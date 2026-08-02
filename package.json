@@ -12,7 +12,8 @@
     "astro": "astro",
     "assets": "node scripts/generate-assets.mjs",
     "check": "astro check",
-    "fonts": "node scripts/fetch-fonts.mjs"
+    "fonts": "node scripts/fetch-fonts.mjs",
+    "postbuild": "node scripts/csp-hashes.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.2",
