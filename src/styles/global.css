@@ -251,6 +251,17 @@
     );
   }
 
+  /* Absence, made material. In the comparator, one document has nothing on the
+     line the other one uses — hatching says "no stock here" where a plain empty
+     cell would only look like padding. Detector note: a deliberate texture. */
+  .ud-void {
+    background-image: repeating-linear-gradient(
+      135deg,
+      transparent 0 5px,
+      color-mix(in srgb, var(--fg-scribe) 65%, transparent) 5px 6px
+    );
+  }
+
   /* --- Motion ---------------------------------------------------------- */
 
   /* The one authored moment: the hammer falls, the work lengthens, scale

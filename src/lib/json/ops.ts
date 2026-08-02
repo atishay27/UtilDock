@@ -2,8 +2,9 @@
  * The operation protocol shared between the UI and the JSON worker.
  *
  * All heavy work (parse, format, schema validation, diff) runs in the worker,
- * which keeps ajv, jsondiffpatch and json-source-map out of the main-thread
- * bundle entirely and stops multi-megabyte documents from freezing the page.
+ * which keeps the schema validator, the diff engine and json-source-map out of
+ * the main-thread bundle entirely and stops multi-megabyte documents from
+ * freezing the page.
  */
 
 import { collectStats, parseJson } from './parse';

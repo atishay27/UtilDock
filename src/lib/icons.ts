@@ -50,6 +50,8 @@ export const ICONS = {
 
   'chevron-down': '<path d="m5 9 7 7 7-7"/>',
 
+  'chevron-up': '<path d="m5 15 7-7 7 7"/>',
+
   lock: '<rect x="4" y="10.5" width="16" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>',
 
   zap: '<path d="M13.5 2.5 4 13.8h6.5L10 21.5 20 10.2h-6.5l0-7.7Z"/>',

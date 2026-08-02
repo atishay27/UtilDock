@@ -22,8 +22,12 @@ import JsonDiff from '../../components/tools/JsonDiff';
       Elements that only changed position are reported as moves.
     </p>
     <p>
-      Every difference is listed with its full path, and the counts along the top filter the list by
-      kind. Both documents are parsed and compared in a Web Worker inside this tab.
+      The result is drawn as one aligned document rather than a list: matching lines sit on the same
+      row, red marks what exists only in the original, green what exists only in the changed
+      document, and an arrow between them marks a value that was replaced. Runs of identical lines
+      fold away, but the braces on the path down to each difference always stay on screen, so every
+      change keeps the structure that locates it. Both documents are parsed and compared in a Web
+      Worker inside this tab.
     </p>
   </div>
 </ToolLayout>

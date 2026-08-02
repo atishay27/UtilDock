@@ -153,6 +153,13 @@ ramp is the one a smith actually reads: cold → dull red → cherry → white h
 | Rings true | `#4fb477` | `#17714a` | Valid — the piece is sound |
 | Crack | `#ff5c46` | `#b02513` | A fault, located to the column |
 
+In the comparator these verdict colours take on a second, fixed meaning, and it must not drift:
+**red is what exists only in the original, green is what exists only in the changed document, and an
+amber arrow between them marks a value that was replaced** — old struck through, new weighted. It is
+the one convention on the site borrowed wholesale from outside it, because every developer already
+reads it, and a tool whose whole claim is "understand this at a glance" cannot afford to teach a
+private colour code first.
+
 Three colour groups exist for reasons worth preserving:
 
 1. **Text-safe heat tokens** (`--fg-cherry`, `--fg-heat`, `--fg-white-hot`) are tuned for contrast
@@ -217,6 +224,10 @@ Texture does the rest. `.ud-scale` scatters radial-gradient scale flecks across 
 shell that shatters off hot iron. It is a named material of this world, generated in CSS so it costs
 no request and tiles at any size. A design detector may flag it as a decorative grid field; it is a
 deliberate, documented exception.
+
+`.ud-void` is the second material: a fine diagonal hatch standing for absence. The comparator uses it
+where one document has nothing on the line the other one occupies — an empty cell would read as
+padding, whereas hatching reads as "no stock here". Same rationale, same exception.
 
 ## Shapes
 

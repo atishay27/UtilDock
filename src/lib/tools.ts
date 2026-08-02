@@ -96,7 +96,7 @@ export const TOOLS: Tool[] = [
     tagline: 'Diff two documents structurally',
     title: 'JSON Diff — compare two JSON documents side by side',
     description:
-      'Compare two JSON documents and see exactly what was added, removed or changed, by path. Key order is ignored by default, so only real differences show up. Runs entirely in your browser.',
+      'Compare two JSON documents side by side and see what changed at a glance — red for what only the original has, green for what only the new one has, an arrow for every replaced value. Key order and formatting are ignored, so only real differences show up. Runs entirely in your browser.',
     keywords: ['json diff', 'compare json', 'json comparator', 'json difference online'],
     icon: 'diff',
     status: 'live',

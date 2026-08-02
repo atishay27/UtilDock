@@ -30,7 +30,6 @@
     "@uiw/react-codemirror": "^4.25.11",
     "astro": "^7.1.6",
     "json-source-map": "^0.6.1",
-    "jsondiffpatch": "^0.7.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3"
