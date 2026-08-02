@@ -13,11 +13,11 @@ import JsonDiff from '../../components/tools/JsonDiff';
       as changes — only differences that actually change what the JSON means.
     </p>
     <p>
-      Arrays are matched by identity where one exists (an
-      <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">id</code>,
-      <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">key</code>,
-      <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">uuid</code> or
-      <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">name</code> field), so inserting
+      Arrays are matched by identity where one exists (an <code
+        class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">id</code
+      >, <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">key</code>, <code
+        class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">uuid</code
+      > or <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">name</code> field), so inserting
       an element at the start reports one addition rather than rewriting every element after it.
       Elements that only changed position are reported as moves.
     </p>
