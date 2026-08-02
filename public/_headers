@@ -15,6 +15,12 @@
   Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()
   Cross-Origin-Opener-Policy: same-origin
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  # Cloudflare attaches its own NEL policy, which asks the browser to report
+  # network errors to a.nel.cloudflare.com. The Reporting API is not governed by
+  # CSP, so that is genuine off-origin traffic from a visitor's browser. A zero
+  # max_age unregisters the policy instead of renewing it.
+  NEL: {"max_age":0}
+  Report-To: {"group":"cf-nel","max_age":0,"endpoints":[]}
 
 # Hashed build output never changes under the same name.
 /_astro/*
@@ -27,5 +33,11 @@
   Cache-Control: public, max-age=604800
 
 # The service worker must always be revalidated or updates never ship.
+# Spelled out rather than a bare `no-cache`: Cloudflare's edge ignored that and
+# applied its 4-hour default, which would have delayed every worker update.
 /sw.js
-  Cache-Control: no-cache
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Self-hosted and never renamed, so revalidate daily rather than hold a year.
+/fonts/*
+  Cache-Control: public, max-age=86400
