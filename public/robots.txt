@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://utildock.dev/sitemap-index.xml

@@ -1,0 +1,134 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import ToolCard from '../components/ToolCard.astro';
+import { CATEGORIES, TOOLS } from '../lib/tools';
+import { SITE } from '../lib/site';
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: SITE.url,
+  description: SITE.description,
+};
+
+const promises = [
+  {
+    icon: 'lock' as const,
+    title: 'Your data stays put',
+    body: 'Every tool runs as JavaScript in your tab. Nothing is uploaded, logged, or sent to a server — there is no server to send it to.',
+  },
+  {
+    icon: 'ad-off' as const,
+    title: 'No ads, no sign-up',
+    body: 'No banners, no interstitials, no "create an account to continue". Open the page, paste, get your answer.',
+  },
+  {
+    icon: 'zap' as const,
+    title: 'Fast on big documents',
+    body: 'Heavy parsing and diffing move to a Web Worker, so multi-megabyte files never freeze the page while you type.',
+  },
+];
+---
+
+<BaseLayout title={`${SITE.name} — ${SITE.tagline}`} description={SITE.description}
+  keywords={['developer tools', 'json tools', 'online json formatter', 'free developer utilities']}
+  structuredData={structuredData}
+>
+  <!-- Hero -->
+  <section class="relative isolate overflow-hidden">
+    <div class="ud-grid-backdrop pointer-events-none absolute inset-0 -z-10"></div>
+
+    <div class="mx-auto max-w-6xl px-4 pt-24 pb-16 text-center sm:px-6 sm:pt-32">
+      <h1
+        class="ud-rise mx-auto max-w-3xl text-4xl leading-[1.1] font-bold tracking-tight text-balance text-content sm:text-6xl"
+      >
+        Your dock for <span class="text-accent">developer utilities</span>.
+      </h1>
+
+      <p
+        class="ud-rise mx-auto mt-6 max-w-xl text-lg leading-relaxed text-pretty text-muted"
+        style="--ud-rise-delay: 90ms"
+      >
+        Small, sharp tools for the things you do every day. Free, ad-free, and running entirely
+        inside your browser.
+      </p>
+
+      <div
+        class="ud-rise mt-9 flex flex-wrap items-center justify-center gap-3"
+        style="--ud-rise-delay: 170ms"
+      >
+        <a
+          href="/json/formatter"
+          class="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 font-medium text-accent-contrast transition-opacity hover:opacity-90"
+        >
+          Format some JSON
+          <Icon name="arrow-right" size={17} />
+        </a>
+        <a
+          href="#tools"
+          class="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-5 py-2.5 font-medium text-content transition-colors hover:border-line-strong"
+        >
+          Browse all tools
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tools -->
+  <section id="tools" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-8 sm:px-6">
+    {
+      CATEGORIES.map((category) => {
+        const tools = TOOLS.filter((t) => t.category === category.id);
+        if (tools.length === 0) return null;
+        const live = tools.filter((t) => t.status === 'live');
+
+        // A category with nothing shipped yet is a one-line note, not a grid of
+        // greyed-out cards taking up a screen of space.
+        if (live.length === 0) {
+          return (
+            <div class="mb-14 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-dashed border-line px-4 py-3.5">
+              <h2 class="text-sm font-semibold text-muted">{category.name}</h2>
+              <p class="text-sm text-faint">
+                {tools.map((t) => t.name).join(', ')} — {category.blurb}
+              </p>
+            </div>
+          );
+        }
+
+        return (
+          <div class="mb-14">
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
+              <h2 class="text-xl font-semibold tracking-tight text-content">{category.name}</h2>
+              <p class="text-sm text-muted">{category.blurb}</p>
+            </div>
+            <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {live.map((tool) => (
+                <ToolCard tool={tool} />
+              ))}
+            </div>
+          </div>
+        );
+      })
+    }
+  </section>
+
+  <!-- The three commitments. Rules rather than boxes: this is a statement of
+       intent, not another grid of tiles competing with the tool directory. -->
+  <section class="mx-auto max-w-6xl px-4 pt-6 pb-4 sm:px-6">
+    <div class="grid gap-x-10 gap-y-10 md:grid-cols-3">
+      {
+        promises.map((promise) => (
+          <div class="border-t border-line-strong pt-5">
+            <h3 class="flex items-center gap-2.5 text-base font-semibold text-content">
+              <Icon name={promise.icon} size={17} class="shrink-0 text-accent" />
+              {promise.title}
+            </h3>
+            <p class="mt-2.5 text-sm leading-relaxed text-muted">{promise.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

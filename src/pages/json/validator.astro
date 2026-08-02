@@ -1,0 +1,29 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import JsonValidator from '../../components/tools/JsonValidator';
+---
+
+<ToolLayout toolId="json-validator">
+  <JsonValidator client:load />
+
+  <div slot="about" class="mt-4 space-y-4 text-sm leading-relaxed text-muted">
+    <p>
+      The document is checked as you type. A syntax error is reported with the exact line and column
+      it occurs on and underlined in the editor, so you can go straight to the trailing comma or
+      unquoted key that broke it.
+    </p>
+    <p>
+      Turn on <strong class="font-medium text-content">Check against a schema</strong> to validate the
+      shape of your data as well as its syntax. Drafts 2020-12, 2019-09 and 07 are all supported, along
+      with the standard <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">format</code>
+      keywords such as <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">date-time</code>,
+      <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">email</code> and
+      <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">uri</code>. Every violation is
+      listed with its path; click one to jump to it in the document.
+    </p>
+    <p>
+      Nothing is uploaded. Both the document and the schema stay in this tab — useful when what you
+      are checking is a production payload.
+    </p>
+  </div>
+</ToolLayout>

@@ -1,0 +1,26 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import JsonViewer from '../../components/tools/JsonViewer';
+---
+
+<ToolLayout toolId="json-viewer">
+  <JsonViewer client:load />
+
+  <div slot="about" class="mt-4 space-y-4 text-sm leading-relaxed text-muted">
+    <p>
+      Paste a document on the left and it becomes a navigable tree on the right, with objects and
+      arrays collapsed past the second level so the overall shape is visible at a glance. Values are
+      coloured by type, and every container shows how many children it holds while collapsed.
+    </p>
+    <p>
+      The filter box matches both keys and values and automatically opens the branches that contain
+      a hit, which is the fastest way to find one field inside a large API response. Hover any row
+      and click <strong class="font-medium text-content">path</strong> to copy its full path — ready to
+      paste into your code.
+    </p>
+    <p>
+      Only the rows currently on screen are rendered, so documents with hundreds of thousands of
+      nodes stay smooth to scroll.
+    </p>
+  </div>
+</ToolLayout>

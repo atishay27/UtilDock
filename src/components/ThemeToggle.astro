@@ -1,0 +1,27 @@
+---
+import Icon from './Icon.astro';
+---
+
+<button
+  id="theme-toggle"
+  type="button"
+  class="grid size-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-line-strong hover:text-content"
+  aria-label="Switch theme"
+  title="Switch theme"
+>
+  <Icon name="sun" size={17} class="hidden [:root[data-theme=light]_&]:block" />
+  <Icon name="moon" size={17} class="block [:root[data-theme=light]_&]:hidden" />
+</button>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  toggle?.addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem('utildock:theme', next);
+    } catch {
+      /* storage unavailable — the toggle still works for this page view */
+    }
+  });
+</script>

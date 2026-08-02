@@ -1,0 +1,87 @@
+---
+import { LIVE_TOOLS } from '../lib/tools';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+const path = Astro.url.pathname.replace(/\/$/, '');
+---
+
+<header
+  class="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-md supports-[backdrop-filter]:bg-bg/65"
+>
+  <div class="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
+    <a
+      href="/"
+      class="flex shrink-0 items-center gap-2 font-semibold tracking-tight text-content"
+      aria-label="UtilDock home"
+    >
+      <Logo size={24} />
+      <span>UtilDock</span>
+    </a>
+
+    <nav aria-label="Tools" class="ml-2 hidden items-center gap-0.5 md:flex">
+      {
+        LIVE_TOOLS.map((tool) => (
+          <a
+            href={tool.href}
+            class:list={[
+              'rounded-lg px-2.5 py-1.5 text-sm transition-colors',
+              path === tool.href
+                ? 'bg-surface-2 text-content'
+                : 'text-muted hover:bg-surface hover:text-content',
+            ]}
+            aria-current={path === tool.href ? 'page' : undefined}
+          >
+            {tool.name.replace('JSON ', '')}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="ml-auto flex items-center gap-2">
+      <span
+        class="hidden items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-xs text-muted sm:inline-flex"
+      >
+        <Icon name="lock" size={13} class="text-success" />
+        100% client-side
+      </span>
+      <ThemeToggle />
+      <button
+        id="nav-toggle"
+        type="button"
+        class="grid size-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:text-content md:hidden"
+        aria-label="Toggle navigation"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+      >
+        <Icon name="menu" size={17} />
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-nav" aria-label="Tools" class="hidden border-t border-line px-4 py-2 md:hidden">
+    {
+      LIVE_TOOLS.map((tool) => (
+        <a
+          href={tool.href}
+          class:list={[
+            'block rounded-lg px-3 py-2 text-sm',
+            path === tool.href ? 'bg-surface-2 text-content' : 'text-muted',
+          ]}
+        >
+          {tool.name}
+        </a>
+      ))
+    }
+  </nav>
+</header>
+
+<script>
+  const button = document.getElementById('nav-toggle');
+  const nav = document.getElementById('mobile-nav');
+  button?.addEventListener('click', () => {
+    const open = nav?.classList.toggle('hidden') === false;
+    button.setAttribute('aria-expanded', String(open));
+  });
+</script>

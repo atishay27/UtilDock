@@ -1,0 +1,23 @@
+---
+interface Props {
+  size?: number;
+  class?: string;
+}
+
+const { size = 26, class: className = '' } = Astro.props;
+---
+
+<!-- A dock: three stacked slots with the top one lit. -->
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 32 32"
+  fill="none"
+  aria-hidden="true"
+  class={className}
+>
+  <rect x="2.5" y="2.5" width="27" height="27" rx="8" class="fill-surface-2 stroke-line" stroke-width="1.5"></rect>
+  <rect x="8" y="9" width="16" height="4" rx="2" class="fill-accent"></rect>
+  <rect x="8" y="15.5" width="16" height="4" rx="2" class="fill-content opacity-35"></rect>
+  <rect x="8" y="22" width="10" height="4" rx="2" class="fill-content opacity-20"></rect>
+</svg>

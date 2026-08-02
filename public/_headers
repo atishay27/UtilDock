@@ -1,0 +1,29 @@
+/*
+  # Everything the site needs is same-origin, so the policy can simply forbid
+  # outbound connections. This is the mechanism behind the privacy promise:
+  # even a compromised dependency could not post your JSON anywhere.
+  #
+  # 'unsafe-inline' covers the pre-paint theme script, the JSON-LD blocks and
+  # the stylesheets CodeMirror injects at runtime. If Cloudflare Web Analytics
+  # is ever switched on, script-src and connect-src also need
+  # https://static.cloudflareinsights.com and https://cloudflareinsights.com.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+# Hashed build output never changes under the same name.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/icon-*.png
+  Cache-Control: public, max-age=604800
+
+/og-default.png
+  Cache-Control: public, max-age=604800
+
+# The service worker must always be revalidated or updates never ship.
+/sw.js
+  Cache-Control: no-cache

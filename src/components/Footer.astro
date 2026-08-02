@@ -1,0 +1,54 @@
+---
+import { CATEGORIES, TOOLS } from '../lib/tools';
+import { SITE } from '../lib/site';
+import Logo from './Logo.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-24 border-t border-line bg-surface/40">
+  <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
+    <div>
+      <div class="flex items-center gap-2 font-semibold text-content">
+        <Logo size={22} />
+        UtilDock
+      </div>
+      <p class="mt-3 max-w-xs text-sm leading-relaxed text-muted">
+        {SITE.tagline} Free, ad-free, and everything runs in your browser.
+      </p>
+    </div>
+
+    {
+      CATEGORIES.map((category) => (
+        <div>
+          <h2 class="text-xs font-semibold tracking-wider text-faint uppercase">{category.name}</h2>
+          <ul class="mt-3 space-y-2 text-sm">
+            {TOOLS.filter((t) => t.category === category.id).map((tool) => (
+              <li>
+                {tool.status === 'live' ? (
+                  <a href={tool.href} class="text-muted transition-colors hover:text-accent">
+                    {tool.name}
+                  </a>
+                ) : (
+                  <span class="text-faint">{tool.name} — soon</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="border-t border-line">
+    <div
+      class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-5 text-sm text-faint sm:flex-row sm:items-center sm:justify-between sm:px-6"
+    >
+      <p>© {year} UtilDock</p>
+      <nav class="flex gap-5" aria-label="Site">
+        <a href="/about" class="transition-colors hover:text-content">About</a>
+        <a href="/privacy" class="transition-colors hover:text-content">Privacy</a>
+      </nav>
+    </div>
+  </div>
+</footer>

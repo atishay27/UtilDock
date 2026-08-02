@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { SITE } from '../lib/site';
+
+const updated = 'August 2026';
+---
+
+<BaseLayout
+  title="Privacy"
+  description="UtilDock runs entirely in your browser. No document you paste is ever uploaded, stored, or logged — there is no server to send it to."
+>
+  <article class="mx-auto max-w-2xl px-4 py-14 sm:px-6">
+    <h1 class="text-3xl font-bold tracking-tight text-content">Privacy</h1>
+    <p class="mt-2 text-sm text-faint">Last updated {updated}</p>
+
+    <div
+      class="mt-8 flex items-start gap-3 rounded-xl border border-success/30 bg-success/8 p-4 sm:p-5"
+    >
+      <Icon name="lock" size={19} class="mt-0.5 shrink-0 text-success" />
+      <p class="text-sm leading-relaxed text-content">
+        <strong class="font-semibold">Nothing you paste into {SITE.name} ever leaves your browser.</strong
+        > Every tool is JavaScript running in your own tab. Your JSON is never uploaded, never stored, and
+        never seen by us — there is no server that could receive it.
+      </p>
+    </div>
+
+    <div class="mt-10 space-y-8 text-sm leading-relaxed text-muted">
+      <section>
+        <h2 class="text-lg font-semibold text-content">How the tools work</h2>
+        <p class="mt-3">
+          {SITE.name} is a static website. When you open a tool, your browser downloads some HTML,
+          CSS and JavaScript, and everything after that happens locally. Parsing, formatting,
+          validating and comparing all run inside a Web Worker in your tab. Opening a file with the
+          <strong class="font-medium text-content">Open</strong> button — or dropping one onto the page
+          — reads it from your disk into memory; it is not an upload.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-content">What is stored on your device</h2>
+        <p class="mt-3">
+          So that a refresh does not lose your work, each tool saves its current input to your
+          browser's <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">localStorage</code>,
+          along with your theme choice and a few preferences such as indent size. This data stays on
+          your device, is readable only by {SITE.name} in your browser, and is never transmitted
+          anywhere. Clearing your browser's site data for this domain removes all of it.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-content">Cookies and tracking</h2>
+        <p class="mt-3">
+          {SITE.name} sets no cookies, runs no advertising, and embeds no third-party trackers,
+          social widgets, or hosted fonts. There is no account system, so there is nothing to sign up
+          for and no profile to build. You will never see a consent banner here, because there is
+          nothing to consent to.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-content">Server logs</h2>
+        <p class="mt-3">
+          The site is served as static files by Cloudflare Pages. Like any web host, Cloudflare
+          processes the network requests needed to deliver a page and may retain limited technical
+          data (such as IP address and user agent) for security and abuse prevention, governed by
+          Cloudflare's own policies. That applies only to requests for the site's own files — the
+          content you paste into a tool is never part of any request.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-content">Verifying this yourself</h2>
+        <p class="mt-3">
+          You do not have to take our word for it. Open your browser's developer tools, switch to the
+          Network tab, and use any tool on this site: you will see requests for the page's own assets
+          and nothing else. Better still, load a tool once and then disconnect from the internet — it
+          keeps working, because there was never anything to send.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-content">Changes</h2>
+        <p class="mt-3">
+          If this policy ever changes, the date at the top of this page changes with it. The
+          commitment that your data stays in your browser is not something we intend to revisit.
+        </p>
+      </section>
+    </div>
+  </article>
+</BaseLayout>

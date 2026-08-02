@@ -1,0 +1,180 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   Every color is declared twice: once as the dark default on :root, once under
+   [data-theme='light']. Components only ever reference the semantic name
+   (bg-surface, text-muted, border-line), so theming is entirely a token swap.
+   --------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: dark;
+
+  --ud-bg: #0a0e14;
+  --ud-surface: #111821;
+  --ud-surface-2: #18212c;
+  --ud-surface-3: #202b38;
+  --ud-line: #26323f;
+  --ud-line-strong: #35455a;
+
+  --ud-text: #e4ecf3;
+  --ud-muted: #8a9bad;
+  /* Kept at 4.5:1 against --ud-bg so it stays legible as small label text. */
+  --ud-faint: #6b7f94;
+
+  --ud-accent: #22d3ee;
+  --ud-accent-strong: #67e8f9;
+  --ud-accent-dim: #0e7490;
+  --ud-accent-contrast: #04121a;
+
+  --ud-success: #34d399;
+  --ud-danger: #f87171;
+  --ud-warning: #fbbf24;
+
+  /* JSON syntax + tree node colors */
+  --ud-key: #79c0ff;
+  --ud-string: #7ee787;
+  --ud-number: #ffab70;
+  --ud-boolean: #d2a8ff;
+  --ud-null: #8b949e;
+
+  --ud-glow: color-mix(in oklab, var(--ud-accent) 18%, transparent);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --ud-bg: #ffffff;
+  --ud-surface: #f7f9fb;
+  --ud-surface-2: #eef2f6;
+  --ud-surface-3: #e3e9ef;
+  --ud-line: #dde4ec;
+  --ud-line-strong: #c3cedb;
+
+  --ud-text: #10161d;
+  --ud-muted: #55636f;
+  --ud-faint: #61707f;
+
+  --ud-accent: #0e7490;
+  --ud-accent-strong: #155e75;
+  --ud-accent-dim: #a5eaf6;
+  --ud-accent-contrast: #ffffff;
+
+  --ud-success: #047857;
+  --ud-danger: #cf2c2c;
+  --ud-warning: #b45309;
+
+  --ud-key: #0550ae;
+  --ud-string: #0a7c42;
+  --ud-number: #953800;
+  --ud-boolean: #6639ba;
+  --ud-null: #6e7781;
+
+  --ud-glow: color-mix(in oklab, var(--ud-accent) 12%, transparent);
+}
+
+@theme inline {
+  --color-bg: var(--ud-bg);
+  --color-surface: var(--ud-surface);
+  --color-surface-2: var(--ud-surface-2);
+  --color-surface-3: var(--ud-surface-3);
+  --color-line: var(--ud-line);
+  --color-line-strong: var(--ud-line-strong);
+
+  --color-content: var(--ud-text);
+  --color-muted: var(--ud-muted);
+  --color-faint: var(--ud-faint);
+
+  --color-accent: var(--ud-accent);
+  --color-accent-strong: var(--ud-accent-strong);
+  --color-accent-dim: var(--ud-accent-dim);
+  --color-accent-contrast: var(--ud-accent-contrast);
+
+  --color-success: var(--ud-success);
+  --color-danger: var(--ud-danger);
+  --color-warning: var(--ud-warning);
+
+  /* JSON value types — shared by the editor highlighting and the tree viewer. */
+  --color-key: var(--ud-key);
+  --color-string: var(--ud-string);
+  --color-number: var(--ud-number);
+  --color-boolean: var(--ud-boolean);
+  --color-nullish: var(--ud-null);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, 'Cascadia Code', 'Roboto Mono',
+    Consolas, monospace;
+}
+
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--ud-bg);
+    color: var(--ud-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--ud-accent) 35%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ud-accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  /* Only animate for users who want it. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* The one authored motion moment on the site: the hero settles into place on
+     arrival. Everything else uses plain state transitions. */
+  @keyframes ud-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+
+  .ud-rise {
+    animation: ud-rise 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--ud-rise-delay, 0ms);
+  }
+
+  /* The faint grid + glow behind the hero, drawn purely in CSS. */
+  .ud-grid-backdrop {
+    background-image:
+      radial-gradient(ellipse 60% 50% at 50% 0%, var(--ud-glow), transparent 70%),
+      linear-gradient(to right, var(--ud-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--ud-line) 1px, transparent 1px);
+    background-size:
+      100% 100%,
+      56px 56px,
+      56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 65% at 50% 0%, #000 30%, transparent 78%);
+    mask-image: radial-gradient(ellipse 80% 65% at 50% 0%, #000 30%, transparent 78%);
+  }
+}
