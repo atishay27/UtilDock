@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolRow from '../components/ToolRow.astro';
-import { LIVE_TOOLS, TOOLS } from '../lib/tools';
+import Icon from '../components/Icon.astro';
+import { TOOLS } from '../lib/tools';
 import { SITE } from '../lib/site';
 
 const structuredData = {
@@ -12,12 +13,26 @@ const structuredData = {
   description: SITE.description,
 };
 
-/* The readout under the billet. Every figure here is literally true. */
+/* The band under the billet. A bare figure is not a measurement — the label has
+   to finish the sentence, or three big zeros just read as data that failed to
+   load. Each one is literally true and checkable in the Network panel, which is
+   what the fourth cell is for. */
 const readout = [
-  { label: 'Tools at heat', value: String(LIVE_TOOLS.length).padStart(3, '0') },
-  { label: 'Bytes transmitted', value: '000' },
-  { label: 'Off-origin requests', value: '000' },
-  { label: 'Accounts required', value: '000' },
+  {
+    value: '0',
+    label: 'bytes of your JSON uploaded',
+    note: 'It is parsed in this tab, by this tab. There is no server to send it to.',
+  },
+  {
+    value: '0',
+    label: 'requests to any other domain',
+    note: 'No CDN, no hosted font, no embedded widget, no analytics.',
+  },
+  {
+    value: '0',
+    label: 'accounts, cookies or trackers',
+    note: 'Nothing to sign up for, and no consent banner to dismiss.',
+  },
 ];
 
 /* The state vocabulary, shown rather than described. These are the same
@@ -138,35 +153,58 @@ const temper = [
           href="#stock"
           class="ud-struck border-2 border-stamp px-7 py-3.5 text-xl text-stamp transition-colors hover:bg-stamp hover:text-stamp-ink"
         >
-          See the rack
+          See the tools
         </a>
-        <!-- Stamped on its own plate: the bar has cooled to grey by this end,
-             so the legend cannot rely on the metal behind it for contrast. -->
-        <span class="ud-legend ml-auto hidden bg-stamp px-3 py-1.5 text-stamp-ink/75 lg:block">
-          Heat 1250 · worked in this tab
-        </span>
       </div>
     </div>
 
     <!-- Registered measurement, exactly as the form keeps it. -->
     <div class="border-t border-scribe bg-ground">
-      <dl class="mx-auto grid max-w-[1600px] grid-cols-2 sm:grid-cols-4">
+      <ul class="mx-auto grid max-w-[1600px] sm:grid-cols-2 lg:grid-cols-4">
         {
           readout.map((item, index) => (
-            <div
+            <li
               class:list={[
                 'border-scribe px-4 py-5 sm:px-6',
-                index > 0 && 'sm:border-l',
-                index % 2 === 1 && 'border-l',
-                index < 2 && 'border-b sm:border-b-0',
+                index > 0 && 'border-t sm:border-t-0',
+                index % 2 === 1 && 'sm:border-l',
+                index >= 2 && 'sm:border-t lg:border-t-0',
+                index > 0 && 'lg:border-l',
               ]}
             >
-              <dt class="ud-legend">{item.label}</dt>
-              <dd class="ud-force mt-1.5 text-3xl text-chalk sm:text-4xl">{item.value}</dd>
-            </div>
+              <p class="flex items-baseline gap-2.5">
+                <span class="ud-force text-3xl leading-none text-cherry sm:text-4xl">
+                  {item.value}
+                </span>
+                <span class="ud-legend text-chalk">{item.label}</span>
+              </p>
+              <p class="mt-2.5 text-xs leading-relaxed text-temper">{item.note}</p>
+            </li>
           ))
         }
-      </dl>
+
+        <!-- The fourth cell is the one that makes the other three worth
+             printing: not another figure, but how to go and check them. -->
+        <li class="border-t border-scribe sm:border-l lg:border-t-0">
+          <a
+            href="/privacy"
+            class="group flex h-full flex-col px-4 py-5 transition-colors hover:bg-bench sm:px-6"
+          >
+            <span class="ud-legend flex items-center gap-1.5 text-chalk">
+              Check it yourself
+              <Icon
+                name="arrow-right"
+                size={13}
+                class="text-cherry transition-transform group-hover:translate-x-0.5"
+              />
+            </span>
+            <span class="mt-2.5 text-xs leading-relaxed text-temper">
+              Open your browser's Network panel and use any tool — every request goes to this domain,
+              and none of them carry your document.
+            </span>
+          </a>
+        </li>
+      </ul>
     </div>
   </section>
 
