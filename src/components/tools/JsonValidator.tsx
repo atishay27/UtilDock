@@ -206,11 +206,11 @@ function ResultBody({ isEmpty, syntaxError, result, issues, onSelectIssue }: Res
   if (syntaxError) {
     return (
       <div className="h-full overflow-auto p-4">
-        <div className="flex items-start gap-3 rounded-lg border border-danger/40 bg-danger/8 p-3">
-          <Icon name="x" size={16} className="mt-0.5 shrink-0 text-danger" />
+        <div className="flex items-start gap-3 border border-fault/40 bg-fault/8 p-3">
+          <Icon name="x" size={16} className="mt-0.5 shrink-0 text-fault" />
           <div className="min-w-0">
-            <p className="text-sm font-medium text-content">{syntaxError.message}</p>
-            <p className="mt-1 font-mono text-xs text-muted">
+            <p className="text-sm font-medium text-chalk">{syntaxError.message}</p>
+            <p className="mt-1 font-mono text-xs text-temper">
               line {syntaxError.line}, column {syntaxError.column}
               {syntaxError.offset !== null && ` · offset ${syntaxError.offset}`}
             </p>
@@ -227,9 +227,9 @@ function ResultBody({ isEmpty, syntaxError, result, issues, onSelectIssue }: Res
   if (result?.schema?.status === 'schema-error') {
     return (
       <div className="h-full overflow-auto p-4">
-        <div className="flex items-start gap-3 rounded-lg border border-warning/40 bg-warning/8 p-3">
-          <Icon name="x" size={16} className="mt-0.5 shrink-0 text-warning" />
-          <p className="text-sm text-content">{result.schema.message}</p>
+        <div className="flex items-start gap-3 border border-warn/40 bg-warn/8 p-3">
+          <Icon name="x" size={16} className="mt-0.5 shrink-0 text-warn" />
+          <p className="text-sm text-chalk">{result.schema.message}</p>
         </div>
       </div>
     );
@@ -237,19 +237,19 @@ function ResultBody({ isEmpty, syntaxError, result, issues, onSelectIssue }: Res
 
   if (issues.length > 0) {
     return (
-      <ul className="h-full divide-y divide-line overflow-auto">
+      <ul className="h-full divide-y divide-scribe overflow-auto">
         {issues.map((issue, index) => (
           <li key={`${issue.pointer}-${issue.keyword}-${index}`}>
             <button
               type="button"
               onClick={() => onSelectIssue(issue)}
               disabled={!issue.from}
-              className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-2 disabled:cursor-default"
+              className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-anvil-lit disabled:cursor-default"
             >
-              <Icon name="x" size={15} className="mt-0.5 shrink-0 text-danger" />
+              <Icon name="x" size={15} className="mt-0.5 shrink-0 text-fault" />
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-xs break-all text-key">{issue.path}</p>
-                <p className="mt-1 text-sm text-content">{issue.message}</p>
+                <p className="mt-1 text-sm text-chalk">{issue.message}</p>
               </div>
               {issue.from && (
                 <span className="shrink-0 font-mono text-xs text-faint">L{issue.from.line}</span>
@@ -276,13 +276,13 @@ function Empty({ icon, children }: { icon: 'check' | 'check-shield'; children: R
     <div className="grid h-full place-items-center p-6 text-center">
       <div>
         <span
-          className={`mx-auto grid size-11 place-items-center rounded-full border ${
-            ok ? 'border-success/40 bg-success/10 text-success' : 'border-line bg-surface-2 text-faint'
+          className={`mx-auto grid size-11 place-items-center border ${
+            ok ? 'border-sound/40 bg-sound/10 text-sound' : 'border-scribe bg-anvil-lit text-faint'
           }`}
         >
           <Icon name={icon} size={20} />
         </span>
-        <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-muted">{children}</p>
+        <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-temper">{children}</p>
       </div>
     </div>
   );

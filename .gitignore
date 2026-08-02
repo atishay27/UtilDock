@@ -26,3 +26,4 @@ pnpm-debug.log*
 # local tooling state
 .claude/settings.local.json
 .impeccable/config.local.json
+scripts/.fonts/

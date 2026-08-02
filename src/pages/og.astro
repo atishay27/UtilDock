@@ -1,0 +1,50 @@
+---
+/**
+ * The share card, rendered by the site's own design system rather than
+ * re-drawn in a build script — so it can never drift from the real thing.
+ *
+ * Capture it with:
+ *   npm run dev
+ *   agent-browser set viewport 1200 630
+ *   agent-browser open http://localhost:4321/og
+ *   agent-browser screenshot public/og-default.png
+ *
+ * Kept out of the index and the sitemap.
+ */
+import '../styles/global.css';
+import Logo from '../components/Logo.astro';
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>UtilDock — share card</title>
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body class="m-0">
+    <div class="ud-scale relative flex h-[630px] w-[1200px] flex-col overflow-hidden bg-ground">
+      <div class="flex flex-1 flex-col justify-center px-20">
+        <div class="ud-struck flex items-center gap-4 text-[2rem] text-chalk">
+          <Logo size={44} />
+          UtilDock
+        </div>
+
+        <h1 class="mt-10 text-[6.5rem] leading-[0.88] text-chalk">
+          Work it on your<br /><span class="text-cherry">own anvil</span>.
+        </h1>
+
+        <p class="mt-8 max-w-[46ch] text-[1.7rem] leading-snug text-temper">
+          Developer tools that never send your work anywhere.
+        </p>
+      </div>
+
+      <div class="ud-billet relative flex h-[74px] shrink-0 items-center px-20">
+        <span class="ud-struck text-[2rem] tracking-[0.14em] text-ground">
+          Nothing leaves the shop
+        </span>
+      </div>
+      <div class="h-3 shrink-0 bg-anvil"></div>
+    </div>
+  </body>
+</html>

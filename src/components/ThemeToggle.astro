@@ -1,16 +1,17 @@
 ---
-import Icon from './Icon.astro';
+/* Not a lightbulb: the shop is either at heat or cold, and the control says so. */
 ---
 
 <button
   id="theme-toggle"
   type="button"
-  class="grid size-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-line-strong hover:text-content"
-  aria-label="Switch theme"
-  title="Switch theme"
+  class="ud-legend flex h-8 items-center gap-2 border border-scribe px-2.5 text-faint transition-colors hover:border-cherry hover:text-chalk"
+  aria-label="Switch between the forge at heat and the cold shop"
+  title="Switch between the forge at heat and the cold shop"
 >
-  <Icon name="sun" size={17} class="hidden [:root[data-theme=light]_&]:block" />
-  <Icon name="moon" size={17} class="block [:root[data-theme=light]_&]:hidden" />
+  <span class="size-2 shrink-0 bg-cherry [:root[data-theme=light]_&]:bg-cold"></span>
+  <span class="hidden [:root[data-theme=light]_&]:inline">Light the forge</span>
+  <span class="inline [:root[data-theme=light]_&]:hidden">Let it cool</span>
 </button>
 
 <script>
@@ -18,6 +19,9 @@ import Icon from './Icon.astro';
   toggle?.addEventListener('click', () => {
     const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
     document.documentElement.dataset.theme = next;
+    document
+      .getElementById('theme-color')
+      ?.setAttribute('content', next === 'light' ? '#e5e2dc' : '#0a0a0c');
     try {
       localStorage.setItem('utildock:theme', next);
     } catch {

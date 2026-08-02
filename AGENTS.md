@@ -18,8 +18,13 @@ npm run dev       # dev server
 npm run build     # static build to dist/
 npm run preview   # serve dist/
 npm run check     # astro check (types + templates)
-npm run assets    # regenerate icons and the OG image from scripts/generate-assets.mjs
+npm run fonts     # re-download the self-hosted faces + licence
+npm run assets    # regenerate favicon and PWA icons
 ```
+
+The share card is not drawn in a script — it is a real page at `/og` rendered by the site's own CSS
+and fonts. To regenerate: `npm run build && npx astro preview --port 4500`, then screenshot
+`http://localhost:4500/og/` at 1200x630 into `public/og-default.png`.
 
 Tailwind only scans files that existed when the dev server started. **After adding a new
 component file, restart the dev server** or its classes will silently not be generated.
@@ -51,9 +56,12 @@ Astro 7 static output + React 19 islands + Tailwind 4 (CSS-first, no config file
   page.
 - `src/lib/json/types.ts` vs `parse.ts` — components import `types.ts` (dependency-free helpers).
   `parse.ts` pulls in a second JSON parser for error positions and must stay worker-only.
-- `src/styles/global.css` — every colour is a `--ud-*` token declared twice (dark default, light
+- `src/styles/global.css` — every colour is a `--fg-*` token declared twice (dark default, light
   override) and mapped into Tailwind via `@theme inline`. Components reference semantic names
-  (`bg-surface`, `text-muted`), never raw colours, so theming is a token swap.
+  (`bg-anvil`, `text-temper`), never raw colours, so theming is a token swap. **Read DESIGN.md
+  before touching the visual system** — in particular the three separate heat ramps and why they
+  cannot be collapsed into one.
+- Tailwind v4 has no config file; the theme lives in `@theme inline` in `global.css`.
 - `src/components/JsonEditor.tsx` — the shared CodeMirror wrapper. Pass `theme="none"`; @uiw
   otherwise injects a light theme with a white background that fights the token theme.
 

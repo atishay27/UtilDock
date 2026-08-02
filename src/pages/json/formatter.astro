@@ -6,16 +6,16 @@ import JsonFormatter from '../../components/tools/JsonFormatter';
 <ToolLayout toolId="json-formatter">
   <JsonFormatter client:load />
 
-  <div slot="about" class="mt-4 space-y-4 text-sm leading-relaxed text-muted">
+  <div slot="about" class="mt-4 space-y-4 text-sm leading-relaxed text-temper">
     <p>
       Paste or drop a document on the left and the formatted result appears on the right as you
       type. Choose two, three or four spaces, or tabs — whichever your project uses. Switch to <strong
-        class="font-medium text-content">Minify</strong
+        class="font-medium text-chalk">Minify</strong
       > to strip every byte of whitespace, which is what you want before embedding JSON in an
       environment variable or a URL.
     </p>
     <p>
-      <strong class="font-medium text-content">Sort keys</strong> rewrites every object with its keys
+      <strong class="font-medium text-chalk">Sort keys</strong> rewrites every object with its keys
       in alphabetical order. Two documents that differ only in key order become byte-identical, which
       makes them diff cleanly in version control.
     </p>

@@ -6,7 +6,7 @@ import JsonDiff from '../../components/tools/JsonDiff';
 <ToolLayout toolId="json-diff">
   <JsonDiff client:load />
 
-  <div slot="about" class="mt-4 space-y-4 text-sm leading-relaxed text-muted">
+  <div slot="about" class="mt-4 space-y-4 text-sm leading-relaxed text-temper">
     <p>
       This is a structural comparison, not a text diff. The two documents are parsed and then walked
       value by value, so reordered keys, different indentation and trailing whitespace never show up
@@ -14,10 +14,10 @@ import JsonDiff from '../../components/tools/JsonDiff';
     </p>
     <p>
       Arrays are matched by identity where one exists (an <code
-        class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">id</code
-      >, <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">key</code>, <code
-        class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">uuid</code
-      > or <code class="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">name</code> field), so inserting
+        class=" bg-anvil-lit px-1 py-0.5 font-mono text-xs">id</code
+      >, <code class=" bg-anvil-lit px-1 py-0.5 font-mono text-xs">key</code>, <code
+        class=" bg-anvil-lit px-1 py-0.5 font-mono text-xs">uuid</code
+      > or <code class=" bg-anvil-lit px-1 py-0.5 font-mono text-xs">name</code> field), so inserting
       an element at the start reports one addition rather than rewriting every element after it.
       Elements that only changed position are reported as moves.
     </p>

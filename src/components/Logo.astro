@@ -5,9 +5,11 @@ interface Props {
 }
 
 const { size = 26, class: className = '' } = Astro.props;
+const id = `heat-${Math.random().toString(36).slice(2, 8)}`;
 ---
 
-<!-- A dock: three stacked slots with the top one lit. -->
+<!-- Three bars racked on the anvil: the top one at working heat, the rest cold
+     stock waiting. Keeps the dock's three-slot silhouette, re-struck in iron. -->
 <svg
   width={size}
   height={size}
@@ -16,8 +18,16 @@ const { size = 26, class: className = '' } = Astro.props;
   aria-hidden="true"
   class={className}
 >
-  <rect x="2.5" y="2.5" width="27" height="27" rx="8" class="fill-surface-2 stroke-line" stroke-width="1.5"></rect>
-  <rect x="8" y="9" width="16" height="4" rx="2" class="fill-accent"></rect>
-  <rect x="8" y="15.5" width="16" height="4" rx="2" class="fill-content opacity-35"></rect>
-  <rect x="8" y="22" width="10" height="4" rx="2" class="fill-content opacity-20"></rect>
+  <defs>
+    <linearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="var(--fg-dull)"></stop>
+      <stop offset="55%" stop-color="var(--fg-cherry)"></stop>
+      <stop offset="100%" stop-color="var(--fg-heat)"></stop>
+    </linearGradient>
+  </defs>
+
+  <rect x="1.5" y="1.5" width="29" height="29" class="fill-anvil stroke-scribe-strong" stroke-width="1.5"></rect>
+  <rect x="6" y="7.5" width="20" height="4.5" fill={`url(#${id})`}></rect>
+  <rect x="6" y="14.5" width="20" height="4.5" class="fill-chalk" opacity="0.3"></rect>
+  <rect x="6" y="21.5" width="13" height="4.5" class="fill-chalk" opacity="0.16"></rect>
 </svg>

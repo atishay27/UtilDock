@@ -1,112 +1,153 @@
 @import 'tailwindcss';
+@import './fonts.css';
 
 /* ---------------------------------------------------------------------------
-   Design tokens.
+   UtilDock — the forge.
 
-   Every color is declared twice: once as the dark default on :root, once under
-   [data-theme='light']. Components only ever reference the semantic name
-   (bg-surface, text-muted, border-line), so theming is entirely a token swap.
+   The palette is a heat scale, which is how a smith actually reads temperature:
+   cold black, dull red, cherry, white heat, white hot. Here it reads state.
+   Nothing is decorative — a colour on this page means the work is at a
+   temperature.
+
+   Two registers of the same shop, not a theme and its inverse:
+     dark  — the forge at heat. Scale-black ground, the work glowing on it.
+     light — the cold shop by day. Mill-scale concrete, chalk, blued steel;
+             the heat scale still reads, and reads harder against cold ground.
    --------------------------------------------------------------------------- */
 
 :root {
   color-scheme: dark;
 
-  --ud-bg: #0a0e14;
-  --ud-surface: #111821;
-  --ud-surface-2: #18212c;
-  --ud-surface-3: #202b38;
-  --ud-line: #26323f;
-  --ud-line-strong: #35455a;
+  /* Ground */
+  --fg-ground: #0a0a0c; /* forge black */
+  --fg-bench: #131417; /* the bench beside the anvil */
+  --fg-anvil: #1b1d21; /* anvil face */
+  --fg-anvil-lit: #24272c;
+  --fg-scribe: #2f3339; /* scribed line */
+  --fg-scribe-strong: #454a52;
 
-  --ud-text: #e4ecf3;
-  --ud-muted: #8a9bad;
-  /* Kept at 4.5:1 against --ud-bg so it stays legible as small label text. */
-  --ud-faint: #6b7f94;
+  /* Marks */
+  --fg-chalk: #f2ede6; /* chalk on steel */
+  --fg-temper: #a8a49d; /* tempered gray */
+  --fg-faint: #86837b;
 
-  --ud-accent: #22d3ee;
-  --ud-accent-strong: #67e8f9;
-  --ud-accent-dim: #0e7490;
-  --ud-accent-contrast: #04121a;
+  /* The heat scale — state, in order of temperature */
+  --fg-cold: #5a5f66; /* stock, untouched */
+  --fg-dull: #7a1e12; /* dull red */
+  --fg-cherry: #ff4b00; /* cherry orange — the working heat, primary */
+  --fg-heat: #ffb400; /* white heat */
+  --fg-white-hot: #fff7f0;
 
-  --ud-success: #34d399;
-  --ud-danger: #f87171;
-  --ud-warning: #fbbf24;
+  /* The billet ramp, kept separate from the text-safe heat tokens above so
+     each theme can stay legible without breaking the other's gradient. */
+  --fg-bar-cold: #5a5f66;
+  --fg-bar-dull: #7a1e12;
+  --fg-bar-cherry: #ff4b00;
+  --fg-bar-heat: #ffb400;
+  --fg-bar-white: #fff7f0;
 
-  /* JSON syntax + tree node colors */
-  --ud-key: #79c0ff;
-  --ud-string: #7ee787;
-  --ud-number: #ffab70;
-  --ud-boolean: #d2a8ff;
-  --ud-null: #8b949e;
+  /* Struck into the bar. Fixed in both registers because the metal is hot in
+     both — a theme-following colour would vanish on the light side. */
+  --fg-stamp: #100c0a;
+  --fg-stamp-ink: #f4efe8;
 
-  --ud-glow: color-mix(in oklab, var(--ud-accent) 18%, transparent);
+  --fg-on-cherry: #140503; /* legend struck into hot metal */
+
+  /* Verdicts */
+  --fg-sound: #4fb477; /* the piece rings true */
+  --fg-fault: #ff5c46; /* a crack */
+  --fg-warn: #ffb400;
+
+  /* JSON value types, drawn off the same scale */
+  --fg-key: #ffb400;
+  --fg-string: #9fd6ae;
+  --fg-number: #ff8c4a;
+  --fg-boolean: #ff7a9c;
+  --fg-null: #8d8a82;
+
+  --fg-shadow: 0 2px 4px rgb(0 0 0 / 0.5), 0 12px 28px -12px rgb(0 0 0 / 0.7);
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --ud-bg: #ffffff;
-  --ud-surface: #f7f9fb;
-  --ud-surface-2: #eef2f6;
-  --ud-surface-3: #e3e9ef;
-  --ud-line: #dde4ec;
-  --ud-line-strong: #c3cedb;
+  --fg-ground: #e5e2dc; /* mill-scale concrete */
+  --fg-bench: #efece6;
+  --fg-anvil: #f6f4ef;
+  --fg-anvil-lit: #fbfaf7;
+  --fg-scribe: #c9c4ba;
+  --fg-scribe-strong: #a8a296;
 
-  --ud-text: #10161d;
-  --ud-muted: #55636f;
-  --ud-faint: #61707f;
+  --fg-chalk: #17181b; /* dark marks on a pale shop */
+  --fg-temper: #4f5257;
+  --fg-faint: #5a5d62;
 
-  --ud-accent: #0e7490;
-  --ud-accent-strong: #155e75;
-  --ud-accent-dim: #a5eaf6;
-  --ud-accent-contrast: #ffffff;
+  --fg-cold: #8a8d92;
+  --fg-dull: #8f2413;
+  --fg-cherry: #b02c00; /* holds 4.5:1 on the pale ground */
+  --fg-heat: #a25c00;
+  --fg-white-hot: #6b3400;
 
-  --ud-success: #047857;
-  --ud-danger: #cf2c2c;
-  --ud-warning: #b45309;
+  /* The bar is a graphic, not text: its ramp must keep climbing in brightness
+     so the hot end still reads as hot against a pale shop. */
+  --fg-bar-cold: #9a9da2;
+  --fg-bar-dull: #a32b12;
+  --fg-bar-cherry: #e84400;
+  --fg-bar-heat: #f5a300;
+  --fg-bar-white: #fff2dc;
 
-  --ud-key: #0550ae;
-  --ud-string: #0a7c42;
-  --ud-number: #953800;
-  --ud-boolean: #6639ba;
-  --ud-null: #6e7781;
+  --fg-stamp: #1a120c;
+  --fg-stamp-ink: #f7f3ec;
 
-  --ud-glow: color-mix(in oklab, var(--ud-accent) 12%, transparent);
+  --fg-on-cherry: #fff7f0;
+
+  --fg-sound: #17714a;
+  --fg-fault: #b02513;
+  --fg-warn: #8a5200;
+
+  --fg-key: #8a4b00;
+  --fg-string: #1c6b3f;
+  --fg-number: #9c3a00;
+  --fg-boolean: #a3306a;
+  --fg-null: #5a5d62;
+
+  --fg-shadow: 0 1px 2px rgb(23 24 27 / 0.09), 0 10px 24px -14px rgb(23 24 27 / 0.28);
 }
 
 @theme inline {
-  --color-bg: var(--ud-bg);
-  --color-surface: var(--ud-surface);
-  --color-surface-2: var(--ud-surface-2);
-  --color-surface-3: var(--ud-surface-3);
-  --color-line: var(--ud-line);
-  --color-line-strong: var(--ud-line-strong);
+  --color-ground: var(--fg-ground);
+  --color-bench: var(--fg-bench);
+  --color-anvil: var(--fg-anvil);
+  --color-anvil-lit: var(--fg-anvil-lit);
+  --color-scribe: var(--fg-scribe);
+  --color-scribe-strong: var(--fg-scribe-strong);
 
-  --color-content: var(--ud-text);
-  --color-muted: var(--ud-muted);
-  --color-faint: var(--ud-faint);
+  --color-chalk: var(--fg-chalk);
+  --color-temper: var(--fg-temper);
+  --color-faint: var(--fg-faint);
 
-  --color-accent: var(--ud-accent);
-  --color-accent-strong: var(--ud-accent-strong);
-  --color-accent-dim: var(--ud-accent-dim);
-  --color-accent-contrast: var(--ud-accent-contrast);
+  --color-cold: var(--fg-cold);
+  --color-dull: var(--fg-dull);
+  --color-cherry: var(--fg-cherry);
+  --color-heat: var(--fg-heat);
+  --color-white-hot: var(--fg-white-hot);
+  --color-on-cherry: var(--fg-on-cherry);
+  --color-stamp: var(--fg-stamp);
+  --color-stamp-ink: var(--fg-stamp-ink);
 
-  --color-success: var(--ud-success);
-  --color-danger: var(--ud-danger);
-  --color-warning: var(--ud-warning);
+  --color-sound: var(--fg-sound);
+  --color-fault: var(--fg-fault);
+  --color-warn: var(--fg-warn);
 
-  /* JSON value types — shared by the editor highlighting and the tree viewer. */
-  --color-key: var(--ud-key);
-  --color-string: var(--ud-string);
-  --color-number: var(--ud-number);
-  --color-boolean: var(--ud-boolean);
-  --color-nullish: var(--ud-null);
+  --color-key: var(--fg-key);
+  --color-string: var(--fg-string);
+  --color-number: var(--fg-number);
+  --color-boolean: var(--fg-boolean);
+  --color-nullish: var(--fg-null);
 
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono:
-    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, 'Cascadia Code', 'Roboto Mono',
-    Consolas, monospace;
+  --font-display: 'Big Shoulders Display', 'Haettenschweiler', 'Arial Narrow', sans-serif;
+  --font-sans: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 @layer base {
@@ -115,66 +156,170 @@
   }
 
   body {
-    background-color: var(--ud-bg);
-    color: var(--ud-text);
+    background-color: var(--fg-ground);
+    color: var(--fg-chalk);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+  }
+
+  /* Display voice: stencilled caps, struck tight. */
+  h1,
+  h2,
+  .ud-struck {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.005em;
+    line-height: 0.92;
+  }
+
+  /* Legend plates: small, spaced, engraved. */
+  .ud-legend {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+  }
+
+  /* Force numerals — measurement is always tabular. */
+  .ud-force {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--ud-accent) 35%, transparent);
+    background: color-mix(in srgb, var(--fg-cherry) 40%, transparent);
+    color: var(--fg-white-hot);
   }
 
   :focus-visible {
-    outline: 2px solid var(--ud-accent);
+    outline: 2px solid var(--fg-heat);
     outline-offset: 2px;
-    border-radius: 3px;
   }
 
-  /* Only animate for users who want it. */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
       transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
     }
   }
 }
 
 @layer components {
-  /* The one authored motion moment on the site: the hero settles into place on
-     arrival. Everything else uses plain state transitions. */
-  @keyframes ud-rise {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-      filter: blur(6px);
+  /* --- Material -------------------------------------------------------- */
+
+  /* Scale flecks: the black shell that shatters off hot iron. A named material
+     of this world, not a decorative grid — the particles are a scatter of
+     radial gradients, and they carry the forge's texture without an image
+     request. Detector note: reads as a tiled gradient field; kept deliberately. */
+  .ud-scale {
+    background-image:
+      radial-gradient(circle at 17% 32%, rgb(0 0 0 / 0.55) 0.6px, transparent 1.1px),
+      radial-gradient(circle at 63% 71%, rgb(0 0 0 / 0.45) 0.5px, transparent 1px),
+      radial-gradient(circle at 84% 19%, rgb(0 0 0 / 0.5) 0.7px, transparent 1.2px),
+      radial-gradient(circle at 38% 88%, rgb(0 0 0 / 0.4) 0.5px, transparent 1px);
+    background-size: 37px 41px, 53px 47px, 61px 59px, 43px 67px;
+  }
+
+  :root[data-theme='light'] .ud-scale {
+    background-image:
+      radial-gradient(circle at 17% 32%, rgb(23 24 27 / 0.13) 0.6px, transparent 1.1px),
+      radial-gradient(circle at 63% 71%, rgb(23 24 27 / 0.1) 0.5px, transparent 1px),
+      radial-gradient(circle at 84% 19%, rgb(23 24 27 / 0.12) 0.7px, transparent 1.2px),
+      radial-gradient(circle at 38% 88%, rgb(23 24 27 / 0.09) 0.5px, transparent 1px);
+  }
+
+  /* The bar: white-hot where the hammer just landed, cooling along its length.
+     The blow lands at the left because that is where the page's action sits —
+     the controls are struck into the part of the bar that is still workable. */
+  .ud-billet {
+    background-image: linear-gradient(
+      90deg,
+      var(--fg-bar-heat) 0%,
+      var(--fg-bar-white) 9%,
+      var(--fg-bar-heat) 26%,
+      var(--fg-bar-cherry) 48%,
+      var(--fg-bar-dull) 74%,
+      var(--fg-bar-cold) 100%
+    );
+  }
+
+  /* --- Motion ---------------------------------------------------------- */
+
+  /* The one authored moment: the hammer falls, the work lengthens, scale
+     leaps off it. Runs once on arrival and again on each operation. */
+  @keyframes ud-strike {
+    0% {
+      transform: scaleX(0.82);
+      filter: brightness(0.55) saturate(0.6);
     }
-    to {
-      opacity: 1;
-      transform: none;
+    38% {
+      transform: scaleX(1.03);
+      filter: brightness(1.7) saturate(1.25);
+    }
+    100% {
+      transform: scaleX(1);
       filter: none;
     }
   }
 
-  .ud-rise {
-    animation: ud-rise 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
-    animation-delay: var(--ud-rise-delay, 0ms);
+  .ud-strike {
+    transform-origin: left center;
+    animation: ud-strike 0.72s cubic-bezier(0.12, 0.9, 0.22, 1) both;
+    animation-delay: var(--ud-delay, 0ms);
   }
 
-  /* The faint grid + glow behind the hero, drawn purely in CSS. */
-  .ud-grid-backdrop {
-    background-image:
-      radial-gradient(ellipse 60% 50% at 50% 0%, var(--ud-glow), transparent 70%),
-      linear-gradient(to right, var(--ud-line) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--ud-line) 1px, transparent 1px);
-    background-size:
-      100% 100%,
-      56px 56px,
-      56px 56px;
-    -webkit-mask-image: radial-gradient(ellipse 80% 65% at 50% 0%, #000 30%, transparent 78%);
-    mask-image: radial-gradient(ellipse 80% 65% at 50% 0%, #000 30%, transparent 78%);
+  @keyframes ud-shed {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, 0, 0);
+    }
+    18% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(var(--shed-x, 30px), var(--shed-y, -22px), 0);
+    }
+  }
+
+  .ud-shed {
+    animation: ud-shed 0.68s ease-out both;
+    animation-delay: var(--ud-delay, 0ms);
+  }
+
+  @keyframes ud-draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .ud-draw {
+    transform-origin: left center;
+    animation: ud-draw 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--ud-delay, 0ms);
+  }
+}
+
+@layer components {
+  /* Reading pages: the display voice keeps the page title, but body headings
+     return to the sans face. Comprehension outranks the world in Read mode. */
+  .ud-prose h2,
+  .ud-prose h3 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: -0.005em;
+    line-height: 1.3;
   }
 }

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { JsonEditor, type Marker } from '../JsonEditor';
 import { Button, CopyButton, FileButton, Panel, Select, Status, Toggle } from '../ui';
-import { useDebounced, useFileDrop, usePersistentState, useShortcut, downloadText } from '../../lib/hooks';
+import { useDebounced, useFileDrop, usePersistentState, downloadText } from '../../lib/hooks';
 import { useJsonWorker } from '../../lib/useJsonWorker';
 import { formatBytes, positionToOffset, type JsonError, type JsonStats } from '../../lib/json/types';
 import type { IndentStyle } from '../../lib/json/format';
@@ -56,14 +56,14 @@ export default function JsonFormatter() {
   }, [error, input]);
 
   const { isOver, dropHandlers } = useFileDrop((text) => setInput(text));
-  useShortcut('Enter', () => setMode('pretty'));
 
   const isEmpty = !input.trim();
 
   return (
-    <div className="grid gap-4 lg:h-[calc(100vh-19rem)] lg:min-h-[440px] lg:grid-cols-2">
+    <div className="grid gap-4 lg:h-[calc(100vh-19rem)] lg:min-h-[440px] lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)_auto]">
       <Panel
         title="Input"
+        aligned
         highlighted={isOver}
         dropHandlers={dropHandlers}
         className="min-h-[300px]"
@@ -104,6 +104,8 @@ export default function JsonFormatter() {
 
       <Panel
         title={mode === 'pretty' ? 'Formatted' : 'Minified'}
+        aligned
+        strikeKey={output}
         className="min-h-[300px]"
         actions={
           <>
@@ -121,35 +123,28 @@ export default function JsonFormatter() {
             <Toggle checked={sortKeys} onChange={setSortKeys} title="Sort object keys alphabetically">
               Sort keys
             </Toggle>
-            <div className="flex overflow-hidden rounded-lg border border-line">
-              <button
-                type="button"
-                onClick={() => setMode('pretty')}
-                className={`px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
-                  mode === 'pretty' ? 'bg-accent text-accent-contrast' : 'bg-surface-2 text-muted hover:text-content'
-                }`}
-              >
-                Pretty
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('minified')}
-                className={`border-l border-line px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
-                  mode === 'minified' ? 'bg-accent text-accent-contrast' : 'bg-surface-2 text-muted hover:text-content'
-                }`}
-              >
-                Minify
-              </button>
+            <div className="flex border border-scribe-strong">
+              {(['pretty', 'minified'] as const).map((option, index) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setMode(option)}
+                  aria-pressed={mode === option}
+                  className={`ud-legend px-3 py-1.5 transition-colors ${index > 0 ? 'border-l border-scribe-strong' : ''} ${
+                    mode === option
+                      ? 'bg-cherry text-on-cherry'
+                      : 'bg-anvil text-temper hover:text-chalk'
+                  }`}
+                >
+                  {option === 'pretty' ? 'Pretty' : 'Minify'}
+                </button>
+              ))}
             </div>
-            <CopyButton text={output} />
-            <Button
-              icon="download"
-              onClick={() => downloadText(output, mode === 'pretty' ? 'formatted.json' : 'minified.json')}
-              disabled={!output}
-              title="Download"
-            />
           </>
         }
+        /* Copy and Download live in the footer: keeping them out of the header
+           stops it wrapping to two rows at intermediate widths, which used to
+           push this editor's first line out of step with the input's. */
         footer={
           <>
             <span>{formatBytes(new Blob([output]).size)}</span>
@@ -160,15 +155,26 @@ export default function JsonFormatter() {
               </span>
             )}
             {output && input && (
-              <span className="ml-auto text-faint">
+              <span className="text-faint">
                 {(() => {
                   const before = new Blob([input]).size;
                   const after = new Blob([output]).size;
                   const delta = Math.round(((after - before) / before) * 100);
-                  return delta === 0 ? 'same size' : `${delta > 0 ? '+' : ''}${delta}%`;
+                  return delta === 0 ? 'same size' : `${delta > 0 ? '+' : ''}${delta} % scale shed`;
                 })()}
               </span>
             )}
+            <span className="ml-auto flex items-center gap-1.5">
+              <CopyButton text={output} />
+              <Button
+                icon="download"
+                onClick={() =>
+                  downloadText(output, mode === 'pretty' ? 'formatted.json' : 'minified.json')
+                }
+                disabled={!output}
+                title="Download"
+              />
+            </span>
           </>
         }
       >

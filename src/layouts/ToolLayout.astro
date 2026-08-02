@@ -1,8 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import Icon from '../components/Icon.astro';
 import { SITE } from '../lib/site';
-import { CATEGORIES, getTool, relatedTools } from '../lib/tools';
+import { CATEGORIES, getTool, relatedTools, LIVE_TOOLS } from '../lib/tools';
 
 interface Props {
   toolId: string;
@@ -13,6 +12,7 @@ const tool = getTool(toolId);
 const category = CATEGORIES.find((c) => c.id === tool.category)!;
 const related = relatedTools(tool.id);
 const url = new URL(tool.href, SITE.url).href;
+const heatNumber = String(LIVE_TOOLS.findIndex((t) => t.id === tool.id) + 1).padStart(2, '0');
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -46,52 +46,56 @@ const structuredData = {
   keywords={tool.keywords}
   structuredData={structuredData}
 >
-  <div class="mx-auto max-w-[1400px] px-4 pt-6 pb-10 sm:px-6">
-    <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-xs text-faint">
-      <a href="/" class="transition-colors hover:text-content">Home</a>
-      <Icon name="chevron-right" size={13} />
-      <span class="text-muted">{category.name}</span>
-      <Icon name="chevron-right" size={13} />
-      <span class="text-content">{tool.name}</span>
-    </nav>
-
-    <div class="mt-3">
-      <h1 class="flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-content">
-        <Icon name={tool.icon} size={22} class="text-accent" />
-        {tool.name}
-      </h1>
-      <p class="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">
-        {tool.tagline}. <span class="text-faint">Runs entirely in this tab — nothing is uploaded.</span>
+  <div class="mx-auto max-w-[1600px] px-4 pt-5 pb-10 sm:px-6">
+    <!-- The workpiece plate: number, name, and what this station does. -->
+    <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-scribe-strong pb-4">
+      <div class="flex items-baseline gap-4 sm:gap-6">
+        <span class="ud-force text-3xl leading-none text-scribe-strong sm:text-5xl">{heatNumber}</span>
+        <div>
+          <nav aria-label="Breadcrumb" class="ud-legend flex items-center gap-2">
+            <a href="/" class="transition-colors hover:text-chalk">Shop</a>
+            <span aria-hidden="true">/</span>
+            <span>{category.name}</span>
+          </nav>
+          <h1 class="mt-1 text-[clamp(1.9rem,4.5vw,3rem)] text-chalk">
+            {tool.name.replace('JSON ', '')}
+          </h1>
+        </div>
+      </div>
+      <p class="ud-legend max-w-md leading-relaxed">
+        {tool.tagline} · worked in this tab, never sent anywhere
       </p>
     </div>
 
-    <div class="mt-5">
+    <div class="mt-4">
       <slot />
     </div>
 
-    <!-- Prose block: gives the page something for search engines to index
-         beyond the app shell, and answers the obvious questions. -->
-    <div class="mt-14 grid gap-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+    <!-- Indexable prose. Also the part a security reviewer reads. -->
+    <div class="mt-16 grid gap-x-12 gap-y-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div class="max-w-2xl">
-        <h2 class="text-lg font-semibold text-content">About this tool</h2>
-        <p class="mt-3 text-sm leading-relaxed text-muted">{tool.description}</p>
+        <h2 class="border-t-2 border-cherry pt-4 text-[1.75rem] text-chalk">The work</h2>
+        <p class="mt-4 text-sm leading-relaxed text-temper">{tool.description}</p>
         <slot name="about" />
       </div>
 
       {
         related.length > 0 && (
           <aside>
-            <h2 class="text-xs font-semibold tracking-wider text-faint uppercase">Related tools</h2>
-            <ul class="mt-3 space-y-2">
+            <h2 class="ud-legend border-t border-scribe-strong pt-4">Other stations</h2>
+            <ul class="mt-2">
               {related.map((item) => (
                 <li>
                   <a
                     href={item.href}
-                    class="flex items-center gap-2.5 rounded-lg border border-line bg-surface px-3 py-2.5 text-sm text-content transition-colors hover:border-line-strong hover:bg-surface-2"
+                    class="group flex items-baseline gap-3 border-b border-scribe py-3 transition-colors hover:bg-anvil"
                   >
-                    <Icon name={item.icon} size={16} class="shrink-0 text-accent" />
-                    <span>{item.name}</span>
-                    <Icon name="arrow-right" size={15} class="ml-auto shrink-0 text-faint" />
+                    <span class="ud-force text-sm text-scribe-strong transition-colors group-hover:text-cherry">
+                      {String(LIVE_TOOLS.findIndex((t) => t.id === item.id) + 1).padStart(2, '0')}
+                    </span>
+                    <span class="ud-struck text-lg text-chalk">
+                      {item.name.replace('JSON ', '')}
+                    </span>
                   </a>
                 </li>
               ))}

@@ -1,34 +1,29 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Icon from '../components/Icon.astro';
-import ToolCard from '../components/ToolCard.astro';
+import ToolRow from '../components/ToolRow.astro';
 import { LIVE_TOOLS } from '../lib/tools';
 ---
 
-<BaseLayout
-  title="Page not found"
-  description="That page does not exist on UtilDock."
-  noindex
->
-  <section class="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6">
-    <p class="font-mono text-sm text-accent">404</p>
-    <h1 class="mt-3 text-3xl font-bold tracking-tight text-content sm:text-4xl">
-      Nothing docked here
-    </h1>
-    <p class="mx-auto mt-4 max-w-md text-muted">
-      That page does not exist — but one of these probably does what you came for.
-    </p>
-
-    <a
-      href="/"
-      class="mt-7 inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-medium text-content transition-colors hover:border-line-strong"
-    >
-      <Icon name="arrow-right" size={16} class="rotate-180" />
-      Back to the dock
-    </a>
-
-    <div class="mt-14 grid gap-4 text-left sm:grid-cols-2 lg:grid-cols-4">
-      {LIVE_TOOLS.map((tool) => <ToolCard tool={tool} />)}
+<BaseLayout title="Page not found" description="That page does not exist on UtilDock." noindex>
+  <section class="ud-scale border-b border-scribe">
+    <div class="mx-auto max-w-[1600px] px-4 py-20 sm:px-6 sm:py-28">
+      <h1 class="max-w-[14ch] text-[clamp(2.75rem,9vw,7rem)] text-chalk">
+        Nothing on this anvil.
+      </h1>
+      <p class="mt-6 max-w-lg text-lg leading-relaxed text-temper">
+        That page was never drawn. The stock that does exist is racked below.
+      </p>
+      <a
+        href="/"
+        class="ud-struck mt-8 inline-block border border-scribe-strong px-6 py-3 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
+      >
+        Back to the shop
+      </a>
     </div>
+  </section>
+
+  <section class="mx-auto max-w-[1600px] px-4 pt-12 sm:px-6">
+    <h2 class="ud-legend border-b-2 border-scribe-strong pb-3">On the rack</h2>
+    {LIVE_TOOLS.map((tool, index) => <ToolRow tool={tool} index={index + 1} />)}
   </section>
 </BaseLayout>

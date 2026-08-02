@@ -6,48 +6,51 @@ import Logo from './Logo.astro';
 const year = new Date().getFullYear();
 ---
 
-<footer class="mt-24 border-t border-line bg-surface/40">
-  <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
-    <div>
-      <div class="flex items-center gap-2 font-semibold text-content">
-        <Logo size={22} />
-        UtilDock
-      </div>
-      <p class="mt-3 max-w-xs text-sm leading-relaxed text-muted">
-        {SITE.tagline} Free, ad-free, and everything runs in your browser.
-      </p>
-    </div>
-
-    {
-      CATEGORIES.map((category) => (
-        <div>
-          <h2 class="text-xs font-semibold tracking-wider text-faint uppercase">{category.name}</h2>
-          <ul class="mt-3 space-y-2 text-sm">
-            {TOOLS.filter((t) => t.category === category.id).map((tool) => (
-              <li>
-                {tool.status === 'live' ? (
-                  <a href={tool.href} class="text-muted transition-colors hover:text-accent">
-                    {tool.name}
-                  </a>
-                ) : (
-                  <span class="text-faint">{tool.name} — soon</span>
-                )}
-              </li>
-            ))}
-          </ul>
+<footer class="border-t-2 border-scribe-strong bg-bench">
+  <div class="ud-scale">
+    <div class="mx-auto grid max-w-[1600px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.6fr_1fr_1fr]">
+      <div>
+        <div class="ud-struck flex items-center gap-2.5 text-xl text-chalk">
+          <Logo size={22} />
+          UtilDock
         </div>
-      ))
-    }
+        <p class="mt-4 max-w-xs text-sm leading-relaxed text-temper">
+          {SITE.tagline} Heated, struck and measured entirely on your own anvil.
+        </p>
+        <div class="ud-billet mt-6 h-1 w-40"></div>
+      </div>
+
+      {
+        CATEGORIES.map((category) => (
+          <div>
+            <h2 class="ud-legend">{category.name}</h2>
+            <ul class="mt-4 space-y-2.5 text-sm">
+              {TOOLS.filter((t) => t.category === category.id).map((tool) => (
+                <li>
+                  {tool.status === 'live' ? (
+                    <a href={tool.href} class="text-temper transition-colors hover:text-cherry">
+                      {tool.name}
+                    </a>
+                  ) : (
+                    <span class="text-faint">{tool.name} — not yet drawn</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
   </div>
 
-  <div class="border-t border-line">
+  <div class="border-t border-scribe">
     <div
-      class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-5 text-sm text-faint sm:flex-row sm:items-center sm:justify-between sm:px-6"
+      class="ud-legend mx-auto flex max-w-[1600px] flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
     >
       <p>© {year} UtilDock</p>
-      <nav class="flex gap-5" aria-label="Site">
-        <a href="/about" class="transition-colors hover:text-content">About</a>
-        <a href="/privacy" class="transition-colors hover:text-content">Privacy</a>
+      <nav class="flex gap-6" aria-label="Site">
+        <a href="/about" class="transition-colors hover:text-chalk">About</a>
+        <a href="/privacy" class="transition-colors hover:text-chalk">Privacy</a>
       </nav>
     </div>
   </div>

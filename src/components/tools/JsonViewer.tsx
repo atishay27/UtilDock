@@ -81,9 +81,10 @@ export default function JsonViewer() {
   const isEmpty = !input.trim();
 
   return (
-    <div className="grid gap-4 lg:h-[calc(100vh-19rem)] lg:min-h-[460px] lg:grid-cols-2">
+    <div className="grid gap-4 lg:h-[calc(100vh-19rem)] lg:min-h-[460px] lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)_auto]">
       <Panel
         title="Source"
+        aligned
         highlighted={isOver}
         dropHandlers={dropHandlers}
         className="min-h-[320px]"
@@ -122,6 +123,7 @@ export default function JsonViewer() {
 
       <Panel
         title="Tree"
+        aligned
         className="min-h-[320px]"
         actions={
           <>
@@ -138,7 +140,7 @@ export default function JsonViewer() {
                 placeholder="Filter keys and values"
                 aria-label="Filter the tree"
                 disabled={value === undefined}
-                className="w-44 rounded-lg border border-line bg-surface-2 py-1.5 pr-2 pl-8 text-[13px] text-content transition-colors placeholder:text-faint hover:border-line-strong focus:w-56"
+                className="w-44 border border-scribe bg-anvil-lit py-1.5 pr-2 pl-8 text-[13px] text-chalk transition-colors placeholder:text-faint hover:border-scribe-strong focus:w-56"
               />
             </div>
             <Button
@@ -166,7 +168,7 @@ export default function JsonViewer() {
                   {stats.depth}
                 </span>
                 {debouncedQuery.trim() && (
-                  <span className="text-accent">
+                  <span className="text-cherry">
                     {searchOutcome?.matches.size ?? 0} matching{' '}
                     {searchOutcome?.matches.size === 1 ? 'node' : 'nodes'}
                   </span>
@@ -181,7 +183,7 @@ export default function JsonViewer() {
       >
         {value === undefined ? (
           <div className="grid h-full place-items-center p-6 text-center">
-            <p className="max-w-xs text-sm leading-relaxed text-muted">
+            <p className="max-w-xs text-sm leading-relaxed text-temper">
               {error
                 ? 'Fix the syntax error on the left and the tree will appear here.'
                 : 'The tree appears here as soon as there is valid JSON on the left.'}
@@ -225,7 +227,7 @@ function TreeRows({ rows, matches, onToggle }: TreeRowsProps) {
   if (rows.length === 0) {
     return (
       <div className="grid h-full place-items-center p-6 text-center">
-        <p className="text-sm text-muted">No keys or values match that filter.</p>
+        <p className="text-sm text-temper">No keys or values match that filter.</p>
       </div>
     );
   }
@@ -268,8 +270,8 @@ function TreeRow({
 
   return (
     <div
-      className={`group flex items-center pr-3 whitespace-nowrap hover:bg-surface-2 ${
-        isMatch ? 'bg-accent/10' : ''
+      className={`group flex items-center pr-3 whitespace-nowrap hover:bg-anvil-lit ${
+        isMatch ? 'bg-cherry/10' : ''
       }`}
       style={{ height: ROW_HEIGHT, paddingLeft: 8 + row.depth * 14 }}
       role="treeitem"
@@ -279,7 +281,7 @@ function TreeRow({
         <button
           type="button"
           onClick={() => onToggle(row.path)}
-          className="mr-1 grid size-4 shrink-0 place-items-center rounded text-faint hover:text-content"
+          className="mr-1 grid size-4 shrink-0 place-items-center text-faint hover:text-chalk"
           aria-label={row.expanded ? 'Collapse' : 'Expand'}
         >
           <Icon name={row.expanded ? 'chevron-down' : 'chevron-right'} size={12} />
@@ -293,7 +295,7 @@ function TreeRow({
           <span className={row.keyIsIndex ? 'text-faint' : 'text-key'}>
             {row.keyIsIndex ? row.key : `"${row.key}"`}
           </span>
-          <span className="mr-1 text-muted">:</span>
+          <span className="mr-1 text-temper">:</span>
         </>
       )}
 
@@ -303,7 +305,7 @@ function TreeRow({
         type="button"
         onClick={() => void copy(row.path)}
         title={`Copy path — ${row.path}`}
-        className="ml-2 hidden shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-faint group-hover:inline-flex hover:bg-surface-3 hover:text-content"
+        className="ml-2 hidden shrink-0 items-center gap-1 px-1.5 py-0.5 text-[11px] text-faint group-hover:inline-flex hover:bg-bench hover:text-chalk"
       >
         <Icon name={copied ? 'check' : 'copy'} size={11} />
         {copied ? 'copied' : 'path'}
@@ -315,9 +317,9 @@ function TreeRow({
 /** `{` when open; `{ … 5 }` when collapsed, so the size stays visible. */
 function Container({ row }: { row: Row }) {
   const [open, close] = row.kind === 'array' ? ['[', ']'] : ['{', '}'];
-  if (row.expanded) return <span className="text-muted">{open}</span>;
+  if (row.expanded) return <span className="text-temper">{open}</span>;
   return (
-    <span className="text-muted">
+    <span className="text-temper">
       {open}
       {row.childCount === 0 ? '' : <span className="text-faint"> … {row.childCount} </span>}
       {close}
