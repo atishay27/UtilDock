@@ -4,9 +4,11 @@
   # even a compromised dependency could not post your JSON anywhere.
   #
   # 'unsafe-inline' covers the pre-paint theme script, the JSON-LD blocks and
-  # the stylesheets CodeMirror injects at runtime. If Cloudflare Web Analytics
-  # is ever switched on, script-src and connect-src also need
-  # https://static.cloudflareinsights.com and https://cloudflareinsights.com.
+  # the stylesheets CodeMirror injects at runtime.
+  #
+  # Do not add a host to script-src or connect-src to accommodate an analytics
+  # or monitoring product. Every allowed origin is a route data could leave by,
+  # and that is precisely what this policy exists to prevent.
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer

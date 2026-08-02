@@ -83,16 +83,6 @@ const ogImage = new URL('/og-default.png', SITE.url).href;
       )
     }
 
-    {
-      SITE.beaconToken && (
-        <script
-          is:inline
-          defer
-          src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon={`{"token": "${SITE.beaconToken}"}`}
-        />
-      )
-    }
   </head>
 
   <body class="flex min-h-screen flex-col">
