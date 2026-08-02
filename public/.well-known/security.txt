@@ -1,0 +1,24 @@
+# UtilDock — https://utildock.dev
+#
+# UtilDock is a static site. There is no backend, no database and no account
+# system, so the interesting attack surface is narrower than most: it is the
+# integrity of what we serve, not data we hold. We hold none — every tool runs
+# in the visitor's own tab and no document they paste is ever transmitted.
+#
+# The reports we most want to receive, in order:
+#
+#   1. Anything that gets a visitor's document off their machine — a dependency
+#      that phones home, a CSP bypass, an injection into a tool's output.
+#   2. A weakness in the headers served from public/_headers, especially the
+#      Content-Security-Policy that the privacy claim rests on.
+#   3. Anything that lets someone else's script or content execute on this
+#      origin, including via the service worker or the cached shell.
+#
+# Please include the URL, the browser, and the smallest input that reproduces
+# it. If a proof of concept would exfiltrate real data, describe it rather than
+# running it against anyone but yourself.
+
+Contact: mailto:security@utildock.dev
+Expires: 2027-08-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://utildock.dev/.well-known/security.txt
