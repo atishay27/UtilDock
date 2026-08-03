@@ -47,7 +47,7 @@ const structuredData = {
   structuredData={structuredData}
 >
   <div class="mx-auto max-w-[1600px] px-4 pt-5 pb-10 sm:px-6">
-    <!-- The workpiece plate: number, name, and what this station does. -->
+    {/* The workpiece plate: number, name, and what this station does. */}
     <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-scribe-strong pb-4">
       <div class="flex items-baseline gap-4 sm:gap-6">
         <span class="ud-force text-3xl leading-none text-scribe-strong sm:text-5xl">{heatNumber}</span>
@@ -71,7 +71,7 @@ const structuredData = {
       <slot />
     </div>
 
-    <!-- Indexable prose. Also the part a security reviewer reads. -->
+    {/* Indexable prose. Also the part a security reviewer reads. */}
     <div class="mt-16 grid gap-x-12 gap-y-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div class="max-w-2xl">
         <h2 class="border-t-2 border-cherry pt-4 text-[1.75rem] text-chalk">The work</h2>

@@ -13,10 +13,9 @@ const structuredData = {
   description: SITE.description,
 };
 
-/* The band under the billet. A bare figure is not a measurement — the label has
-   to finish the sentence, or three big zeros just read as data that failed to
-   load. Each one is literally true and checkable in the Network panel, which is
-   what the fourth cell is for. */
+/* A bare figure is not a measurement: the label has to finish the sentence, or
+   three big zeros read as data that failed to load. Each claim is checkable in
+   the Network panel, which is what the fourth cell is for. */
 const readout = [
   {
     value: '0',
@@ -35,8 +34,7 @@ const readout = [
   },
 ];
 
-/* The state vocabulary, shown rather than described. These are the same
-   colours the tools use, so the legend teaches the interface. */
+/* The same colours the tools use, so the legend teaches the interface. */
 const heats = [
   { swatch: 'bg-cold', name: 'Cold', meaning: 'Nothing on the anvil yet' },
   { swatch: 'bg-cherry', name: 'Working', meaning: 'Being parsed as you type' },
@@ -66,7 +64,7 @@ const temper = [
   keywords={['developer tools', 'json tools', 'online json formatter', 'free developer utilities']}
   structuredData={structuredData}
 >
-  <!-- FIRST VIEWPORT ---------------------------------------------------- -->
+  {/* FIRST VIEWPORT ---------------------------------------------------- */}
   <section class="ud-scale relative overflow-hidden border-b border-scribe">
     <div
       class="mx-auto grid max-w-[1600px] gap-x-16 gap-y-12 px-4 pt-16 pb-0 sm:px-6 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end"
@@ -76,8 +74,8 @@ const temper = [
         class="ud-strike max-w-[16ch] text-[clamp(3.25rem,11vw,9rem)] text-chalk"
         style="--ud-delay: 120ms"
       >
-        <!-- The full stop rides inside the accent: this face sets it as a solid
-             square, which reads as a stray block when left in the body colour. -->
+        {/* The full stop rides inside the accent: this face sets it as a solid
+             square that reads as a stray block in the body colour. */}
         Work it on your <span class="text-cherry">own anvil.</span>
       </h1>
 
@@ -91,7 +89,7 @@ const temper = [
 
       </div>
 
-      <!-- The heat plate: the state vocabulary every tool uses, shown once. -->
+      {/* The heat plate: the state vocabulary every tool uses, shown once. */}
       <aside class="ud-strike border border-scribe-strong bg-anvil" style="--ud-delay: 380ms">
         <h2 class="ud-legend border-b border-scribe bg-bench px-4 py-2.5 text-chalk">
           Reading the heat
@@ -115,13 +113,12 @@ const temper = [
       </aside>
     </div>
 
-    <!-- The bar, carrying the page's actions: the blow lands at the left, and
-         the controls are stamped into the metal while it is still workable. -->
+    {/* The bar carries the page's actions, stamped into metal still workable. */}
     <div class="relative mt-12 sm:mt-16">
       <div class="ud-billet ud-draw absolute inset-0" style="--ud-delay: 420ms"></div>
       <div class="ud-scale pointer-events-none absolute inset-0 opacity-50"></div>
 
-      <!-- Scale leaping off where the hammer struck. -->
+      {/* Scale leaping off where the hammer struck. */}
       <div class="pointer-events-none absolute inset-y-0 left-[6%] w-64" aria-hidden="true">
         {
           [
@@ -158,7 +155,7 @@ const temper = [
       </div>
     </div>
 
-    <!-- Registered measurement, exactly as the form keeps it. -->
+    {/* Registered measurement, exactly as the form keeps it. */}
     <div class="border-t border-scribe bg-ground">
       <ul class="mx-auto grid max-w-[1600px] sm:grid-cols-2 lg:grid-cols-4">
         {
@@ -183,8 +180,7 @@ const temper = [
           ))
         }
 
-        <!-- The fourth cell is the one that makes the other three worth
-             printing: not another figure, but how to go and check them. -->
+        {/* Not a fourth figure, but how to go and check the other three. */}
         <li class="border-t border-scribe sm:border-l lg:border-t-0">
           <a
             href="/privacy"
@@ -208,7 +204,7 @@ const temper = [
     </div>
   </section>
 
-  <!-- THE RACK ----------------------------------------------------------- -->
+  {/* THE RACK ----------------------------------------------------------- */}
   <section id="stock" class="mx-auto max-w-[1600px] scroll-mt-16 px-4 pt-16 sm:px-6 sm:pt-24">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b-2 border-scribe-strong pb-4">
       <h2 class="text-[clamp(2rem,5vw,3.5rem)] text-chalk">On the rack</h2>
@@ -220,7 +216,7 @@ const temper = [
     </div>
   </section>
 
-  <!-- TEMPER ------------------------------------------------------------- -->
+  {/* TEMPER ------------------------------------------------------------- */}
   <section class="mx-auto max-w-[1600px] px-4 pt-20 sm:px-6">
     <div class="grid gap-x-12 gap-y-10 md:grid-cols-3">
       {
@@ -234,7 +230,7 @@ const temper = [
     </div>
   </section>
 
-  <!-- THE CLOSE ---------------------------------------------------------- -->
+  {/* THE CLOSE ---------------------------------------------------------- */}
   <section class="mt-20 border-y-2 border-scribe-strong bg-bench">
     <div class="ud-scale">
       <div

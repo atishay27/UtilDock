@@ -381,11 +381,9 @@ function DiffPanel({ left, right, result, sideError, header, strikeKey, tall }: 
 }
 
 /**
- * Collapse long runs of untouched rows.
- *
- * `keep` rows are the braces on the path down to a difference, so what survives
- * a fold is an outline: every change, in place, with the structure that locates
- * it — and none of the thousands of lines that are the same on both sides.
+ * Collapse long runs of untouched rows. `keep` rows are the braces on the path
+ * to a difference, so a fold leaves an outline: every change, in place, with
+ * the structure that locates it.
  */
 function buildItems(
   rows: DiffRow[],
@@ -650,8 +648,7 @@ function Body({
 
 /**
  * The change ribbon: the whole comparison compressed into one column, so the
- * shape and distribution of the differences is visible without scrolling — and
- * every one of them is one click away.
+ * distribution of differences is visible without scrolling and each is a click.
  */
 function Ribbon({
   blocks,

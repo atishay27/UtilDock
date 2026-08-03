@@ -1,12 +1,12 @@
 /**
  * Renders the static image assets (PWA icons, apple-touch-icon, OG card).
  *
- * Backgrounds are inline SVG so nothing binary needs keeping in sync with the
- * design tokens; the lettering is composited separately because librsvg has no
- * access to the site's self-hosted faces. Run `npm run fonts` first — the TTFs
- * under scripts/.fonts/ are build-only and never served.
+ * Backgrounds are inline SVG so no binary needs keeping in sync with the design
+ * tokens; lettering is composited separately because librsvg cannot reach the
+ * self-hosted faces. Run `npm run fonts` first — the TTFs under scripts/.fonts/
+ * are build-only and never served.
  *
- * Run with `npm run assets` after changing the palette.
+ * Run `npm run assets` after changing the palette.
  */
 import { mkdir, writeFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';

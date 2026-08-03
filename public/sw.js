@@ -1,16 +1,12 @@
 /**
- * UtilDock service worker.
- *
- * Deliberately hand-written and short enough to read in one sitting — this file
- * is the only thing standing between the site and your browser cache, so it
- * should be auditable.
- *
- * It never talks to anything but this origin, and it caches only responses to
- * requests the page already made.
+ * UtilDock service worker. Hand-written and kept short so it stays auditable:
+ * it talks to no other origin and caches only what the page already requested.
  *
  *   /_astro/*  content-hashed build output → cache first, it can never go stale
  *   documents  network first, falling back to cache so reloads work offline
  *   other GETs stale-while-revalidate
+ *
+ * Bump VERSION when any of that changes.
  */
 
 const VERSION = 'v1';

@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * State mirrored into localStorage so a refresh doesn't lose the user's work.
- *
- * Reads happen after mount (never during render) so server-rendered markup and
- * the first client render always agree.
+ * Reads happen after mount, never during render, so the server-rendered markup
+ * and the first client render agree.
  */
 export function usePersistentState<T>(key: string, initial: T) {
   const [value, setValue] = useState<T>(initial);

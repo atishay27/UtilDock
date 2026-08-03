@@ -1,10 +1,9 @@
 /**
  * The tool registry — the single source of truth for UtilDock.
  *
- * Everything derived from this: the homepage grid, the header nav, the command
- * palette, the "related tools" rail, sitemap priorities and per-page JSON-LD.
- * Adding a tool means adding an entry here, a page under src/pages/, and a
- * component under src/components/tools/. Nothing else needs editing.
+ * Drives the homepage grid, header nav, footer, 404, the "related tools" rail
+ * and per-page JSON-LD. Adding a tool means an entry here, a page under
+ * src/pages/, and a component under src/components/tools/. Nothing else.
  */
 
 export type ToolStatus = 'live' | 'planned';

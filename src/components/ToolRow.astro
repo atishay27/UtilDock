@@ -13,7 +13,7 @@ const Tag = live ? 'a' : 'div';
 const number = String(index).padStart(2, '0');
 ---
 
-<!-- One blow per full-width row. The row heats under the pointer. -->
+{/* One blow per full-width row. The row heats under the pointer. */}
 <Tag
   href={live ? tool.href : undefined}
   class:list={[
@@ -21,7 +21,7 @@ const number = String(index).padStart(2, '0');
     live && 'hover:bg-anvil',
   ]}
 >
-  <!-- Heat bar: the row's left edge comes to temperature on approach. -->
+  {/* Heat bar: the row's left edge comes to temperature on approach. */}
   {
     live && (
       <span class="ud-billet absolute top-0 bottom-0 left-0 w-[3px] origin-top scale-y-0 transition-transform duration-300 group-hover:scale-y-100" />

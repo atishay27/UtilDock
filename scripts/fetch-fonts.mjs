@@ -2,17 +2,14 @@
  * Downloads the latin subset of each self-hosted face into public/fonts/ and
  * writes src/styles/fonts.css.
  *
- * Fonts are self-hosted because the site forbids third-party requests: a
- * stylesheet or font pulled from another origin would be a route data could
- * leave by, and would force an extra host into the CSP.
+ * Fonts are self-hosted because a font from another origin would be a route
+ * data could leave by, and would force an extra host into the CSP.
  *
- * All three families ship as variable fonts, so each is downloaded ONCE and
- * declared with a weight range. Requesting named weights returns the same bytes
- * under different filenames — three downloads of one file.
+ * All three families are variable, so each is downloaded ONCE and declared with
+ * a weight range; requesting named weights returns the same bytes three times.
  *
- * The licence text is fetched too, and the script fails loudly rather than
- * writing whatever came back: a site claiming auditability must not ship an
- * error page as its font licence.
+ * The licence is fetched too, and a bad response fails the script rather than
+ * being written — shipping an error page as a font licence would be worse.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';

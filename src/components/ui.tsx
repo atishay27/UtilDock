@@ -4,9 +4,8 @@ import type { IconKey } from '../lib/icons';
 import { useCopy } from '../lib/hooks';
 
 /**
- * True for a beat each time `key` changes — the visual report of a blow
- * landing. Skipped on first render so arriving at a page with restored work
- * does not fake an operation that never happened.
+ * True for a beat each time `key` changes. Skipped on first render so arriving
+ * at a page with restored work does not fake an operation that never happened.
  */
 function useStrike(key: string | number | undefined, duration = 720) {
   const [struck, setStruck] = useState(false);
@@ -26,11 +25,7 @@ function useStrike(key: string | number | undefined, duration = 720) {
   return struck;
 }
 
-/**
- * Shop controls. Everything is struck rather than softened: square corners,
- * engraved legends, tabular figures. Operate rules bind here — the task and its
- * state always outrank the world.
- */
+/** Shop controls: square corners, engraved legends, tabular figures. */
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: IconKey;
@@ -133,9 +128,9 @@ interface PanelProps {
   /** Change this when an operation lands; the panel takes the blow. */
   strikeKey?: string | number;
   /**
-   * Share row tracks with sibling panels so headers, bodies and footers line up
-   * even when one panel's controls wrap and the other's do not. The parent must
-   * declare `lg:grid-rows-[auto_minmax(0,1fr)_auto]`.
+   * Share row tracks with sibling panels so headers, bodies and footers align
+   * even when one panel's controls wrap. Requires the parent to declare
+   * `lg:grid-rows-[auto_minmax(0,1fr)_auto]`.
    */
   aligned?: boolean;
 }

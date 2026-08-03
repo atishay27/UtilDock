@@ -7,14 +7,12 @@ import type { JsonError } from './types';
 /**
  * JSON Schema validation with source positions.
  *
- * The validator interprets the schema rather than compiling it to JavaScript.
- * That matters here: it means the site works under a Content-Security-Policy
- * with no 'unsafe-eval', which is a load-bearing part of the promise that a
- * pasted document cannot escape the tab.
+ * This validator interprets the schema instead of compiling it to JavaScript,
+ * which is why the site can run under a CSP with no 'unsafe-eval'. Do not swap
+ * it for a compiling validator such as ajv.
  *
- * Errors come back addressed by JSON Pointer; json-source-map tells us the
- * character range each pointer occupies, so every violation can be underlined
- * where it actually appears.
+ * Errors arrive addressed by JSON Pointer; json-source-map maps each pointer to
+ * a character range so violations can be underlined where they appear.
  */
 
 export interface SchemaIssue {

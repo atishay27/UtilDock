@@ -55,7 +55,7 @@ const ogImage = new URL('/og-default.png', SITE.url).href;
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta id="theme-color" name="theme-color" content="#0a0a0c" />
 
-    <!-- Self-hosted; the display face carries the first viewport, so it leads. -->
+    {/* Self-hosted; the display face carries the first viewport, so it leads. */}
     <link rel="preload" href="/fonts/bigshoulders.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin />
 
@@ -87,19 +87,6 @@ const ogImage = new URL('/og-default.png', SITE.url).href;
   </head>
 
   <body class="flex min-h-screen flex-col">
-    <!--
-      THESIS: A forge, not a dashboard. Stock is heated, struck, measured — and never leaves the
-      shop. Refuses the dark-page-with-one-neon-accent tool template this category always ships.
-      OWN-WORLD: A heat scale carrying state (cold, dull red, cherry, white heat) over forge black
-      or cold mill-scale concrete; stencilled condensed caps; tabular force numerals; scale-fleck
-      texture; scribed hairlines. No glass, no gradient chrome, no rounded pill cards.
-      STORY: A developer forbidden from pasting production data into a website learns the billet
-      never leaves their own anvil, watches it proven, and starts work.
-      FIRST VIEWPORT: Full-bleed struck headline over a heat-graded billet; measurement readout
-      registered beneath it; the primary action struck into hot metal on the billet's own row.
-      FORM: "Scale Shower" (forging), chosen by the user over assigned index 7; seed 2b1ba07a.
-      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
-    -->
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:bg-cherry focus:px-4 focus:py-2 focus:font-semibold focus:text-on-cherry"

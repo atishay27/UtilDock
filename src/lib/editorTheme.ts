@@ -3,9 +3,8 @@ import { EditorView } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
 
 /**
- * The editor is the anvil face: dark iron in the forge register, cold steel in
- * the shop. Everything is expressed through the site's custom properties so the
- * two registers swap with no remount and no second theme to maintain.
+ * The editor is the anvil face. Built entirely from the site's custom
+ * properties, so light and dark swap with no remount and no second theme.
  */
 
 export const editorTheme = EditorView.theme({

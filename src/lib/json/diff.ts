@@ -1,27 +1,14 @@
 /**
- * Structural JSON comparison, rendered as one aligned document.
+ * Structural JSON comparison, rendered as one aligned document: a row model
+ * where both sides sit on the same line and a missing cell is a real gap.
  *
- * The output is not a list of changes — it is a row model where both documents
- * are laid out side by side with the matching parts on the same line, so a
- * difference is something you *see* rather than something you look up. A row
- * carries a cell for each side; a missing cell is a genuine gap in that
- * document, which is what makes an addition or a removal legible at a glance.
+ * Objects match by key name, so reordering keys is never a change. Arrays match
+ * by longest-common-subsequence over element identity, so an insertion at the
+ * front is one addition rather than a rewrite of everything after it; elements
+ * with an `id`-like field are tracked across a reorder and reported as moved.
  *
- * Both documents are parsed first, so key order, indentation and whitespace can
- * never appear as differences — only things that change what the JSON means.
- *
- * Two matching rules do the real work:
- *
- * - **Objects** are matched by key name, never by position. Reordering keys is
- *   not a change, so it must not produce one.
- * - **Arrays** are matched by a longest-common-subsequence over element
- *   identity, so inserting an element at the front reports one addition rather
- *   than rewriting every element after it. Elements carrying an `id`-like field
- *   are matched by it even across a reorder, and reported as moved.
- *
- * Equal subtrees larger than a few nodes collapse to a single summary row. That
- * is what keeps a 5 MB pair of documents to a few thousand rows: the tool's job
- * is the difference, and the untouched bulk only needs to be accounted for.
+ * Equal subtrees over a few nodes collapse to one summary row, which is what
+ * keeps a 5 MB pair to a few thousand rows.
  */
 
 import { childPath, kindOf } from './tree';
@@ -128,9 +115,8 @@ function emit(
 }
 
 /**
- * Open a difference. Every enclosing container is marked as containing a change
- * so its braces survive folding — that is what keeps the path to a difference
- * on screen instead of a bare hunk header.
+ * Open a difference, marking every enclosing container so its braces survive
+ * folding — that is what shows the path to a change instead of a hunk header.
  */
 function openBlock(ctx: Ctx, kind: ChangeKind, path: string): number {
   const index = ctx.blocks.length;
@@ -228,11 +214,7 @@ function emitValue(
   emit(ctx, side, { depth, tokens: [{ t: 'punct', v: close }] }, kind, block, path);
 }
 
-/**
- * An equal value. Small ones are written out so the surrounding shape still
- * reads; anything larger becomes one summary row, because rendering thousands
- * of identical lines helps nobody and costs everybody.
- */
+/** Small equal values are written out for context; larger ones summarise. */
 function emitEqual(
   ctx: Ctx,
   value: unknown,
@@ -318,9 +300,8 @@ function emitPair(
 
   const block = openBlock(ctx, 'changed', path);
 
-  // A value that changed shape — object to string, array to object — has no
-  // line-for-line correspondence, so show the old block leaving and the new
-  // block arriving rather than pretending they align.
+  // A value that changed shape has no line-for-line correspondence, so show the
+  // old block leaving and the new arriving rather than pretending they align.
   if (leftKind === 'object' || leftKind === 'array' || rightKind === 'object' || rightKind === 'array') {
     emitValue(ctx, left, key, depth, 'left', 'removed', block, path);
     emitValue(ctx, right, key, depth, 'right', 'added', block, path);
@@ -416,12 +397,9 @@ interface Pairing {
 }
 
 /**
- * An element's identity for matching purposes.
- *
- * An `id`-like field is a strong identity: the same record across both
- * documents, wherever it sits. Failing that, an object's key signature matches
- * records of the same shape, so a list of similar objects pairs up positionally
- * and the diff lands on the fields that actually differ.
+ * An element's identity for matching. An `id`-like field is strong: the same
+ * record wherever it sits. Failing that, an object's key signature pairs
+ * same-shaped records so the diff lands on the fields that differ.
  */
 function hashOf(item: unknown): string {
   if (Array.isArray(item)) return `[${item.length}`;
@@ -442,9 +420,9 @@ function alignArray(left: unknown[], right: unknown[]): Pairing[] {
   const leftHashes = left.map(hashOf);
   const rightHashes = right.map(hashOf);
 
-  // The subsequence is the better alignment, but its table is quadratic. Past
-  // the cap, match on identity instead — linear, and on the arrays that get
-  // that large (records with ids) it lands in the same place anyway.
+  // The subsequence aligns better but its table is quadratic. Past the cap,
+  // match on identity: linear, and on arrays that large (records with ids) it
+  // lands in the same place anyway.
   const pairs =
     left.length * right.length > LCS_CELL_LIMIT
       ? anchorPairs(leftHashes, rightHashes)
@@ -454,12 +432,10 @@ function alignArray(left: unknown[], right: unknown[]): Pairing[] {
 }
 
 /**
- * A dropped value immediately followed by an arriving one, both plain values,
- * is a replacement — `[1, 2, 3]` against `[1, 5, 3]` changed an element, it did
- * not delete one and add another. Zipping the two together puts them on one row
- * with the arrow between, which is the truth and the shorter read.
+ * A dropped scalar immediately followed by an arriving one is a replacement:
+ * `[1,2,3]` against `[1,5,3]` changed an element, it did not delete and add.
  *
- * Containers are left alone: pairing two unrelated objects would turn a clean
+ * Containers are excluded — pairing two unrelated objects would turn a clean
  * "this left, that arrived" into a misleading field-by-field comparison.
  */
 function pairReplacedScalars(pairs: Pairing[], left: unknown[], right: unknown[]): Pairing[] {
@@ -505,14 +481,11 @@ function pairReplacedScalars(pairs: Pairing[], left: unknown[], right: unknown[]
 }
 
 /**
- * Linear alignment for large arrays: pair each element on the right with the
- * first unclaimed element on the left that has the same identity, then read the
- * result out in the changed document's order, flushing elements the original
- * had and the change dropped as they are passed.
+ * Linear alignment for large arrays: claim the first unclaimed left element of
+ * matching identity, then read out in right order, flushing dropped elements.
  *
- * This is the path that matters for real data — a 20k-record export compared
- * against the same export with one record removed has to report one removal,
- * not twenty thousand edits.
+ * This is the path that matters for real data. A 20k-record export against the
+ * same export minus one record must report one removal, not 20k edits.
  */
 function anchorPairs(leftHashes: string[], rightHashes: string[]): Pairing[] {
   const unclaimed = new Map<string, number[]>();
@@ -598,10 +571,9 @@ function lcsPairs(a: string[], b: string[]): Pairing[] {
 }
 
 /**
- * An element with a strong identity that the subsequence could not keep in
- * place has not left the document — it moved. Rejoining the two halves turns
- * "one deletion and one addition" back into the smaller truth: same record,
- * different position, and possibly an edited field.
+ * An `id`-carrying element the subsequence could not keep in place has not left
+ * the document, it moved. Rejoining the halves turns a deletion plus an
+ * addition back into one record in a new position.
  */
 function recoverMoves(pairs: Pairing[], leftHashes: string[], rightHashes: string[]): Pairing[] {
   const removals = new Map<string, number[]>();

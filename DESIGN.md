@@ -129,6 +129,12 @@ the work glowing on it. Light is the cold shop by day: mill-scale concrete, dark
 the same heat scale reading state — which reads *harder* against a cold ground. Both are first-class;
 the site is used in both, unpredictably.
 
+**The story the first viewport tells.** A developer forbidden from pasting production data into a
+website learns the billet never leaves their own anvil, watches that proven, and starts work. So the
+first screen is a full-bleed struck headline over a heat-graded billet, the measurement readout
+registered beneath it, and the primary action struck into hot metal on the billet's own row. Form:
+"Scale Shower" (forging), seed `2b1ba07a`.
+
 **Anti-references:** glass and blur, gradient text, soft-shadowed rounded rectangles, pill buttons,
 icon-plus-heading-plus-text card grids as page structure, and any monospace used as a costume for
 "technical" rather than for code or measurement.

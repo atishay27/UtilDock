@@ -2,17 +2,9 @@
  * Replaces `'unsafe-inline'` in the shipped script-src with a SHA-256 hash per
  * inline script, computed from the built output.
  *
- * Runs automatically after `npm run build` (npm's postbuild hook), because the
- * hashes cannot be written by hand: Astro emits its own inline island-hydration
- * loaders, and their contents change with every Astro release and most builds.
- *
- * Why only script-src. `style-src` keeps 'unsafe-inline' and cannot lose it:
- * CodeMirror's style-mod writes rules into a <style> element via textContent,
- * and the tree viewer sets `transform: translateY(...)` on every scroll frame.
- * Neither can be known ahead of time. That is a far smaller exposure than the
- * script equivalent — every channel CSS could exfiltrate through (url() to
- * another host) is already closed by default-src, img-src, font-src and
- * connect-src all being 'self'.
+ * Runs from npm's postbuild hook because the hashes cannot be written by hand:
+ * Astro emits its own island-hydration loaders, whose contents change with most
+ * builds. style-src is left alone — see the note in public/_headers.
  */
 import { createHash } from 'node:crypto';
 import { readFile, writeFile, readdir } from 'node:fs/promises';

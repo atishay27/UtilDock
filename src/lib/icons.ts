@@ -1,10 +1,8 @@
 /**
- * Inline SVG icon paths. Kept as raw markup strings so the same set can be used
- * from .astro (set:html) and from React (dangerouslySetInnerHTML) without
- * pulling in an icon library or making a network request.
+ * Inline SVG icon paths, kept as raw strings so .astro (set:html) and React
+ * (dangerouslySetInnerHTML) share one set with no library and no request.
  *
- * Every icon is drawn on a 24x24 grid with stroke styling applied by the
- * consumer (fill="none" stroke="currentColor").
+ * Drawn on a 24x24 grid; the consumer applies fill="none" stroke="currentColor".
  */
 
 export const ICONS = {

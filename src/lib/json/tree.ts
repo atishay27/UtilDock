@@ -1,9 +1,7 @@
 /**
  * Flattens a parsed JSON value into the linear row list the tree viewer renders.
- *
- * Keeping the tree as a flat array (rather than nested components) is what makes
- * windowing possible: a 200k-node document still only ever renders the ~40 rows
- * that are actually on screen.
+ * The flat array (rather than nested components) is what makes windowing work:
+ * a 200k-node document still renders only the ~40 rows on screen.
  */
 
 export type NodeKind = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
