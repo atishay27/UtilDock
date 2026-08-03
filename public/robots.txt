@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 
+# The share card is a render target, not a page anyone should land on.
+Disallow: /og/
+
 Sitemap: https://utildock.dev/sitemap-index.xml

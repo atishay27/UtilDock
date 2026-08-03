@@ -9,12 +9,12 @@
  * Bump VERSION when any of that changes.
  */
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const ASSET_CACHE = `utildock-assets-${VERSION}`;
 const PAGE_CACHE = `utildock-pages-${VERSION}`;
 
 /** The shell worth having before the first offline visit. */
-const PRECACHE = ['/', '/json/viewer', '/json/validator', '/json/diff', '/json/formatter'];
+const PRECACHE = ['/', '/json', '/json/viewer', '/json/validator', '/json/diff', '/json/formatter'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

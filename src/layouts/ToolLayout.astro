@@ -1,7 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import { SITE } from '../lib/site';
-import { CATEGORIES, getTool, relatedTools, LIVE_TOOLS } from '../lib/tools';
+import { SITE, absoluteUrl } from '../lib/site';
+import { getCategory, getTool, relatedTools, splitName, LIVE_TOOLS } from '../lib/tools';
 
 interface Props {
   toolId: string;
@@ -9,10 +9,13 @@ interface Props {
 
 const { toolId } = Astro.props;
 const tool = getTool(toolId);
-const category = CATEGORIES.find((c) => c.id === tool.category)!;
+const category = getCategory(tool.category);
 const related = relatedTools(tool.id);
-const url = new URL(tool.href, SITE.url).href;
+const url = absoluteUrl(tool.href);
+const categoryUrl = category.href ? absoluteUrl(category.href) : undefined;
 const heatNumber = String(LIVE_TOOLS.findIndex((t) => t.id === tool.id) + 1).padStart(2, '0');
+const name = splitName(tool);
+const faqs = tool.faqs ?? [];
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -22,20 +25,42 @@ const structuredData = {
       name: `${tool.name} — ${SITE.name}`,
       url,
       applicationCategory: 'DeveloperApplication',
+      applicationSubCategory: 'Online tool',
       operatingSystem: 'Any',
       description: tool.description,
       browserRequirements: 'Requires JavaScript',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       isAccessibleForFree: true,
+      featureList: tool.keywords,
+      publisher: { '@id': `${SITE.url}/#organization` },
     },
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url },
-        { '@type': 'ListItem', position: 2, name: category.name, item: url },
-        { '@type': 'ListItem', position: 3, name: tool.name, item: url },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: absoluteUrl('/') },
+        ...(categoryUrl
+          ? [{ '@type': 'ListItem', position: 2, name: category.name, item: categoryUrl }]
+          : []),
+        {
+          '@type': 'ListItem',
+          position: categoryUrl ? 3 : 2,
+          name: tool.name,
+          item: url,
+        },
       ],
     },
+    ...(faqs.length > 0
+      ? [
+          {
+            '@type': 'FAQPage',
+            mainEntity: faqs.map((faq) => ({
+              '@type': 'Question',
+              name: faq.q,
+              acceptedAnswer: { '@type': 'Answer', text: faq.a },
+            })),
+          },
+        ]
+      : []),
   ],
 };
 ---
@@ -55,10 +80,19 @@ const structuredData = {
           <nav aria-label="Breadcrumb" class="ud-legend flex items-center gap-2">
             <a href="/" class="transition-colors hover:text-chalk">Shop</a>
             <span aria-hidden="true">/</span>
-            <span>{category.name}</span>
+            {
+              category.href ? (
+                <a href={category.href} class="transition-colors hover:text-chalk">
+                  {category.name}
+                </a>
+              ) : (
+                <span>{category.name}</span>
+              )
+            }
           </nav>
+          {/* The category stays in the h1 — quieter, but there for anyone searching it. */}
           <h1 class="mt-1 text-[clamp(1.9rem,4.5vw,3rem)] text-chalk">
-            {tool.name.replace('JSON ', '')}
+            {name.prefix && <span class="text-faint">{name.prefix}</span>}{name.prefix && ' '}{name.rest}
           </h1>
         </div>
       </div>
@@ -74,8 +108,10 @@ const structuredData = {
     {/* Indexable prose. Also the part a security reviewer reads. */}
     <div class="mt-16 grid gap-x-12 gap-y-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div class="max-w-2xl">
-        <h2 class="border-t-2 border-cherry pt-4 text-[1.75rem] text-chalk">The work</h2>
-        <p class="mt-4 text-sm leading-relaxed text-temper">{tool.description}</p>
+        <h2 class="border-t-2 border-cherry pt-4 text-[1.75rem] text-chalk">
+          How the {tool.name} works
+        </h2>
+        <p class="mt-4 text-sm leading-relaxed text-temper">{tool.overview ?? tool.description}</p>
         <slot name="about" />
       </div>
 
@@ -94,7 +130,8 @@ const structuredData = {
                       {String(LIVE_TOOLS.findIndex((t) => t.id === item.id) + 1).padStart(2, '0')}
                     </span>
                     <span class="ud-struck text-lg text-chalk">
-                      {item.name.replace('JSON ', '')}
+                      <span class="text-faint">{splitName(item).prefix}</span>{' '}
+                      {splitName(item).rest}
                     </span>
                   </a>
                 </li>
@@ -104,5 +141,23 @@ const structuredData = {
         )
       }
     </div>
+
+    {
+      faqs.length > 0 && (
+        <section class="mt-16">
+          <h2 class="border-t-2 border-cherry pt-4 text-[1.75rem] text-chalk">
+            Questions off the bench
+          </h2>
+          <div class="mt-6 grid gap-x-12 md:grid-cols-2">
+            {faqs.map((faq) => (
+              <div class="border-t border-scribe py-5">
+                <h3 class="ud-struck text-lg text-chalk">{faq.q}</h3>
+                <p class="mt-2 max-w-2xl text-sm leading-relaxed text-temper">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
   </div>
 </BaseLayout>

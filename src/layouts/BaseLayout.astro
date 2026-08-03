@@ -22,10 +22,14 @@ const {
   noindex = false,
 } = Astro.props;
 
-const canonicalUrl = canonical ?? new URL(Astro.url.pathname, SITE.url).href;
+/* The sitemap emits directory URLs, so the canonical has to agree with it or the
+   two disagree about which of /json/diff and /json/diff/ is the real page. */
+const path = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const canonicalUrl = canonical ?? new URL(path, SITE.url).href;
 /* A title that already names the site does not get it a second time. */
 const fullTitle = title.startsWith(SITE.name) ? title : `${title} | ${SITE.name}`;
 const ogImage = new URL('/og-default.png', SITE.url).href;
+const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
 ---
 
 <!doctype html>
@@ -37,18 +41,26 @@ const ogImage = new URL('/og-default.png', SITE.url).href;
     <meta name="description" content={description} />
     {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
     <link rel="canonical" href={canonicalUrl} />
-    {noindex && <meta name="robots" content="noindex" />}
+    <meta
+      name="robots"
+      content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'}
+    />
 
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

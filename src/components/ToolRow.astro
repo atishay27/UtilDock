@@ -1,5 +1,5 @@
 ---
-import type { Tool } from '../lib/tools';
+import { splitName, type Tool } from '../lib/tools';
 
 interface Props {
   tool: Tool;
@@ -11,6 +11,9 @@ const { tool, index, delay = 0 } = Astro.props;
 const live = tool.status === 'live';
 const Tag = live ? 'a' : 'div';
 const number = String(index).padStart(2, '0');
+/* The category was a separate chip; folded into the name so the row's link text
+   is the full thing anyone would search for. */
+const name = splitName(tool);
 ---
 
 {/* One blow per full-width row. The row heats under the pointer. */}
@@ -35,9 +38,8 @@ const number = String(index).padStart(2, '0');
     ]}>{number}</span
   >
 
-  <h3 class:list={["ud-struck text-2xl sm:text-[2rem]", live ? "text-chalk" : "text-temper"]}>
-    {tool.name.replace('JSON ', '')}
-    <span class="ud-legend ml-2 align-middle text-faint">{tool.category}</span>
+  <h3 class:list={['ud-struck text-2xl sm:text-[2rem]', live ? 'text-chalk' : 'text-temper']}>
+    {name.prefix && <span class="text-faint">{name.prefix}</span>}{name.prefix && ' '}{name.rest}
   </h3>
 
   <p class="col-start-2 max-w-lg text-sm leading-relaxed text-temper sm:col-start-3 sm:pt-1.5">

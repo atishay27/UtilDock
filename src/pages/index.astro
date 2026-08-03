@@ -2,15 +2,41 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolRow from '../components/ToolRow.astro';
 import Icon from '../components/Icon.astro';
-import { TOOLS } from '../lib/tools';
-import { SITE } from '../lib/site';
+import { TOOLS, LIVE_TOOLS } from '../lib/tools';
+import { SITE, absoluteUrl } from '../lib/site';
 
 const structuredData = {
   '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: SITE.name,
-  url: SITE.url,
-  description: SITE.description,
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE.url}/#website`,
+      name: SITE.name,
+      alternateName: SITE.tagline,
+      url: absoluteUrl('/'),
+      description: SITE.description,
+      publisher: { '@id': `${SITE.url}/#organization` },
+    },
+    {
+      '@type': 'Organization',
+      '@id': `${SITE.url}/#organization`,
+      name: SITE.name,
+      url: absoluteUrl('/'),
+      logo: new URL('/icon-512.png', SITE.url).href,
+      description: SITE.description,
+    },
+    {
+      '@type': 'ItemList',
+      name: `Tools on ${SITE.name}`,
+      itemListElement: LIVE_TOOLS.map((tool, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: tool.name,
+        description: tool.tagline,
+        url: absoluteUrl(tool.href),
+      })),
+    },
+  ],
 };
 
 /* A bare figure is not a measurement: the label has to finish the sentence, or
@@ -59,7 +85,7 @@ const temper = [
 ---
 
 <BaseLayout
-  title={`${SITE.name} — ${SITE.tagline}`}
+  title="Free JSON tools that never leave your browser"
   description={SITE.description}
   keywords={['developer tools', 'json tools', 'online json formatter', 'free developer utilities']}
   structuredData={structuredData}
@@ -83,8 +109,9 @@ const temper = [
         class="ud-strike mt-7 max-w-xl text-lg leading-relaxed text-temper"
         style="--ud-delay: 220ms"
       >
-        {SITE.name} is a shop of small developer tools that never send your work anywhere.
-        Paste a production payload with the network unplugged — it still runs.
+        {SITE.name} is a shop of free developer tools that never send your work anywhere — a JSON
+        viewer, validator, comparator and formatter, with no ads and no sign-up. Paste a production
+        payload with the network unplugged and it still runs.
       </p>
 
       </div>
@@ -207,8 +234,20 @@ const temper = [
   {/* THE RACK ----------------------------------------------------------- */}
   <section id="stock" class="mx-auto max-w-[1600px] scroll-mt-16 px-4 pt-16 sm:px-6 sm:pt-24">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b-2 border-scribe-strong pb-4">
-      <h2 class="text-[clamp(2rem,5vw,3.5rem)] text-chalk">On the rack</h2>
-      <p class="ud-legend">Four drawn · more in the fire</p>
+      <h2 class="max-w-[22ch] text-[clamp(2rem,5vw,3.5rem)] text-chalk">
+        Free JSON tools that run in your browser
+      </h2>
+      <a
+        href="/json"
+        class="ud-legend group flex items-center gap-1.5 transition-colors hover:text-chalk"
+      >
+        On the rack · {LIVE_TOOLS.length} drawn
+        <Icon
+          name="arrow-right"
+          size={13}
+          class="text-cherry transition-transform group-hover:translate-x-0.5"
+        />
+      </a>
     </div>
 
     <div>

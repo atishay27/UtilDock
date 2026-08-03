@@ -23,7 +23,15 @@ const year = new Date().getFullYear();
       {
         CATEGORIES.map((category) => (
           <div>
-            <h2 class="ud-legend">{category.name}</h2>
+            <h2 class="ud-legend">
+              {category.href ? (
+                <a href={category.href} class="transition-colors hover:text-chalk">
+                  {category.name} tools
+                </a>
+              ) : (
+                category.name
+              )}
+            </h2>
             <ul class="mt-4 space-y-2.5 text-sm">
               {TOOLS.filter((t) => t.category === category.id).map((tool) => (
                 <li>

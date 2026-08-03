@@ -3,8 +3,18 @@ export const SITE = {
   tagline: 'Your dock for developer utilities.',
   url: 'https://utildock.dev',
   description:
-    'Fast, ad-free developer utilities that run entirely in your browser. JSON viewer, validator, comparator and formatter — no uploads, no accounts, no tracking.',
+    'Free, ad-free developer utilities that run entirely in your browser: JSON viewer, validator, diff and formatter. No uploads, no accounts, no tracking.',
 } as const;
+
+/**
+ * An absolute URL in the one shape the site commits to: directory-style, with a
+ * trailing slash. Canonicals, the sitemap and every JSON-LD `url` must agree,
+ * or they nominate different pages for the same content.
+ */
+export function absoluteUrl(path: string): string {
+  const withSlash = path.endsWith('/') ? path : `${path}/`;
+  return new URL(withSlash, SITE.url).href;
+}
 
 /**
  * There is deliberately no analytics configuration here. Every hosted product,
