@@ -23,7 +23,8 @@ const {
 } = Astro.props;
 
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, SITE.url).href;
-const fullTitle = title === SITE.name ? title : `${title} | ${SITE.name}`;
+/* A title that already names the site does not get it a second time. */
+const fullTitle = title.startsWith(SITE.name) ? title : `${title} | ${SITE.name}`;
 const ogImage = new URL('/og-default.png', SITE.url).href;
 ---
 
