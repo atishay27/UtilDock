@@ -1,11 +1,25 @@
 ---
 /**
- * Shown only to a visitor who has not answered yet. Deliberately non-modal:
- * nothing on this site is gated behind the decision, so the banner does not
- * trap focus, does not dim the page and does not block a tool. Declining and
- * ignoring it produce the same result — no request to Google, ever.
+ * Shown to a visitor who has not answered yet, and reopened on demand by the
+ * footer's Analytics button via [data-consent-open].
  *
- * The footer's "Analytics" button reopens it via [data-consent-open].
+ * Deliberately non-modal: nothing on this site is gated behind the decision, so
+ * the banner does not trap focus, does not dim the page and does not block a
+ * tool. Declining and ignoring it produce the same result — no request to
+ * Google, ever.
+ *
+ * **It reports state, it does not re-ask.** The first version rendered one
+ * fixed block of copy, so reopening it after a decision showed the identical
+ * question with the identical two buttons — no indication of what had been
+ * chosen, and no way to tell "I already said no" from "I have not answered".
+ * A control that cannot show its own value is not a control. The three states
+ * below are mutually exclusive blocks toggled by [data-when]; only `undecided`
+ * asks a question.
+ *
+ * The two flows also end differently, on purpose. Answering for the first time
+ * closes the banner — the visitor came here to use a tool. Toggling from the
+ * footer leaves it open and re-renders, because the visitor came here for this
+ * and seeing the new state is the point.
  */
 import { ANALYTICS_ENABLED } from '../lib/analytics';
 ---
@@ -15,18 +29,23 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
     <section
       id="consent-banner"
       class="ud-consent fixed inset-x-0 bottom-0 z-40"
-      aria-label="Analytics consent"
+      aria-label="Analytics"
+      tabindex="-1"
       hidden
     >
       <div class="ud-billet h-[3px]" />
       <div class="border-t border-scribe bg-anvil">
         <div class="mx-auto flex max-w-[1600px] flex-col gap-5 px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
           <div class="max-w-2xl">
-            <h2 class="ud-struck text-xl text-chalk sm:text-2xl">Cookies</h2>
-            <p class="mt-2 text-sm leading-relaxed text-temper">
+            {/* One heading across all three states. The footer button, this
+                heading and the /privacy anchor are all the same word, so the
+                control a visitor is looking for is named once. */}
+            <h2 class="ud-struck text-xl text-chalk sm:text-2xl">Analytics</h2>
+
+            <p data-when="undecided" class="mt-2 text-sm leading-relaxed text-temper">
               We would like to use Google Analytics to count page views, so we know which tools to
-              improve. Nothing you paste is ever included — your JSON never leaves this tab either
-              way.{' '}
+              improve. It sets a cookie. Nothing you paste is ever included — your JSON never leaves
+              this tab either way.{' '}
               <a
                 href="/privacy#analytics"
                 class="text-chalk underline decoration-scribe-strong underline-offset-4 transition-colors hover:text-cherry"
@@ -35,11 +54,50 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
               </a>
               .
             </p>
+
+            {/* The stamp carries the state; the sentence says what the state
+                means. A square, not a dot — nothing in this system is round. */}
+            <div data-when="granted">
+              <p class="ud-legend mt-2 flex items-center gap-2 text-chalk">
+                <span class="h-2 w-2 shrink-0 bg-cherry" aria-hidden="true" />
+                Currently on
+              </p>
+              <p class="mt-2 text-sm leading-relaxed text-temper">
+                Google Analytics is counting page views in this browser. Nothing you paste is ever
+                included.{' '}
+                <a
+                  href="/privacy#analytics"
+                  class="text-chalk underline decoration-scribe-strong underline-offset-4 transition-colors hover:text-cherry"
+                >
+                  What it collects
+                </a>
+                .
+              </p>
+            </div>
+
+            <div data-when="denied">
+              <p class="ud-legend mt-2 flex items-center gap-2 text-temper">
+                <span class="h-2 w-2 shrink-0 bg-scribe-strong" aria-hidden="true" />
+                Currently off
+              </p>
+              <p class="mt-2 text-sm leading-relaxed text-temper">
+                Nothing is requested from Google in this browser, and any analytics cookie already
+                written has been deleted. Every tool works exactly the same either way.{' '}
+                <a
+                  href="/privacy#analytics"
+                  class="text-chalk underline decoration-scribe-strong underline-offset-4 transition-colors hover:text-cherry"
+                >
+                  Privacy Policy
+                </a>
+                .
+              </p>
+            </div>
           </div>
 
           <div class="flex shrink-0 flex-wrap items-center gap-3">
             <button
               type="button"
+              data-when="undecided"
               data-consent="granted"
               class="ud-struck border-2 border-scribe-strong px-5 py-2.5 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
             >
@@ -47,10 +105,39 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
             </button>
             <button
               type="button"
+              data-when="undecided"
               data-consent="denied"
               class="ud-struck border-2 border-scribe-strong px-5 py-2.5 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
             >
               No thanks
+            </button>
+
+            {/* Reopened: one button changes the thing, one leaves. The label
+                names the result, so it reads as a switch rather than as the
+                same question asked twice. */}
+            <button
+              type="button"
+              data-when="granted"
+              data-consent="denied"
+              class="ud-struck border-2 border-scribe-strong px-5 py-2.5 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
+            >
+              Turn it off
+            </button>
+            <button
+              type="button"
+              data-when="denied"
+              data-consent="granted"
+              class="ud-struck border-2 border-scribe-strong px-5 py-2.5 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
+            >
+              Turn it on
+            </button>
+            <button
+              type="button"
+              data-when="granted denied"
+              data-consent-close
+              class="ud-legend px-2 py-2.5 transition-colors hover:text-chalk"
+            >
+              Close
             </button>
           </div>
         </div>
@@ -66,13 +153,39 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
         var banner = document.getElementById('consent-banner');
         if (!banner) return;
 
-        function open() {
+        var blocks = banner.querySelectorAll('[data-when]');
+
+        /* Anything other than a stored decision is undecided, including
+           storage being unavailable — which is what the analytics module
+           reports when localStorage throws. */
+        function current() {
+          var stored = window.utildock && window.utildock.consent;
+          return stored === 'granted' || stored === 'denied' ? stored : 'undecided';
+        }
+
+        /* Toggling inline display rather than the hidden attribute: the shown
+           blocks carry their own display utility (the buttons are flex
+           children), and '' restores whatever the class said. */
+        function render(state) {
+          banner.setAttribute('data-state', state);
+          for (var i = 0; i < blocks.length; i++) {
+            var when = blocks[i].getAttribute('data-when').split(' ');
+            blocks[i].style.display = when.indexOf(state) === -1 ? 'none' : '';
+          }
+        }
+
+        function open(takeFocus) {
+          render(current());
           banner.hidden = false;
           /* display:none cancels the transition, so the class that animates it
              waits for a frame in which the element is already laid out. */
           requestAnimationFrame(function () {
             requestAnimationFrame(function () {
               banner.classList.add('is-open');
+              /* Only when reopened on purpose. The state is the reason the
+                 visitor clicked and a screen reader has to be told it; on
+                 first load, stealing focus from the page would be rude. */
+              if (takeFocus) banner.focus({ preventScroll: true });
             });
           });
         }
@@ -91,17 +204,36 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
         document.addEventListener('click', function (event) {
           var choice = event.target.closest('[data-consent]');
           if (choice) {
+            var wasAsking = banner.getAttribute('data-state') === 'undecided';
             window.utildock.setConsent(choice.getAttribute('data-consent'));
+            /* First answer: get out of the way. Reopened from the footer:
+               stay and show what just changed. */
+            if (wasAsking) close();
+            else render(current());
+            return;
+          }
+          if (event.target.closest('[data-consent-close]')) {
             close();
             return;
           }
           if (event.target.closest('[data-consent-open]')) {
             event.preventDefault();
-            open();
+            if (banner.hidden) open(true);
+            else close();
           }
         });
 
-        if (!window.utildock || !window.utildock.consent) open();
+        /* Reopening moves focus into the panel, so there has to be a key that
+           gets back out. Never while undecided: dismissing the question with a
+           keystroke would store nothing and look like an answer. */
+        document.addEventListener('keydown', function (event) {
+          if (event.key !== 'Escape') return;
+          if (banner.hidden || banner.getAttribute('data-state') === 'undecided') return;
+          close();
+        });
+
+        render(current());
+        if (current() === 'undecided') open(false);
       })();
     </script>
   )
@@ -115,6 +247,13 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
 
   .ud-consent.is-open {
     transform: translateY(0);
+  }
+
+  /* Reopened programmatically, so the ring would fire on a pointer click that
+     never asked for one. The banner sliding in is the visible acknowledgement;
+     the focus move exists for the screen reader. */
+  .ud-consent:focus {
+    outline: none;
   }
 
   @media (prefers-reduced-motion: reduce) {

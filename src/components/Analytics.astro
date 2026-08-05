@@ -82,11 +82,51 @@ import { GTM_ID, GA_ID, LOADER, CONSENT_KEY, ANALYTICS_ENABLED } from '../lib/an
           }
         }
 
+        /* Every cookie GA4 writes is named _ga or _ga_<stream>. Clearing one
+           needs the domain and path it was set with, and GA sets it on the
+           registrable domain — which we cannot know from script, so expire it
+           against the host and every parent of it. Unmatched attempts are
+           no-ops; one of them lands.
+
+           This runs on withdrawal *and* on every load of an already-denied
+           page, which also sweeps up anything left by an earlier decision. */
+        function clearCookies() {
+          var jar = document.cookie ? document.cookie.split(';') : [];
+          var names = [];
+          for (var i = 0; i < jar.length; i++) {
+            var name = jar[i].split('=')[0].trim();
+            if (name.indexOf('_ga') === 0) names.push(name);
+          }
+          if (!names.length) return;
+
+          var labels = location.hostname.split('.');
+          var scopes = [''];
+          for (var d = 0; d < labels.length - 1; d++) {
+            scopes.push('; domain=.' + labels.slice(d).join('.'));
+          }
+
+          var dead = '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+          for (var n = 0; n < names.length; n++) {
+            for (var s = 0; s < scopes.length; s++) {
+              document.cookie = names[n] + dead + scopes[s];
+            }
+          }
+        }
+
         /* The only path to a network request in this file. */
         function apply(state) {
-          if (state !== 'granted') return;
-          gtag('consent', 'update', { analytics_storage: 'granted' });
-          load();
+          if (state === 'granted') {
+            gtag('consent', 'update', { analytics_storage: 'granted' });
+            load();
+            return;
+          }
+
+          /* Withdrawal has to reach the tag that is already running in this
+             page, not just the next one. Without this update GA4 keeps its
+             cookie and keeps firing enhanced-measurement events until the
+             visitor navigates, which is not what "off" means. */
+          if (loaded) gtag('consent', 'update', { analytics_storage: 'denied' });
+          clearCookies();
         }
 
         var api = (window.utildock = window.utildock || {});
