@@ -1,84 +1,367 @@
 ---
-import { LIVE_TOOLS } from '../lib/tools';
+/**
+ * Category-grouped navigation.
+ *
+ * The bar names categories, not tools: "JSON tools" opens a panel of the four,
+ * each under its full name. A flat list of "Viewer / Validator / Comparator"
+ * gave no clue which format it worked on, and had nowhere to put JWT — the bar
+ * would simply have grown until it collided with the logo.
+ *
+ * Categories come from the registry, so adding JWT adds a menu with no edit
+ * here. A category with nothing live yet renders as a marker rather than a
+ * trigger: a menu that opens onto "coming soon" wastes the click.
+ */
+import { CATEGORIES, toolsInCategory } from '../lib/tools';
 import Logo from './Logo.astro';
+import Icon from './Icon.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
 const path = Astro.url.pathname.replace(/\/$/, '');
+
+const menus = CATEGORIES.map((category) => {
+  const tools = toolsInCategory(category.id);
+  return {
+    category,
+    live: tools.filter((t) => t.status === 'live'),
+    planned: tools.filter((t) => t.status !== 'live'),
+  };
+});
 ---
 
 <header class="sticky top-0 z-40 border-b border-scribe bg-ground">
-  <div class="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
+  <div class="mx-auto flex h-14 max-w-[1600px] items-center gap-2 px-4 sm:px-6">
     <a
       href="/"
-      class="ud-struck flex shrink-0 items-center gap-2.5 text-[1.35rem] text-chalk"
+      class="ud-struck flex h-11 shrink-0 items-center gap-2.5 text-[1.35rem] text-chalk"
       aria-label="UtilDock home"
     >
       <Logo size={24} />
       UtilDock
     </a>
 
-    <nav aria-label="Tools" class="ml-3 hidden items-center md:flex">
+    <nav aria-label="Tools" class="ml-4 hidden items-center gap-1 md:flex">
       {
-        LIVE_TOOLS.map((tool) => {
-          const active = path === tool.href;
+        menus.map(({ category, live, planned }) => {
+          const within = category.href ? path.startsWith(category.href) : false;
+
+          if (live.length === 0) {
+            return (
+              <span class="ud-legend flex items-center gap-2 px-3 py-2 text-faint">
+                {category.name}
+                <span class="border border-scribe px-1.5 py-0.5 text-faint">soon</span>
+              </span>
+            );
+          }
+
           return (
-            <a
-              href={tool.href}
-              class:list={[
-                'ud-legend relative px-3 py-4 transition-colors',
-                active ? 'text-chalk' : 'hover:text-chalk',
-              ]}
-              aria-current={active ? 'page' : undefined}
-            >
-              {tool.name.replace('JSON ', '')}
-              {active && <span class="absolute inset-x-2 bottom-0 h-0.5 bg-cherry" />}
-            </a>
+            <div class="ud-menu relative" data-menu>
+              <button
+                type="button"
+                data-menu-trigger
+                aria-haspopup="true"
+                aria-expanded="false"
+                class:list={[
+                  'ud-legend flex items-center gap-1.5 px-3 py-2 transition-colors',
+                  within ? 'text-chalk' : 'text-temper hover:text-chalk',
+                ]}
+              >
+                {category.name} tools
+                <Icon name="chevron-down" size={12} class="ud-menu-caret transition-transform" />
+              </button>
+
+              <div
+                data-menu-panel
+                hidden
+                class="ud-menu-panel absolute top-full left-0 w-[23rem] border-2 border-scribe-strong bg-anvil"
+              >
+                <p class="ud-legend border-b border-scribe bg-bench px-4 py-2.5 text-faint">
+                  {category.blurb}
+                </p>
+
+                <ul>
+                  {live.map((tool) => {
+                    const active = path === tool.href;
+                    return (
+                      <li>
+                        <a
+                          href={tool.href}
+                          aria-current={active ? 'page' : undefined}
+                          class:list={[
+                            'group relative flex items-start gap-3 border-b border-scribe px-4 py-3 transition-colors hover:bg-anvil-lit',
+                            /* anvil-lit alone is a 5-value lift in the light
+                               theme — invisible. The edge carries it instead. */
+                            active && 'bg-bench',
+                          ]}
+                        >
+                          {active && <span class="absolute inset-y-0 left-0 w-[2px] bg-cherry" />}
+                          <Icon
+                            name={tool.icon}
+                            size={17}
+                            class:list={[
+                              'mt-0.5 shrink-0 transition-colors',
+                              active ? 'text-cherry' : 'text-faint group-hover:text-cherry',
+                            ]}
+                          />
+                          <span class="min-w-0">
+                            <span class="ud-struck block text-[1.05rem] text-chalk">
+                              {tool.name}
+                            </span>
+                            <span class="mt-0.5 block text-xs leading-snug text-temper">
+                              {tool.tagline}
+                            </span>
+                          </span>
+                        </a>
+                      </li>
+                    );
+                  })}
+
+                  {planned.map((tool) => (
+                    <li class="flex items-center gap-3 border-b border-scribe px-4 py-2.5">
+                      <Icon name={tool.icon} size={17} class="shrink-0 text-scribe-strong" />
+                      <span class="ud-struck text-[1.05rem] text-faint">{tool.name}</span>
+                      <span class="ud-legend ml-auto text-faint">soon</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {category.href && (
+                  <a
+                    href={category.href}
+                    class="ud-legend group flex items-center gap-1.5 px-4 py-3 text-temper transition-colors hover:text-chalk"
+                  >
+                    All {category.name} tools
+                    <Icon
+                      name="arrow-right"
+                      size={12}
+                      class="text-cherry transition-transform group-hover:translate-x-0.5"
+                    />
+                  </a>
+                )}
+              </div>
+            </div>
           );
         })
       }
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
-      <span class="ud-legend hidden items-center gap-2 border border-scribe px-2.5 py-1.5 lg:inline-flex">
-        <span class="size-1.5 shrink-0 bg-sound"></span>
-        Nothing leaves the shop
-      </span>
+      {/* A link, not a badge. Styled as a pill beside two real buttons, it read
+          as a control that did nothing when clicked.
+
+          The outer element is the 44px target; the inner one is the visible
+          box, sized to match ThemeToggle's exactly. Bordering the target itself
+          drew an 11-high box next to the toggle's 8-high one. */}
+      <a href="/privacy" class="hidden h-11 items-center lg:inline-flex">
+        <span
+          class="ud-legend flex h-8 items-center gap-2 border border-scribe px-2.5 text-temper transition-colors hover:border-cherry hover:text-chalk"
+        >
+          <Icon name="lock" size={12} class="shrink-0 text-sound" />
+          Nothing leaves this tab
+        </span>
+      </a>
       <ThemeToggle />
       <button
         id="nav-toggle"
         type="button"
-        class="ud-legend flex h-8 items-center border border-scribe px-2.5 text-faint transition-colors hover:text-chalk md:hidden"
-        aria-label="Toggle navigation"
+        class="ud-legend group flex h-11 items-center gap-1.5 border border-scribe px-3 text-temper transition-colors hover:border-cherry hover:text-chalk md:hidden"
+        aria-label="Open tools menu"
         aria-expanded="false"
         aria-controls="mobile-nav"
       >
+        {/* The icon states what the next tap does, matching the label. */}
+        <span class="contents group-[[aria-expanded=true]]:hidden"><Icon name="menu" size={14} /></span>
+        <span class="hidden group-[[aria-expanded=true]]:contents"><Icon name="x" size={14} /></span>
         Tools
       </button>
     </div>
   </div>
 
-  <nav id="mobile-nav" aria-label="Tools" class="hidden border-t border-scribe md:hidden">
+  <nav id="mobile-nav" aria-label="Tools" class="hidden border-t border-scribe bg-anvil md:hidden">
     {
-      LIVE_TOOLS.map((tool) => (
-        <a
-          href={tool.href}
-          class:list={[
-            'ud-legend block border-b border-scribe px-4 py-3',
-            path === tool.href ? 'bg-anvil text-chalk' : '',
-          ]}
-        >
-          {tool.name}
-        </a>
+      menus.map(({ category, live, planned }) => (
+        <div>
+          <p class="ud-legend flex items-center gap-2 border-b border-scribe bg-bench px-4 py-2 text-faint">
+            {category.name}
+            {live.length === 0 && (
+              <span class="border border-scribe px-1.5 py-0.5">soon</span>
+            )}
+          </p>
+
+          {live.map((tool) => (
+            <a
+              href={tool.href}
+              aria-current={path === tool.href ? 'page' : undefined}
+              class:list={[
+                'relative flex min-h-11 items-center gap-3 border-b border-scribe px-4 py-3',
+                path === tool.href && 'bg-bench',
+              ]}
+            >
+              {path === tool.href && <span class="absolute inset-y-0 left-0 w-[2px] bg-cherry" />}
+              <Icon
+                name={tool.icon}
+                size={17}
+                class:list={['shrink-0', path === tool.href ? 'text-cherry' : 'text-faint']}
+              />
+              <span class="ud-struck text-[1.05rem] text-chalk">{tool.name}</span>
+            </a>
+          ))}
+
+          {planned.map((tool) => (
+            <span class="flex min-h-11 items-center gap-3 border-b border-scribe px-4 py-3">
+              <Icon name={tool.icon} size={17} class="shrink-0 text-scribe-strong" />
+              <span class="ud-struck text-[1.05rem] text-faint">{tool.name}</span>
+              <span class="ud-legend ml-auto text-faint">soon</span>
+            </span>
+          ))}
+        </div>
       ))
     }
+
+    <a
+      href="/privacy"
+      class="ud-legend flex min-h-11 items-center gap-2 px-4 py-3 text-temper transition-colors hover:text-chalk"
+    >
+      <Icon name="lock" size={12} class="shrink-0 text-sound" />
+      Your JSON stays in this tab
+    </a>
   </nav>
 </header>
 
 <script>
+  /* Desktop menus open on hover and on click.
+   *
+   * Hover is gated on a device that actually has one: on a touchscreen a tap
+   * synthesises mouseenter before click, so an ungated hover handler opens the
+   * panel and the click that follows immediately closes it again.
+   *
+   * Both delays exist to make the pointer's path forgiving. Opening waits long
+   * enough that a pointer merely crossing the header on its way down the page
+   * does not trigger a panel; closing waits long enough to cross the seam
+   * between trigger and panel, and to sweep diagonally toward an item near the
+   * edge. Once one panel is open, switching to a sibling is instant — that is
+   * the behaviour a menu bar teaches.
+   */
+  const menus = [...document.querySelectorAll<HTMLElement>('[data-menu]')];
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const OPEN_DELAY = 110;
+  const CLOSE_DELAY = 220;
+  let openTimer: number | undefined;
+  let closeTimer: number | undefined;
+
+  function clearTimers() {
+    window.clearTimeout(openTimer);
+    window.clearTimeout(closeTimer);
+  }
+
+  function panelOf(menu: HTMLElement) {
+    return menu.querySelector<HTMLElement>('[data-menu-panel]');
+  }
+
+  function setOpen(menu: HTMLElement, open: boolean) {
+    const panel = panelOf(menu);
+    const trigger = menu.querySelector<HTMLElement>('[data-menu-trigger]');
+    if (!panel || !trigger) return;
+    panel.hidden = !open;
+    menu.dataset.open = open ? 'true' : 'false';
+    trigger.setAttribute('aria-expanded', String(open));
+  }
+
+  function closeAll() {
+    menus.forEach((menu) => setOpen(menu, false));
+  }
+
+  const anyOpen = () => menus.some((menu) => menu.dataset.open === 'true');
+
+  menus.forEach((menu) => {
+    const trigger = menu.querySelector<HTMLElement>('[data-menu-trigger]');
+
+    trigger?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      clearTimers();
+      const open = menu.dataset.open === 'true';
+      closeAll();
+      setOpen(menu, !open);
+    });
+
+    if (!canHover) return;
+
+    menu.addEventListener('mouseenter', () => {
+      clearTimers();
+      if (menu.dataset.open === 'true') return;
+      openTimer = window.setTimeout(
+        () => {
+          closeAll();
+          setOpen(menu, true);
+        },
+        anyOpen() ? 0 : OPEN_DELAY,
+      );
+    });
+
+    menu.addEventListener('mouseleave', () => {
+      clearTimers();
+      closeTimer = window.setTimeout(closeAll, CLOSE_DELAY);
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!(event.target as HTMLElement).closest('[data-menu]')) closeAll();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !anyOpen()) return;
+    clearTimers();
+    const open = menus.find((menu) => menu.dataset.open === 'true');
+    closeAll();
+    open?.querySelector<HTMLElement>('[data-menu-trigger]')?.focus();
+  });
+
+  /* Focus leaving the menu entirely closes it, so tabbing past the last item
+     does not leave a panel hanging open behind the page. */
+  document.addEventListener('focusin', (event) => {
+    if (!(event.target as HTMLElement).closest('[data-menu]')) closeAll();
+  });
+
   const button = document.getElementById('nav-toggle');
   const nav = document.getElementById('mobile-nav');
-  button?.addEventListener('click', () => {
-    const open = nav?.classList.toggle('hidden') === false;
-    button.setAttribute('aria-expanded', String(open));
+
+  function setDrawer(open: boolean) {
+    nav?.classList.toggle('hidden', !open);
+    button?.setAttribute('aria-expanded', String(open));
+    button?.setAttribute('aria-label', open ? 'Close tools menu' : 'Open tools menu');
+  }
+
+  button?.addEventListener('click', () => setDrawer(nav?.classList.contains('hidden') === true));
+
+  /* Escape closed the desktop menus but left the drawer open, so a keyboard
+     user on a narrow window had no way out but to find the toggle again. */
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || nav?.classList.contains('hidden') !== false) return;
+    setDrawer(false);
+    button?.focus();
   });
 </script>
+
+<style>
+  .ud-menu-panel {
+    transform: translateY(-4px);
+    opacity: 0;
+    transition:
+      opacity 140ms ease-out,
+      transform 140ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  .ud-menu[data-open='true'] .ud-menu-panel {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .ud-menu[data-open='true'] .ud-menu-caret {
+    transform: rotate(180deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ud-menu-panel {
+      transition: none;
+    }
+  }
+</style>

@@ -1,26 +1,35 @@
 ---
 import { splitName, type Tool } from '../lib/tools';
+import Icon from './Icon.astro';
 
 interface Props {
   tool: Tool;
-  index: number;
-  delay?: number;
 }
 
-const { tool, index, delay = 0 } = Astro.props;
+const { tool } = Astro.props;
 const live = tool.status === 'live';
 const Tag = live ? 'a' : 'div';
-const number = String(index).padStart(2, '0');
 /* The category was a separate chip; folded into the name so the row's link text
    is the full thing anyone would search for. */
 const name = splitName(tool);
 ---
 
-{/* One blow per full-width row. The row heats under the pointer. */}
+{/*
+  One blow per full-width row. The row heats under the pointer.
+
+  Three columns — name, description, open — each centred in the row.
+
+  Centring is the rule that holds no matter what a row contains, which is the
+  point. Earlier versions aligned on the baseline, then on cap tops with a pixel
+  correction; both assumed every row had the same shape, and the JWT row does
+  not — no spec plate, no open affordance, one line where the others have two.
+  Any rule tuned to the four-line rows puts that row visibly wrong. Centring is
+  indifferent to how many lines each column holds.
+*/}
 <Tag
   href={live ? tool.href : undefined}
   class:list={[
-    'group relative grid grid-cols-[3.5rem_1fr] items-baseline gap-x-4 gap-y-1 border-b border-scribe py-6 transition-colors sm:grid-cols-[5rem_minmax(0,16rem)_1fr] sm:gap-x-8 sm:py-7',
+    'group relative grid items-center gap-x-10 gap-y-2 border-b border-scribe py-6 pl-4 transition-colors sm:grid-cols-[minmax(0,17rem)_1fr_auto] sm:py-7 sm:pl-6',
     live && 'hover:bg-anvil',
   ]}
 >
@@ -31,25 +40,67 @@ const name = splitName(tool);
     )
   }
 
-  <span
+  {/* leading-[0.92] restores the display leading DESIGN.md specifies. An
+      arbitrary font-size resets Tailwind's paired line-height, so sm:text-[2rem]
+      was silently setting this heading to 1.33 and inflating every row. */}
+  <h3
     class:list={[
-      'ud-force self-center text-2xl leading-none transition-colors sm:text-[2.75rem]',
-      live ? 'text-scribe-strong group-hover:text-cherry' : 'text-scribe-strong',
-    ]}>{number}</span
+      'ud-struck text-2xl leading-[0.92] sm:text-[2rem]',
+      live ? 'text-chalk' : 'text-temper',
+    ]}
   >
-
-  <h3 class:list={['ud-struck text-2xl sm:text-[2rem]', live ? 'text-chalk' : 'text-temper']}>
     {name.prefix && <span class="text-faint">{name.prefix}</span>}{name.prefix && ' '}{name.rest}
   </h3>
 
-  <p class="col-start-2 max-w-lg text-sm leading-relaxed text-temper sm:col-start-3 sm:pt-1.5">
-    {tool.tagline}.
+  <div class="max-w-lg">
+    <p class="text-sm leading-relaxed text-temper">
+      {tool.tagline}.
+      {
+        !live && (
+          <span class="ud-legend ml-1 border border-scribe px-1.5 py-0.5 align-middle whitespace-nowrap">
+            coming soon
+          </span>
+        )
+      }
+    </p>
+
+    {/* The spec plate. A tagline says which tool this is; the plate says
+        whether it does the one thing the visitor came for, which is the
+        question that decides the click. Stamped, not sentence-cased —
+        it is read as a rating stamped into the stock, not as prose.
+
+        Only for tools that exist. A plate on an unbuilt tool reads as a
+        feature list, and this site does not get to describe what it has
+        not made.
+
+        The divider trails its item rather than leading the next one, so a
+        plate that wraps breaks after a divider instead of starting the
+        second line with one. */}
     {
-      !live && (
-        <span class="ud-legend ml-1 border border-scribe px-1.5 py-0.5 align-middle">
-          cold stock
-        </span>
+      live && (
+        <ul class="ud-legend mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-faint">
+          {tool.does.map((capability, position) => (
+            <li class="flex items-center gap-2">
+              {capability}
+              {position < tool.does.length - 1 && (
+                <span class="h-2.5 w-px bg-scribe-strong" aria-hidden="true" />
+              )}
+            </li>
+          ))}
+        </ul>
       )
     }
-  </p>
+  </div>
+
+  {/* At rest the row carried no link affordance at all — no arrow, no
+      underline, only a hover bar that does not exist on touch. Over half
+      the row's width was empty; this is what belongs in it. */}
+  {
+    live && (
+      <span class="ud-legend flex items-center gap-1.5 text-faint transition-colors group-hover:text-cherry">
+        Open
+        <Icon name="arrow-right" size={13} class="transition-transform group-hover:translate-x-0.5" />
+      </span>
+    )
+  }
 </Tag>

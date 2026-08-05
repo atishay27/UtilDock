@@ -8,22 +8,22 @@ import { LIVE_TOOLS } from '../lib/tools';
   <section class="ud-scale border-b border-scribe">
     <div class="mx-auto max-w-[1600px] px-4 py-20 sm:px-6 sm:py-28">
       <h1 class="max-w-[14ch] text-[clamp(2.75rem,9vw,7rem)] text-chalk">
-        Nothing on this anvil.
+        That page does not exist.
       </h1>
       <p class="mt-6 max-w-lg text-lg leading-relaxed text-temper">
-        That page was never drawn. The stock that does exist is racked below.
+        The link may be out of date, or the address mistyped. Every tool on UtilDock is listed below.
       </p>
       <a
         href="/"
         class="ud-struck mt-8 inline-block border border-scribe-strong px-6 py-3 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
       >
-        Back to the shop
+        Back to home
       </a>
     </div>
   </section>
 
   <section class="mx-auto max-w-[1600px] px-4 pt-12 sm:px-6">
-    <h2 class="ud-legend border-b-2 border-scribe-strong pb-3">On the rack</h2>
-    {LIVE_TOOLS.map((tool, index) => <ToolRow tool={tool} index={index + 1} />)}
+    <h2 class="ud-legend border-b-2 border-scribe-strong pb-3">All tools</h2>
+    {LIVE_TOOLS.map((tool) => <ToolRow tool={tool} />)}
   </section>
 </BaseLayout>

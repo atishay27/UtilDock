@@ -1,7 +1,8 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import { SITE, absoluteUrl } from '../lib/site';
-import { getCategory, getTool, relatedTools, splitName, LIVE_TOOLS } from '../lib/tools';
+import { getCategory, getTool, relatedTools, splitName } from '../lib/tools';
+import Icon from '../components/Icon.astro';
 
 interface Props {
   toolId: string;
@@ -13,7 +14,6 @@ const category = getCategory(tool.category);
 const related = relatedTools(tool.id);
 const url = absoluteUrl(tool.href);
 const categoryUrl = category.href ? absoluteUrl(category.href) : undefined;
-const heatNumber = String(LIVE_TOOLS.findIndex((t) => t.id === tool.id) + 1).padStart(2, '0');
 const name = splitName(tool);
 const faqs = tool.faqs ?? [];
 
@@ -72,32 +72,34 @@ const structuredData = {
   structuredData={structuredData}
 >
   <div class="mx-auto max-w-[1600px] px-4 pt-5 pb-10 sm:px-6">
-    {/* The workpiece plate: number, name, and what this station does. */}
+    {/* The workpiece plate: name, and what this station does.
+
+        It opened with a large tabular numeral, which was the tool's position in
+        the registry array and nothing else — no rank, no sequence, no step. On
+        a page dedicated to one tool it answered a question nobody had, and it
+        set the plate's alignment against a figure that carried no meaning. */}
     <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-scribe-strong pb-4">
-      <div class="flex items-baseline gap-4 sm:gap-6">
-        <span class="ud-force text-3xl leading-none text-scribe-strong sm:text-5xl">{heatNumber}</span>
-        <div>
-          <nav aria-label="Breadcrumb" class="ud-legend flex items-center gap-2">
-            <a href="/" class="transition-colors hover:text-chalk">Shop</a>
-            <span aria-hidden="true">/</span>
-            {
-              category.href ? (
-                <a href={category.href} class="transition-colors hover:text-chalk">
-                  {category.name}
-                </a>
-              ) : (
-                <span>{category.name}</span>
-              )
-            }
-          </nav>
-          {/* The category stays in the h1 — quieter, but there for anyone searching it. */}
-          <h1 class="mt-1 text-[clamp(1.9rem,4.5vw,3rem)] text-chalk">
-            {name.prefix && <span class="text-faint">{name.prefix}</span>}{name.prefix && ' '}{name.rest}
-          </h1>
-        </div>
+      <div>
+        <nav aria-label="Breadcrumb" class="ud-legend flex items-center gap-2">
+          <a href="/" class="transition-colors hover:text-chalk">Home</a>
+          <span aria-hidden="true">/</span>
+          {
+            category.href ? (
+              <a href={category.href} class="transition-colors hover:text-chalk">
+                {category.name}
+              </a>
+            ) : (
+              <span>{category.name}</span>
+            )
+          }
+        </nav>
+        {/* The category stays in the h1 — quieter, but there for anyone searching it. */}
+        <h1 class="mt-1 text-[clamp(1.9rem,4.5vw,3rem)] text-chalk">
+          {name.prefix && <span class="text-faint">{name.prefix}</span>}{name.prefix && ' '}{name.rest}
+        </h1>
       </div>
       <p class="ud-legend max-w-md leading-relaxed">
-        {tool.tagline} · worked in this tab, never sent anywhere
+        {tool.tagline} · runs in this tab, never sent anywhere
       </p>
     </div>
 
@@ -118,21 +120,25 @@ const structuredData = {
       {
         related.length > 0 && (
           <aside>
-            <h2 class="ud-legend border-t border-scribe-strong pt-4">Other stations</h2>
+            <h2 class="ud-legend border-t border-scribe-strong pt-4">Other tools</h2>
             <ul class="mt-2">
               {related.map((item) => (
                 <li>
                   <a
                     href={item.href}
-                    class="group flex items-baseline gap-3 border-b border-scribe py-3 transition-colors hover:bg-anvil"
+                    class="group flex items-baseline justify-between gap-3 border-b border-scribe py-3 transition-colors hover:bg-anvil"
                   >
-                    <span class="ud-force text-sm text-scribe-strong transition-colors group-hover:text-cherry">
-                      {String(LIVE_TOOLS.findIndex((t) => t.id === item.id) + 1).padStart(2, '0')}
-                    </span>
                     <span class="ud-struck text-lg text-chalk">
                       <span class="text-faint">{splitName(item).prefix}</span>{' '}
                       {splitName(item).rest}
                     </span>
+                    {/* The arrow says "link"; the numeral it replaced said only
+                        where this tool happened to sit in an array. */}
+                    <Icon
+                      name="arrow-right"
+                      size={13}
+                      class="shrink-0 text-faint transition-all group-hover:translate-x-0.5 group-hover:text-cherry"
+                    />
                   </a>
                 </li>
               ))}
@@ -146,7 +152,7 @@ const structuredData = {
       faqs.length > 0 && (
         <section class="mt-16">
           <h2 class="border-t-2 border-cherry pt-4 text-[1.75rem] text-chalk">
-            Questions off the bench
+            Common questions
           </h2>
           <div class="mt-6 grid gap-x-12 md:grid-cols-2">
             {faqs.map((faq) => (

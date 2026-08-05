@@ -106,7 +106,7 @@ components:
     backgroundColor: "transparent"
     textColor: "{colors.chalk}"
     rounded: "{rounded.none}"
-    padding: "28px 0"
+    padding: "28px 0 28px 24px"
 ---
 
 # Design System: UtilDock
@@ -261,9 +261,15 @@ white-hot at the left where the blow lands, cooling to grey along its length.
   disabled.
 - **Status** — a 1.5px square colour mark plus text. Four temperatures only: `idle` (cold stock),
   `ok` (rings true), `warn`, `error` (crack).
-- **Tool row** — full-width link: `.ud-force` index numeral, display-caps name, `.ud-legend`
-  category, body description. Unavailable tools drop to `tempered` and lose the heat bar; they never
-  use blanket opacity, which would take their body copy below contrast floor.
+- **Tool row** — full-width link, two columns on one baseline: display-caps name, then body
+  description over a `.ud-legend` spec plate of three or four capabilities, with the open affordance
+  set right. Unavailable tools drop to `tempered`, lose the heat bar and lose the spec plate — the
+  site does not describe what it has not built; they never use blanket opacity, which would take
+  their body copy below contrast floor.
+  It carried a leading `.ud-force` index numeral until that numeral was found to be the tool's
+  position in the registry array — no rank, no sequence, no step. **Do not reintroduce an index on a
+  list whose order carries no information**, and note it was also the row's third competing
+  alignment rule: centred numeral, baseline name, and a hardcoded nudge on the description.
 - **Editor** — CodeMirror themed entirely through the site's custom properties, so both registers
   swap with no remount and no second theme to maintain. Value types are coloured off the heat scale;
   a syntax error is underlined in `crack` with a gutter mark.

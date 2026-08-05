@@ -27,6 +27,15 @@ export interface Tool {
   name: string;
   /** One short line, used on cards and in the nav. */
   tagline: string;
+  /**
+   * What the tool actually does, as a spec plate — three or four capabilities,
+   * each two or three words. Rendered on the tool row beneath the tagline.
+   *
+   * A tagline says which tool this is; these say whether it does the specific
+   * thing the visitor came for, which is the question a directory has to answer
+   * before the click. They are also, not by accident, the terms people search.
+   */
+  does: string[];
   /** <meta name="description">. Keep under ~155 chars or Google truncates it. */
   description: string;
   /** Page <title> without the site suffix. Keep under ~49 chars for the same reason. */
@@ -69,11 +78,52 @@ export const CATEGORIES: Category[] = [
 
 export const TOOLS: Tool[] = [
   {
+    id: 'json-formatter',
+    href: '/json/formatter',
+    category: 'json',
+    name: 'JSON Formatter',
+    tagline: 'Pretty-print an unreadable response, or minify it',
+    does: ['Pretty-print', 'Minify to one line', 'Sort keys', 'Indent 2 / 4 / tab'],
+    title: 'JSON Formatter — pretty-print and minify',
+    description:
+      'Free online JSON formatter and minifier. Pretty-print with any indentation, compact to one line, or sort keys alphabetically. Runs in your browser.',
+    overview:
+      'A JSON formatter and minifier in one. Pretty-print with two, three or four spaces or tabs, compact the document back to a single line, or sort every object’s keys alphabetically so two files diff cleanly in version control. The result updates as you type, and the document is never uploaded.',
+    faqs: [
+      {
+        q: 'What is the difference between formatting and minifying JSON?',
+        a: 'Formatting adds indentation and line breaks so the structure is readable. Minifying strips every byte of optional whitespace, which is what you want before putting JSON in an environment variable, a URL or over the wire. Both produce the same data.',
+      },
+      {
+        q: 'Why would I sort the keys?',
+        a: 'Two documents that describe the same thing but list their keys in a different order produce a noisy text diff. Sorting keys alphabetically makes them byte-identical where they agree, so only real changes appear in version control.',
+      },
+      {
+        q: 'Can it handle very large files?',
+        a: 'Yes. Parsing and formatting run in a Web Worker, so multi-megabyte documents reformat without the page going unresponsive while you type.',
+      },
+      {
+        q: 'Is my JSON uploaded to a server?',
+        a: 'Never. The formatter is JavaScript running in your own tab and there is no backend to send anything to. It keeps working with the network disconnected.',
+      },
+    ],
+    keywords: [
+      'json formatter',
+      'json beautifier',
+      'json minifier',
+      'format json online',
+      'pretty print json',
+    ],
+    icon: 'braces',
+    status: 'live',
+  },
+  {
     id: 'json-viewer',
     href: '/json/viewer',
     category: 'json',
     name: 'JSON Viewer',
-    tagline: 'Explore JSON as a collapsible tree',
+    tagline: 'Explore a payload too big to scroll through',
+    does: ['Collapsible tree', 'Search keys and values', 'Copy any path', 'Handles 100k+ nodes'],
     title: 'JSON Viewer — collapsible tree with search',
     description:
       'Free online JSON viewer. Explore any document as a collapsible, colour-coded tree, search keys and values, and copy paths. Runs entirely in your browser.',
@@ -106,7 +156,8 @@ export const TOOLS: Tool[] = [
     href: '/json/validator',
     category: 'json',
     name: 'JSON Validator',
-    tagline: 'Find syntax errors and check against a schema',
+    tagline: 'Find the exact line something is rejecting',
+    does: ['Exact line and column', 'JSON Schema 2020-12 / 2019-09 / 07', 'Jump to each error'],
     title: 'JSON Validator — syntax and schema errors',
     description:
       'Free online JSON validator. Get the exact line and column of any syntax error and check your document against a JSON Schema. Runs entirely in your browser.',
@@ -144,7 +195,8 @@ export const TOOLS: Tool[] = [
     href: '/json/diff',
     category: 'json',
     name: 'JSON Comparator',
-    tagline: 'Diff two documents structurally',
+    tagline: 'See what actually changed between two documents',
+    does: ['Structural diff', 'Ignores key order', 'Matches array items by id', 'Side-by-side'],
     title: 'JSON Diff — compare two documents visually',
     description:
       'Free online JSON diff. Compare two documents side by side with colour-coded additions, removals and changed values. Runs entirely in your browser.',
@@ -173,50 +225,12 @@ export const TOOLS: Tool[] = [
     status: 'live',
   },
   {
-    id: 'json-formatter',
-    href: '/json/formatter',
-    category: 'json',
-    name: 'JSON Formatter',
-    tagline: 'Pretty-print, minify and sort keys',
-    title: 'JSON Formatter — pretty-print and minify',
-    description:
-      'Free online JSON formatter and minifier. Pretty-print with any indentation, compact to one line, or sort keys alphabetically. Runs in your browser.',
-    overview:
-      'A JSON formatter and minifier in one. Pretty-print with two, three or four spaces or tabs, compact the document back to a single line, or sort every object’s keys alphabetically so two files diff cleanly in version control. The result updates as you type, and the document is never uploaded.',
-    faqs: [
-      {
-        q: 'What is the difference between formatting and minifying JSON?',
-        a: 'Formatting adds indentation and line breaks so the structure is readable. Minifying strips every byte of optional whitespace, which is what you want before putting JSON in an environment variable, a URL or over the wire. Both produce the same data.',
-      },
-      {
-        q: 'Why would I sort the keys?',
-        a: 'Two documents that describe the same thing but list their keys in a different order produce a noisy text diff. Sorting keys alphabetically makes them byte-identical where they agree, so only real changes appear in version control.',
-      },
-      {
-        q: 'Can it handle very large files?',
-        a: 'Yes. Parsing and formatting run in a Web Worker, so multi-megabyte documents reformat without the page going unresponsive while you type.',
-      },
-      {
-        q: 'Is my JSON uploaded to a server?',
-        a: 'Never. The formatter is JavaScript running in your own tab and there is no backend to send anything to. It keeps working with the network disconnected.',
-      },
-    ],
-    keywords: [
-      'json formatter',
-      'json beautifier',
-      'json minifier',
-      'format json online',
-      'pretty print json',
-    ],
-    icon: 'braces',
-    status: 'live',
-  },
-  {
     id: 'jwt-decoder',
     href: '/jwt/decoder',
     category: 'jwt',
     name: 'JWT Decoder',
     tagline: 'Decode and inspect token claims',
+    does: ['Header and payload', 'Expiry and claims', 'Signature check'],
     title: 'JWT Decoder',
     description: 'Decode a JSON Web Token and inspect its header, payload and claims.',
     keywords: ['jwt decoder', 'decode jwt'],
@@ -226,6 +240,18 @@ export const TOOLS: Tool[] = [
 ];
 
 export const LIVE_TOOLS = TOOLS.filter((t) => t.status === 'live');
+
+/**
+ * Categories that have at least one tool, in registry order. The homepage
+ * directory is built from this, so a new category appears there by adding it to
+ * CATEGORIES and pointing a tool at it — the page itself never changes.
+ */
+export function populatedCategories(): { category: Category; tools: Tool[] }[] {
+  return CATEGORIES.map((category) => ({
+    category,
+    tools: toolsInCategory(category.id),
+  })).filter((group) => group.tools.length > 0);
+}
 
 export function toolsInCategory(category: CategoryId): Tool[] {
   return TOOLS.filter((t) => t.category === category);

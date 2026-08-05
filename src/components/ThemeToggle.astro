@@ -1,27 +1,59 @@
 ---
-/* Not a lightbulb: the shop is either at heat or cold, and the control says so. */
+/**
+ * Names the theme it switches *to*, not the one in use — a control labelled
+ * with the current state reads as a status readout and gets clicked by mistake.
+ *
+ * The icon carries the meaning on its own: text alone made this look like a
+ * label rather than a control, which is exactly how it was being read.
+ */
+import Icon from './Icon.astro';
 ---
 
+{/* The 44px hit area is the button; the 32px box is only what you see. */}
 <button
   id="theme-toggle"
   type="button"
-  class="ud-legend flex h-8 items-center gap-2 border border-scribe px-2.5 text-faint transition-colors hover:border-cherry hover:text-chalk"
-  aria-label="Switch between the forge at heat and the cold shop"
-  title="Switch between the forge at heat and the cold shop"
+  class="ud-legend group flex h-11 items-center text-temper transition-colors hover:text-chalk"
+  aria-label="Switch to light theme"
+  title="Switch theme"
 >
-  <span class="size-2 shrink-0 bg-cherry [:root[data-theme=light]_&]:bg-cold"></span>
-  <span class="hidden [:root[data-theme=light]_&]:inline">Light the forge</span>
-  <span class="inline [:root[data-theme=light]_&]:hidden">Let it cool</span>
+  {/*
+    Sibling flex spans, not display:contents. The light variant used to resolve
+    to a block box inside the fixed height, which stacked the icon above the
+    label and overflowed the border — on every page, for every visitor whose
+    system prefers light.
+  */}
+  <span
+    class="flex h-8 items-center gap-2 border border-scribe px-2.5 transition-colors group-hover:border-cherry [:root[data-theme=light]_&]:hidden"
+  >
+    <Icon name="sun" size={14} class="shrink-0 text-heat" />
+    <span class="hidden sm:inline">Light</span>
+  </span>
+  <span
+    class="hidden h-8 items-center gap-2 border border-scribe px-2.5 transition-colors group-hover:border-cherry [:root[data-theme=light]_&]:flex"
+  >
+    <Icon name="moon" size={14} class="shrink-0 text-cherry" />
+    <span class="hidden sm:inline">Dark</span>
+  </span>
 </button>
 
 <script>
   const toggle = document.getElementById('theme-toggle');
+
+  function label() {
+    const light = document.documentElement.dataset.theme === 'light';
+    toggle?.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+
+  label();
+
   toggle?.addEventListener('click', () => {
     const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
     document.documentElement.dataset.theme = next;
     document
       .getElementById('theme-color')
       ?.setAttribute('content', next === 'light' ? '#e5e2dc' : '#0a0a0c');
+    label();
     try {
       localStorage.setItem('utildock:theme', next);
     } catch {

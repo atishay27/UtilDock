@@ -16,7 +16,7 @@ const year = new Date().getFullYear();
           UtilDock
         </div>
         <p class="mt-4 max-w-xs text-sm leading-relaxed text-temper">
-          {SITE.tagline} Heated, struck and measured entirely on your own anvil.
+          {SITE.tagline} Free, ad-free, and everything runs in your own browser.
         </p>
         <div class="ud-billet mt-6 h-1 w-40"></div>
       </div>
@@ -24,7 +24,7 @@ const year = new Date().getFullYear();
       {
         CATEGORIES.map((category) => (
           <div>
-            <h2 class="ud-legend">
+            <p class="ud-legend">
               {category.href ? (
                 <a href={category.href} class="transition-colors hover:text-chalk">
                   {category.name} tools
@@ -32,7 +32,7 @@ const year = new Date().getFullYear();
               ) : (
                 category.name
               )}
-            </h2>
+            </p>
             <ul class="mt-4 space-y-2.5 text-sm">
               {TOOLS.filter((t) => t.category === category.id).map((tool) => (
                 <li>
@@ -41,7 +41,7 @@ const year = new Date().getFullYear();
                       {tool.name}
                     </a>
                   ) : (
-                    <span class="text-faint">{tool.name} — not yet drawn</span>
+                    <span class="text-faint">{tool.name} — coming soon</span>
                   )}
                 </li>
               ))}
