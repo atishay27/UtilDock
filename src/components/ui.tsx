@@ -156,7 +156,13 @@ export function Panel({
       } ${highlighted ? 'border-cherry' : 'border-scribe-strong'} bg-anvil ${className}`}
       {...dropHandlers}
     >
-      <header className="flex min-h-10 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-scribe bg-bench px-3 py-2">
+      {/* min-h-12 is the height a header reaches once it holds a button, and
+          most of them do. The floor used to be min-h-10, so a panel whose only
+          control is a checkbox — the validator's Result — sat 8px shorter than
+          the panel beside it and the two bodies started at different lines.
+          Panels that can use `aligned` get this from the subgrid; the validator
+          cannot, because its right column stacks two panels of its own. */}
+      <header className="flex min-h-12 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-scribe bg-bench px-3 py-2">
         <h2 className="ud-legend flex items-baseline gap-2 text-chalk">
           {title}
           {station && <span className="text-faint">{station}</span>}

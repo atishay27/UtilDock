@@ -30,6 +30,13 @@ export const editorTheme = EditorView.theme({
   '.cm-lineNumbers .cm-gutterElement': { padding: '0 10px 0 14px', minWidth: '2.5em' },
   '.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--fg-cherry) 7%, transparent)' },
   '.cm-activeLineGutter': { backgroundColor: 'transparent', color: 'var(--fg-cherry)' },
+  /* The active line marks where the cursor is, so it has no business being
+     drawn when there is no cursor. On an untouched editor the placeholder is a
+     three-line widget living inside line 1, which stretched this warm band
+     across the whole of it — every tool's empty state opened looking like it
+     had already flagged an error. */
+  '&:not(.cm-focused) .cm-activeLine': { backgroundColor: 'transparent' },
+  '&:not(.cm-focused) .cm-activeLineGutter': { color: 'var(--fg-faint)' },
   '&.cm-focused': { outline: 'none' },
   '&.cm-focused .cm-cursor': { borderLeftColor: 'var(--fg-cherry)', borderLeftWidth: '2px' },
   '.cm-selectionBackground, &.cm-focused .cm-selectionBackground': {
