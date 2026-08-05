@@ -156,6 +156,26 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Form controls carry `text-transform: none` in the UA stylesheet, which is
+     not a reset Tailwind's preflight undoes — it inherits `font` for controls
+     but not this. So a <button> sitting inside an uppercase container renders
+     in the source's own case while the <a> beside it renders uppercase. The
+     footer's Analytics button read "Analytics" next to "ABOUT" and "PRIVACY"
+     for exactly this reason.
+
+     Fixed here rather than by pasting `uppercase` onto the one button, because
+     the bug reappears on every future control placed inside .ud-legend or
+     .ud-struck, and nothing in the markup would hint at why.
+
+     Buttons only. Inputs and selects are deliberately left with the UA's
+     `none`: the tree viewer's filter field and the indent select both sit
+     inside .ud-legend labels, and inheriting there would uppercase what the
+     visitor typed and the option text along with it. A button's label is
+     always ours; an input's value is not. */
+  button {
+    text-transform: inherit;
+  }
+
   /* Display voice: stencilled caps, struck tight. */
   h1,
   h2,
