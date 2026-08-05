@@ -20,7 +20,7 @@ export default function JsonViewer() {
   const [error, setError] = useState<JsonError | null>(null);
   const [stats, setStats] = useState<JsonStats | null>(null);
 
-  const run = useJsonWorker();
+  const run = useJsonWorker('json-viewer');
   const debouncedInput = useDebounced(input, 180);
   const debouncedQuery = useDebounced(query, 160);
 

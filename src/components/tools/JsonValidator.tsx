@@ -16,7 +16,7 @@ export default function JsonValidator() {
   const [useSchema, setUseSchema] = usePersistentState('utildock:json-validator:use-schema', false);
   const [result, setResult] = useState<ValidationResult | null>(null);
 
-  const run = useJsonWorker();
+  const run = useJsonWorker('json-validator');
   const editor = useRef<ReactCodeMirrorRef>(null);
   const debouncedInput = useDebounced(input, 180);
   const debouncedSchema = useDebounced(schema, 300);

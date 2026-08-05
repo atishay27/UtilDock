@@ -20,7 +20,7 @@ export default function JsonFormatter() {
   const [error, setError] = useState<JsonError | null>(null);
   const [stats, setStats] = useState<JsonStats | null>(null);
 
-  const run = useJsonWorker();
+  const run = useJsonWorker('json-formatter');
   const debouncedInput = useDebounced(input, 180);
 
   useEffect(() => {

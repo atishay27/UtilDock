@@ -29,7 +29,7 @@ export default function JsonDiff() {
   const [sideError, setSideError] = useState<SideError>(null);
   const [showEditors, setShowEditors] = usePersistentState('utildock:json-diff:editors', true);
 
-  const run = useJsonWorker();
+  const run = useJsonWorker('json-diff');
   const debouncedLeft = useDebounced(left, 220);
   const debouncedRight = useDebounced(right, 220);
 

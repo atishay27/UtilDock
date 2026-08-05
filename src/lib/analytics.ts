@@ -47,3 +47,32 @@ export const LOADER: 'gtm' | 'gtag' | 'none' = GTM_ID ? 'gtm' : GA_ID ? 'gtag' :
 
 /** Analytics is only ever wired up when there is somewhere to send to. */
 export const ANALYTICS_ENABLED = LOADER !== 'none';
+
+/**
+ * Push a custom event to the container.
+ *
+ * **What may be passed here is not a matter of taste.** A page view already
+ * tells us a tool page was opened; the only thing worth adding is whether the
+ * tool was then *used*, which is one boolean's worth of information and is
+ * carried by the event's existence. Nothing describing the visitor's document
+ * belongs in `params` — not its content, not its size, not its shape, not the
+ * error it produced. Rule 4 in PRODUCT.md is that no analytics event carries
+ * document content, and a byte count is a measurement of their document just
+ * as surely as a substring of it is.
+ *
+ * Silent unless a container is configured *and* consent was granted. The
+ * consent check is defence in depth: with nothing loaded these pushes only
+ * accumulate in an array nobody reads, but a future tag that fires on
+ * historical dataLayer entries would replay them, and this stops that.
+ */
+export function trackEvent(name: string, params: Record<string, string> = {}): void {
+  if (!ANALYTICS_ENABLED || typeof window === 'undefined') return;
+
+  const api = (window as { utildock?: { consent?: string | null } }).utildock;
+  if (api?.consent !== 'granted') return;
+
+  const layer = (window as { dataLayer?: unknown[] }).dataLayer;
+  if (!layer) return;
+
+  layer.push({ event: name, ...params });
+}
