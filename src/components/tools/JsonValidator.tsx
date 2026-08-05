@@ -198,7 +198,7 @@ function ResultBody({ isEmpty, syntaxError, result, issues, onSelectIssue }: Res
   if (isEmpty) {
     return (
       <Empty icon="check-shield">
-        Paste a document on the left. It is checked as you type, entirely in this tab.
+        Paste a document into the Document panel. It is checked as you type, entirely in this tab.
       </Empty>
     );
   }

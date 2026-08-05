@@ -140,7 +140,8 @@ export default function JsonViewer() {
                 placeholder="Filter keys and values"
                 aria-label="Filter the tree"
                 disabled={value === undefined}
-                className="w-44 border border-scribe bg-anvil-lit py-1.5 pr-2 pl-8 text-[13px] text-chalk transition-colors placeholder:text-faint hover:border-scribe-strong focus:w-56"
+                /* w-44 cut the placeholder off mid-word at every width. */
+                className="w-52 border border-scribe bg-anvil-lit py-1.5 pr-2 pl-8 text-[13px] text-chalk transition-colors placeholder:text-faint hover:border-scribe-strong focus:w-64"
               />
             </div>
             <Button
@@ -184,9 +185,11 @@ export default function JsonViewer() {
         {value === undefined ? (
           <div className="grid h-full place-items-center p-6 text-center">
             <p className="max-w-xs text-sm leading-relaxed text-temper">
+              {/* Named panels rather than sides: below lg the two stack, and
+                  "on the left" then points at nothing. */}
               {error
-                ? 'Fix the syntax error on the left and the tree will appear here.'
-                : 'The tree appears here as soon as there is valid JSON on the left.'}
+                ? 'Fix the syntax error in the Source panel and the tree will appear here.'
+                : 'The tree appears here as soon as the Source panel holds valid JSON.'}
             </p>
           </div>
         ) : (

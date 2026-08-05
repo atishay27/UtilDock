@@ -171,6 +171,12 @@ export default function JsonDiff() {
           </>
         }
         tall={!showEditors}
+        /* Nothing to compare yet: the panel keeps only enough height to hold
+           its own sentence. It used to reserve 54vh of empty anvil under two
+           empty editors, which on a stacked layout is most of a second screen
+           of nothing. Height is claimed the moment both sides have text, so it
+           settles once rather than jumping on every keystroke. */
+        idle={!left.trim() || !right.trim()}
       />
     </div>
   );
@@ -199,9 +205,10 @@ interface DiffPanelProps {
   header: React.ReactNode;
   strikeKey: string;
   tall: boolean;
+  idle: boolean;
 }
 
-function DiffPanel({ left, right, result, sideError, header, strikeKey, tall }: DiffPanelProps) {
+function DiffPanel({ left, right, result, sideError, header, strikeKey, tall, idle }: DiffPanelProps) {
   const [unified, setUnified] = useState(false);
   const [showUnchanged, setShowUnchanged] = useState(false);
   const [openFolds, setOpenFolds] = useState<Set<number>>(() => new Set());
@@ -297,7 +304,13 @@ function DiffPanel({ left, right, result, sideError, header, strikeKey, tall }: 
     <Panel
       title="Comparison"
       strikeKey={strikeKey}
-      className={tall ? 'h-[calc(100vh-17rem)] min-h-[420px]' : 'h-[54vh] min-h-[360px]'}
+      className={
+        idle
+          ? 'min-h-[180px]'
+          : tall
+            ? 'h-[calc(100vh-17rem)] min-h-[420px]'
+            : 'h-[54vh] min-h-[360px]'
+      }
       actions={
         <>
           {hasChanges && (
