@@ -33,16 +33,24 @@ growth or traffic targets. Quality and longevity outrank reach.
 
 ## Positioning
 
-Competitors *claim* client-side processing. UtilDock is architecturally incapable of doing anything
-else, and can prove it three ways a security reviewer accepts:
+Competitors *claim* client-side processing. UtilDock can prove it three ways a security reviewer
+accepts:
 
-- there is no backend to receive data;
-- the shipped Content-Security-Policy (`default-src 'self'`, `connect-src 'self'`) makes an
-  outbound request impossible even from a compromised dependency;
+- there is no backend to receive a document;
+- the shipped Content-Security-Policy is an allowlist. `default-src 'self'`, and the only other
+  origins named anywhere in it are Google's analytics hosts. A compromised dependency has nowhere
+  to send anything it has not already been granted;
 - the whole site works with the network disconnected, which no server-backed tool can fake.
 
 The differentiator is verifiability, not the claim. Anyone can assert "your data never leaves your
-browser"; the value here is that a skeptical reviewer can check it in under a minute.
+browser"; the value here is that a skeptical reviewer can check it in under a minute — open the
+Network panel, use a tool, and watch what is and is not sent.
+
+**Be precise about what the CSP now does.** It once read `connect-src 'self'` alone, which made
+exfiltration of a pasted document *impossible*. It now makes it *blocked for every origin not
+named*, and the guarantee that no analytics event carries a document is held by how the tools are
+written rather than by a rule the browser enforces on our behalf. That is a real reduction and the
+positioning must not overstate it.
 
 ## Operating Context
 
@@ -79,20 +87,54 @@ Confirmed as never-break, not launch stances:
 - **Never ads.** This rules out the funding model every competitor uses.
 - **Never accounts or sign-up.** No login, no user records, nothing to breach — which also rules
   out sync, saved workspaces, and team features.
-- **No third-party requests of any kind.** No CDN, no hosted fonts, no embeds. The CSP stays strict
-  enough that exfiltration is impossible.
-- **No analytics script, of any kind, including cookieless ones.** Traffic questions are answered
-  from the host's own request logs, which exist because the files must be served at all. Nothing
-  additional runs in the visitor's page. If measurement is ever needed it must be first-party and
-  disclosed on `/privacy` before it ships.
+- **Never a request that carries the visitor's document.** No tool reads an editor buffer into a
+  request, to any origin, for any reason. This is the commitment the whole product rests on, and it
+  is the one that cannot be traded away. It is narrower than "nothing leaves the browser" — say the
+  narrow thing, because the narrow thing is the one that is true.
+- **No CDN, no hosted fonts, no embeds.** Every font, icon, style and image is served from this
+  origin. The single third-party script on the site is the analytics container below, and it is not
+  requested at all without consent.
+
+### Analytics
+
+**The site runs Google Analytics 4, delivered through a Google Tag Manager container, gated behind
+consent.** This is current, deployed behaviour, not a plan. It exists for one purpose: to know
+which tools are actually used, so effort goes where it matters. It is not a growth-measurement
+programme and there are still no traffic targets.
+
+How it is constrained, all of it load-bearing:
+
+- **Nothing is requested from Google until the visitor consents.** This is stricter than standard
+  Consent Mode, which still pings Google on every page load while denied. Here the container is not
+  injected at all until a decision is stored, so declining — or ignoring the banner entirely —
+  leaves the site as same-origin as it was before analytics existed.
+- **Advertising signals are denied unconditionally** and are never raised by the consent flow, so a
+  tag added later in the GTM console cannot switch remarketing on.
+- **The CSP stays an allowlist.** Google's hosts are named explicitly; anything else added through
+  the GTM console is blocked by the browser without a commit to this repository.
+- **No analytics event carries document content.** Page views and standard web analytics only.
+
+Two rules for anyone changing this:
+
+1. **Any new origin must clear the same bar**, and `/privacy` must change in the same commit. That
+   page describes the mechanism precisely and goes stale dangerously.
+2. **The privacy page follows the build.** Its analytics section and its consent control render
+   from `ANALYTICS_ENABLED`, so a build without the container describes a site without analytics
+   rather than describing one that is not there.
+
+This section previously read *"No analytics script, of any kind, including cookieless ones."* That
+commitment was broken deliberately, and the record of it is kept here rather than quietly deleted.
 
 ### Required for the primary audience
 
-- Fully offline operation (already true).
+- Fully offline operation for the tools themselves (already true; analytics failing changes
+  nothing about whether a tool works).
 - A plainly worded page stating what is stored, what is transmitted, and what the CSP forbids —
-  something a developer can forward to a security team. `/privacy` is a first pass at this.
-- **Publicly inspectable source.** Not yet met: the repository is local-only with no remote. Until
-  it is public, the "verify it yourself" position is weaker than the product claims.
+  something a developer can forward to a security team. `/privacy` does this.
+- **Publicly inspectable source.** Met: the repository is public at
+  `github.com/atishay27/UtilDock`. Nothing on the site should be linking to it yet, which is a gap
+  worth closing — the "verify it yourself" position is weaker while the source is public but
+  unfindable from the product.
 
 ### Open decisions — record, do not invent
 
@@ -110,9 +152,11 @@ Confirmed as never-break, not launch stances:
 
 ## Evidence on Hand
 
-Pre-launch. Nothing is deployed, there are no users, no traffic, no testimonials, no press, and no
-benchmarks. **Future work must not fabricate any of these** — no invented user counts, no "trusted
-by" claims, no fictional reviews.
+Live at `https://utildock.dev`, but with no audience yet: there are no testimonials, no press, no
+reviews, and no traffic figures worth citing. Analytics has only just been switched on, and a
+number it produces is not evidence of anything until there is a meaningful amount of it.
+**Future work must not fabricate any of these** — no invented user counts, no "trusted by" claims,
+no fictional reviews, and no traffic numbers pulled from the GA4 property to dress up a page.
 
 What genuinely exists and can be shown:
 
@@ -121,7 +165,7 @@ What genuinely exists and can be shown:
   worst main-thread stall of 106 ms; the tree viewer renders 34 DOM nodes for 144,003 expanded rows.
   These are real and citable.
 - Generated brand assets in `public/` (icons, OG card), reproducible via `npm run assets`.
-- Two local commits; no public repository yet.
+- A public repository at `github.com/atishay27/UtilDock`.
 
 ## Product Principles
 
