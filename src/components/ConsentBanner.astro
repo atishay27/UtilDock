@@ -1,0 +1,125 @@
+---
+/**
+ * Shown only to a visitor who has not answered yet. Deliberately non-modal:
+ * nothing on this site is gated behind the decision, so the banner does not
+ * trap focus, does not dim the page and does not block a tool. Declining and
+ * ignoring it produce the same result — no request to Google, ever.
+ *
+ * The footer's "Analytics" button reopens it via [data-consent-open].
+ */
+import { ANALYTICS_ENABLED } from '../lib/analytics';
+---
+
+{
+  ANALYTICS_ENABLED && (
+    <section
+      id="consent-banner"
+      class="ud-consent fixed inset-x-0 bottom-0 z-40"
+      aria-label="Analytics consent"
+      hidden
+    >
+      <div class="ud-billet h-[3px]" />
+      <div class="border-t border-scribe bg-anvil shadow-[var(--fg-shadow)]">
+        <div class="mx-auto flex max-w-[1600px] flex-col gap-5 px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+          <div class="max-w-2xl">
+            <h2 class="ud-struck text-xl text-chalk sm:text-2xl">Cookies</h2>
+            <p class="mt-2 text-sm leading-relaxed text-temper">
+              We would like to use Google Analytics to count page views, so we know which tools to
+              improve. Nothing you paste is ever included — your JSON never leaves this tab either
+              way.{' '}
+              <a
+                href="/privacy#analytics"
+                class="text-chalk underline decoration-scribe-strong underline-offset-4 transition-colors hover:text-cherry"
+              >
+                Privacy Policy
+              </a>
+              .
+            </p>
+          </div>
+
+          <div class="flex shrink-0 flex-wrap items-center gap-3">
+            <button
+              type="button"
+              data-consent="granted"
+              class="ud-struck bg-cherry px-5 py-2.5 text-lg text-on-cherry transition-opacity hover:opacity-85"
+            >
+              Allow analytics
+            </button>
+            <button
+              type="button"
+              data-consent="denied"
+              class="ud-struck border-2 border-scribe-strong px-5 py-2.5 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
+            >
+              No thanks
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+{
+  ANALYTICS_ENABLED && (
+    <script is:inline>
+      (function () {
+        var banner = document.getElementById('consent-banner');
+        if (!banner) return;
+
+        function open() {
+          banner.hidden = false;
+          /* display:none cancels the transition, so the class that animates it
+             waits for a frame in which the element is already laid out. */
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              banner.classList.add('is-open');
+            });
+          });
+        }
+
+        function close() {
+          banner.classList.remove('is-open');
+          var done = function () {
+            banner.hidden = true;
+            banner.removeEventListener('transitionend', done);
+          };
+          banner.addEventListener('transitionend', done);
+          /* Reduced motion skips the transition, so nothing would fire. */
+          setTimeout(done, 400);
+        }
+
+        document.addEventListener('click', function (event) {
+          var choice = event.target.closest('[data-consent]');
+          if (choice) {
+            window.utildock.setConsent(choice.getAttribute('data-consent'));
+            close();
+            return;
+          }
+          if (event.target.closest('[data-consent-open]')) {
+            event.preventDefault();
+            open();
+          }
+        });
+
+        if (!window.utildock || !window.utildock.consent) open();
+      })();
+    </script>
+  )
+}
+
+<style>
+  .ud-consent {
+    transform: translateY(100%);
+    transition: transform 280ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  .ud-consent.is-open {
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ud-consent {
+      transition: none;
+    }
+  }
+</style>

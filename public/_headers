@@ -1,7 +1,15 @@
 /*
-  # Everything the site needs is same-origin, so the policy can simply forbid
-  # outbound connections. This is the mechanism behind the privacy promise:
-  # even a compromised dependency could not post your JSON anywhere.
+  # The site is same-origin apart from one deliberate exception: the Google Tag
+  # Manager container, which loads only after a visitor grants consent (see
+  # src/components/Analytics.astro — gtm.js is not injected before that).
+  #
+  # Read this before relaxing anything further. connect-src used to be 'self'
+  # alone, which made exfiltration of a pasted document impossible rather than
+  # merely unintended. With Google's endpoints allowed, that property now rests
+  # on no code path reading the editor buffer into a request — a design
+  # commitment rather than something the browser enforces for us. Every origin
+  # added here widens the same hole. The bar for the next one: it ships nothing
+  # without consent, and there is no first-party way to get the same answer.
   #
   # script-src carries no 'unsafe-inline'. The token below is replaced at build
   # time by scripts/csp-hashes.mjs with one SHA-256 per inline script actually in
@@ -15,10 +23,24 @@
   # external URL, and default-src, img-src, font-src and connect-src are all
   # 'self', so there is nowhere for it to fetch from.
   #
-  # Do not add a host to script-src or connect-src to accommodate an analytics
-  # or monitoring product. Every allowed origin is a route data could leave by,
-  # and that is precisely what this policy exists to prevent.
-  Content-Security-Policy: default-src 'self'; script-src 'self' {{SCRIPT_HASHES}}; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  # The Google hosts below are scoped as tightly as GTM and GA4 permit:
+  # googletagmanager for the container and the tag, google-analytics and
+  # analytics.google for the regional collection endpoints GA4 picks at runtime,
+  # and an img-src entry for the pixel it falls back to when fetch is
+  # unavailable. No advertising host is listed, and none should be — ad_storage
+  # is denied unconditionally in the Consent Mode defaults.
+  #
+  # This list is also the guard on the GTM console. A container can load any
+  # vendor its tags name, so anyone with console access could otherwise add a
+  # third party to every page without a commit. Because only Google's own hosts
+  # are allowed here, such a tag is blocked by the browser until this file is
+  # edited and reviewed. Treat a CSP violation from a new tag as the control
+  # working, not as a bug to silence.
+  #
+  # frame-src is intentionally absent, so default-src 'self' blocks the GTM
+  # <noscript> iframe. That snippet is not shipped either; see the note in
+  # src/components/Analytics.astro for why.
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com {{SCRIPT_HASHES}}; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; font-src 'self'; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   # Redundant with frame-ancestors above, which wins wherever both are read.
   # Kept for browsers predating CSP Level 2, and because scanners score it.
   X-Frame-Options: DENY

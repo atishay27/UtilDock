@@ -1,6 +1,7 @@
 ---
 import { CATEGORIES, TOOLS } from '../lib/tools';
 import { SITE } from '../lib/site';
+import { ANALYTICS_ENABLED } from '../lib/analytics';
 import Logo from './Logo.astro';
 
 const year = new Date().getFullYear();
@@ -59,6 +60,14 @@ const year = new Date().getFullYear();
       <nav class="flex gap-6" aria-label="Site">
         <a href="/about" class="transition-colors hover:text-chalk">About</a>
         <a href="/privacy" class="transition-colors hover:text-chalk">Privacy</a>
+        {/* Reopens the consent choice; the banner script owns the click. */}
+        {
+          ANALYTICS_ENABLED && (
+            <button type="button" data-consent-open class="transition-colors hover:text-chalk">
+              Analytics
+            </button>
+          )
+        }
       </nav>
     </div>
   </div>

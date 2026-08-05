@@ -3,7 +3,7 @@ export const SITE = {
   tagline: 'Your dock for developer utilities.',
   url: 'https://utildock.dev',
   description:
-    'Free, ad-free developer utilities that run entirely in your browser: JSON viewer, validator, diff and formatter. No uploads, no accounts, no tracking.',
+    'Free, ad-free developer utilities that run entirely in your browser: JSON viewer, validator, diff and formatter. No uploads, no accounts, no ads.',
 } as const;
 
 /**
@@ -17,12 +17,8 @@ export function absoluteUrl(path: string): string {
 }
 
 /**
- * There is deliberately no analytics configuration here. Every hosted product,
- * cookieless ones included, loads a script from another origin and beacons back
- * to it — which would mean adding a host to the CSP in `public/_headers` and
- * giving up the guarantee the site is built on. Traffic questions are answered
- * from Cloudflare's own request logs instead.
- *
- * If measurement is ever needed it must be first-party, same-origin, and
- * disclosed on /privacy before it ships.
+ * Analytics configuration lives in `./analytics.ts`, not here. Read the note at
+ * the top of that file before changing anything about it: measurement is opt-in
+ * and loads no third-party code until a visitor grants it, and the disclosure
+ * on /privacy is written to match that exactly. The two have to move together.
  */

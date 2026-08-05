@@ -82,7 +82,7 @@ export const TOOLS: Tool[] = [
     faqs: [
       {
         q: 'Is it safe to paste production data into this JSON viewer?',
-        a: 'Yes. The document never leaves your browser. There is no upload, no server-side parsing and no request that carries your data — you can disconnect from the network and the viewer still works. Open your browser’s Network panel while you use it and you will see nothing sent.',
+        a: 'Yes. The document never leaves your browser. There is no upload, no server-side parsing and no request that carries your data — you can disconnect from the network and the viewer still works. Open your browser’s Network panel while you use it and you will see nothing from the editor sent anywhere.',
       },
       {
         q: 'How large a JSON file can it open?',

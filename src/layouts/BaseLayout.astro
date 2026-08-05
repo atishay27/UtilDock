@@ -3,6 +3,8 @@ import '../styles/global.css';
 import { SITE } from '../lib/site';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Analytics from '../components/Analytics.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
 
 interface Props {
   title: string;
@@ -92,6 +94,8 @@ const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
       })();
     </script>
 
+    <Analytics />
+
     {
       structuredData && (
         <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
@@ -111,6 +115,7 @@ const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
       <slot />
     </main>
     <Footer />
+    <ConsentBanner />
 
     <script is:inline>
       if ('serviceWorker' in navigator && location.hostname !== 'localhost') {

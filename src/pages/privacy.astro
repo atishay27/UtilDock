@@ -11,20 +11,15 @@ const updated = 'August 2026';
   description="UtilDock runs entirely in your browser. No document you paste ever leaves your device — there is no server that could receive it."
 >
   <article class="ud-prose mx-auto max-w-2xl px-4 py-14 sm:px-6">
-    <h1 class="text-[clamp(1.9rem,4.5vw,3rem)] text-chalk">Privacy</h1>
+    <h1 class="text-[clamp(1.9rem,4.5vw,3rem)] text-chalk">Privacy Policy</h1>
     <p class="mt-2 text-sm text-faint">Last updated {updated}</p>
 
-    <div
-      class="mt-8 flex items-start gap-3 border border-sound/30 bg-sound/8 p-4 sm:p-5"
-    >
+    <div class="mt-8 flex items-start gap-3 border border-sound/30 bg-sound/8 p-4 sm:p-5">
       <Icon name="lock" size={19} class="mt-0.5 shrink-0 text-sound" />
       <p class="text-sm leading-relaxed text-chalk">
         <strong class="font-semibold">Nothing you paste into {SITE.name} ever leaves your browser.</strong
-        > Every tool is JavaScript running in your own tab. Your JSON never leaves your device, is
-        never uploaded, and is never seen by us — there is no server that could receive it. The one
-        thing kept between visits is kept <em class="not-italic underline decoration-scribe-strong underline-offset-4"
-          >on your machine</em
-        >, and is described below.
+        > Every tool is JavaScript running in your own tab. Your JSON is never uploaded, never stored
+        on a server, and never seen by us — there is no server of ours that could receive it.
       </p>
     </div>
 
@@ -34,127 +29,133 @@ const updated = 'August 2026';
         <p class="mt-3">
           {SITE.name} is a static website. When you open a tool, your browser downloads some HTML,
           CSS and JavaScript, and everything after that happens locally. Parsing, formatting,
-          validating and comparing all run inside a Web Worker in your tab. Opening a file with the <strong
+          validating and comparing all run inside your tab. Opening a file with the <strong
             class="font-medium text-chalk">Load</strong
           > button — or dropping one onto the page — reads it from your disk into memory; it is not an
           upload.
         </p>
+        <p class="mt-3">
+          Because there is no backend, the content you work with is never transmitted, logged or
+          retained anywhere. You can disconnect from the internet and the tools keep working.
+        </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-chalk">What is stored on your device</h2>
+        <h2 class="text-lg font-semibold text-chalk">Information stored on your device</h2>
         <p class="mt-3">
           So that a refresh does not lose your work, each tool saves its current input to your
           browser's <code class="bg-anvil-lit px-1 py-0.5 font-mono text-xs">localStorage</code>,
           along with your theme choice and a few preferences such as indent size. This data stays on
-          your device, is readable only by {SITE.name} in your browser, and is never transmitted
-          anywhere. Clearing your browser's site data for this domain removes all of it.
+          your device, is readable only by {SITE.name} in your browser, and is never transmitted to
+          us. Clearing your browser's site data for this domain removes all of it.
+        </p>
+      </section>
+
+      <section id="analytics" class="scroll-mt-24">
+        <h2 class="text-lg font-semibold text-chalk">Analytics and cookies</h2>
+        <p class="mt-3">
+          With your consent, we use Google Analytics to understand how the site is used — which
+          pages are visited and how often — so we know which tools are worth improving. It is loaded
+          through a Google Tag Manager container, and it does not run until you allow it. If you
+          decline, no analytics cookies are set and no data is collected.
+        </p>
+        <p class="mt-3">
+          When enabled, Google Analytics collects standard web analytics data: pages viewed,
+          approximate location derived from your IP address, referring website, and general device
+          and browser information. It sets cookies named <code
+            class="bg-anvil-lit px-1 py-0.5 font-mono text-xs">_ga</code
+          > and <code class="bg-anvil-lit px-1 py-0.5 font-mono text-xs">_ga_*</code> to recognise returning
+          visitors. This processing is described in <a
+            href="https://policies.google.com/privacy"
+            rel="noopener noreferrer"
+            class="text-cherry underline underline-offset-4">Google's privacy policy</a
+          >.
+        </p>
+        <p class="mt-3">
+          <strong class="font-medium text-chalk"
+            >Analytics never receives the content you work with.</strong
+          > Your JSON is not included in any analytics event. We have also disabled Google's advertising
+          features, so your visit is not used for remarketing, ad personalisation or audience building.
+        </p>
+        <p class="mt-3">
+          We do not sell your data, and we do not use advertising networks, social media widgets,
+          session recording or fingerprinting.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-chalk">Cookies, tracking and analytics</h2>
+        <h2 class="text-lg font-semibold text-chalk">Your choices</h2>
         <p class="mt-3">
-          {SITE.name} sets no cookies, runs no advertising, and embeds no third-party trackers,
-          social widgets, or hosted fonts. There is no account system, so there is nothing to sign up
-          for and no profile to build. You will never see a consent banner here, because there is
-          nothing to consent to.
+          You can change your analytics preference at any time using the <button
+            type="button"
+            data-consent-open
+            class="text-cherry underline underline-offset-4 hover:no-underline">Analytics</button
+          > link in the footer of any page. Declining stops analytics from loading on every subsequent
+          page. Clearing your browser's site data for this domain also removes any cookies already set.
         </p>
         <p class="mt-3">
-          That includes analytics. We run no analytics product, and nothing in this site's source
-          code loads one. There is one exception we do not fully control, and rather than leave you
-          to find it in the page source, it is described in full below.
+          Every tool on this site works identically whether you accept analytics or not. Nothing is
+          gated behind the choice.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-chalk">Our host, Cloudflare</h2>
+        <h2 class="text-lg font-semibold text-chalk">Hosting</h2>
         <p class="mt-3">
-          {SITE.name} is a set of static files served by Cloudflare Pages. Like any web host,
-          Cloudflare processes the network requests needed to deliver a page and may retain limited
-          technical data — IP address, user agent, timestamps — for security and abuse prevention,
-          governed by <a
+          {SITE.name} is served by Cloudflare Pages. Like any web host, Cloudflare processes the
+          network requests needed to deliver a page and may retain limited technical data — IP
+          address, user agent, timestamps — for security and abuse prevention, governed by <a
             href="https://www.cloudflare.com/privacypolicy/"
             rel="noopener noreferrer"
-            class="text-cherry underline underline-offset-4">Cloudflare's own privacy policy</a
+            class="text-cherry underline underline-offset-4">Cloudflare's privacy policy</a
           >. That covers requests for the site's own files. What you paste into a tool is never part
           of any request, so it is never in any log.
         </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-chalk">Security</h2>
         <p class="mt-3">
-          Cloudflare also injects a small analytics script into the HTML of sites it serves, pointing
-          at <code class="bg-anvil-lit px-1 py-0.5 font-mono text-xs">static.cloudflareinsights.com</code
-          >. It is not in our source code and we did not put it there; it is added at Cloudflare's
-          edge as the page is delivered. Taken on its own it is a mild thing — no cookies, no
-          fingerprinting, no cross-site profile, and no sale of data — but it is still a request to
-          somebody else's server, and this site's whole claim is that there are none.
+          The site is served over HTTPS with a strict Content-Security-Policy that restricts which
+          origins may load code or receive data. This is what keeps the privacy commitment above a
+          property of how the site is built, rather than a promise you simply have to take on trust.
+          You are welcome to verify it: open your browser's developer tools, use any tool on the
+          site, and inspect the requests.
         </p>
         <p class="mt-3">
-          <strong class="font-semibold text-chalk">So the browser refuses to run it.</strong> The
-          Content-Security-Policy described below forbids loading scripts from any origin but this
-          one, and your browser enforces that before a single byte is fetched. The script is present
-          in the markup and never executes; no analytics data about your visit reaches Cloudflare or
-          anyone else. You can confirm it in seconds — see below.
+          Security issues can be reported to <a
+            href="mailto:security@utildock.dev"
+            class="text-cherry underline underline-offset-4">security@utildock.dev</a
+          >, or see our <a
+            href="/.well-known/security.txt"
+            class="text-cherry underline underline-offset-4">security.txt</a
+          >.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-chalk">The Content-Security-Policy</h2>
+        <h2 class="text-lg font-semibold text-chalk">Children's privacy</h2>
         <p class="mt-3">
-          A Content-Security-Policy is a header a site sends to instruct your browser about what that
-          page is allowed to do. Unlike a privacy promise, it is not a statement of intent — it is a
-          rule your browser enforces on our behalf, whether we like it or not.
-        </p>
-        <p class="mt-3">Ours says, in effect:</p>
-        <ul class="mt-3 space-y-2 pl-5">
-          <li class="list-disc">
-            <strong class="font-medium text-chalk">Load nothing from anywhere else.</strong> Scripts,
-            styles, fonts and images may come only from this domain. No CDN, no hosted font, no
-            embedded widget — and no analytics beacon.
-          </li>
-          <li class="list-disc">
-            <strong class="font-medium text-chalk">Send nothing anywhere else.</strong> The page
-            cannot open a connection to any other server. This is the important one: even if a
-            dependency we rely on were compromised tomorrow, it would have nowhere to send your data.
-          </li>
-          <li class="list-disc">
-            <strong class="font-medium text-chalk">Run no generated code.</strong> The policy omits <code
-              class="bg-anvil-lit px-1 py-0.5 font-mono text-xs">unsafe-eval</code
-            >, so nothing on the page can build and execute new code at runtime. This shaped the tools themselves: our
-            JSON Schema validator interprets schemas rather than compiling them, because the
-            compiling kind could not run here.
-          </li>
-          <li class="list-disc">
-            <strong class="font-medium text-chalk">Submit no forms, and load in no frames.</strong
-            > There is nowhere for data to be posted, and the site cannot be embedded and dressed up
-            as something else.
-          </li>
-        </ul>
-        <p class="mt-3">
-          This is why the privacy claim on this page is a description of a mechanism rather than a
-          policy you have to trust us to keep.
+          {SITE.name} is a developer tool and is not directed at children. We do not knowingly
+          collect personal information from anyone, including children under 13.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-chalk">Verifying this yourself</h2>
+        <h2 class="text-lg font-semibold text-chalk">Changes to this policy</h2>
         <p class="mt-3">
-          You do not have to take our word for any of it. Open your browser's developer tools, switch
-          to the Network tab, and use any tool on this site: every request goes to this domain. The
-          one exception is the Cloudflare beacon described above, which you will see listed as
-          blocked, with nothing transferred — the Console tab names the policy that stopped it.
-        </p>
-        <p class="mt-3">
-          The stronger test takes ten seconds: load any tool, disconnect from the internet, and keep
-          working. Paste a document, format it, compare it. It all still runs, because there was
-          never anything to send.
+          If this policy changes, the date at the top of this page changes with it. The commitment
+          that the data you paste stays in your browser is not something we intend to revisit.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-chalk">Changes</h2>
+        <h2 class="text-lg font-semibold text-chalk">Contact</h2>
         <p class="mt-3">
-          If this policy ever changes, the date at the top of this page changes with it. The
-          commitment that your data stays in your browser is not something we intend to revisit.
+          Questions about this policy can go to <a
+            href="mailto:security@utildock.dev"
+            class="text-cherry underline underline-offset-4">security@utildock.dev</a
+          >.
         </p>
       </section>
     </div>

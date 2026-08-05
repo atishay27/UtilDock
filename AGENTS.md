@@ -31,9 +31,17 @@ component file, restart the dev server** or its classes will silently not be gen
 
 ## The rule that shapes everything
 
-No user data leaves the browser. There is no backend, no analytics by default, no third-party
-script, no web font fetch. `public/_headers` enforces this with a CSP whose `default-src 'self'`
-and `connect-src 'self'` make exfiltration impossible even from a compromised dependency.
+No user *document* leaves the browser. There is no backend, no web font fetch, and the only
+third-party script is a Google Tag Manager container that is not loaded until a visitor grants
+consent. `public/_headers` allows Google's hosts and nothing else, so `connect-src` is an
+allowlist of two: this origin, and analytics.
+
+This is weaker than it once was, and the weakening is deliberate — read the comment block in
+`public/_headers` and the header of `src/lib/analytics.ts` before touching either. The short
+version: the CSP used to make exfiltration *impossible*; it now makes it *blocked for every
+origin we have not named*, and "your document never leaves" is held by the code rather than by
+the browser. Any new origin must clear a high bar, and `/privacy` must change in the same commit —
+that page describes the mechanism precisely, and goes stale dangerously.
 
 Two consequences worth knowing before changing a dependency:
 

@@ -5,6 +5,12 @@
 # integrity of what we serve, not data we hold. We hold none — every tool runs
 # in the visitor's own tab and no document they paste is ever transmitted.
 #
+# One third party is loaded, and only after the visitor consents: a Google Tag
+# Manager container carrying a GA4 page-view tag. The CSP names Google's hosts
+# and no others, so a tag added in that console pointing elsewhere is blocked by
+# the browser rather than silently shipped. Reports that defeat either the
+# consent gate or that allowlist are in scope and wanted.
+#
 # The reports we most want to receive, in order:
 #
 #   1. Anything that gets a visitor's document off their machine — a dependency

@@ -1,0 +1,111 @@
+---
+/**
+ * Queues the Consent Mode defaults and, only once consent is stored, injects
+ * the container. Renders nothing when no ID is configured, which is the local
+ * and preview case.
+ *
+ * Lives in <head> so the defaults are in dataLayer before any Google code could
+ * read them, so `window.utildock.consent` is readable by the time the banner
+ * script runs, and so a returning visitor who already granted starts measuring
+ * without waiting for the body to parse.
+ *
+ * The official GTM snippet is deliberately not pasted verbatim. Google's copy
+ * runs on parse; this one runs on consent. Everything else about it — the
+ * gtm.start timing push, the async insert — is the same.
+ *
+ * The snippet's companion <noscript> iframe is also omitted, and that is not an
+ * oversight. It fires unconditionally, which is precisely what a JavaScript
+ * consent gate cannot govern: a visitor with JS disabled would be measured
+ * without having been asked, contradicting the banner and the /privacy text. It
+ * would also need frame-src added to the CSP. What it buys is page views from
+ * JS-disabled browsers, on a site whose tools do not run without JavaScript.
+ */
+import { GTM_ID, GA_ID, LOADER, CONSENT_KEY, ANALYTICS_ENABLED } from '../lib/analytics';
+---
+
+{
+  ANALYTICS_ENABLED && (
+    <script
+      is:inline
+      define:vars={{ loader: LOADER, gtmId: GTM_ID, gaId: GA_ID, consentKey: CONSENT_KEY }}
+    >
+      (function () {
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          window.dataLayer.push(arguments);
+        }
+        window.gtag = gtag;
+
+        /* Denied here and never updated anywhere. A tag added in the GTM
+           console cannot raise these; the consent flow only touches
+           analytics_storage. */
+        gtag('consent', 'default', {
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+          analytics_storage: 'denied',
+        });
+
+        function inject(src) {
+          var script = document.createElement('script');
+          script.async = true;
+          script.src = src;
+          document.head.appendChild(script);
+        }
+
+        var loaded = false;
+        function load() {
+          if (loaded) return;
+          loaded = true;
+
+          if (loader === 'gtm') {
+            window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+            inject('https://www.googletagmanager.com/gtm.js?id=' + gtmId);
+            return;
+          }
+
+          inject('https://www.googletagmanager.com/gtag/js?id=' + gaId);
+          gtag('js', new Date());
+          gtag('config', gaId, {
+            anonymize_ip: true,
+            allow_google_signals: false,
+            allow_ad_personalization_signals: false,
+          });
+        }
+
+        function stored() {
+          try {
+            return localStorage.getItem(consentKey);
+          } catch (e) {
+            /* Storage blocked: treat as undecided and never load. */
+            return null;
+          }
+        }
+
+        /* The only path to a network request in this file. */
+        function apply(state) {
+          if (state !== 'granted') return;
+          gtag('consent', 'update', { analytics_storage: 'granted' });
+          load();
+        }
+
+        var api = (window.utildock = window.utildock || {});
+        api.consent = stored();
+        api.setConsent = function (state) {
+          var value = state === 'granted' ? 'granted' : 'denied';
+          try {
+            localStorage.setItem(consentKey, value);
+          } catch (e) {
+            /* A visitor who cannot store a decision is left undecided, which
+               means unmeasured. That is the safe direction to fail in. */
+          }
+          api.consent = value;
+          apply(value);
+          document.dispatchEvent(new CustomEvent('utildock:consent', { detail: value }));
+        };
+
+        apply(api.consent);
+      })();
+    </script>
+  )
+}
