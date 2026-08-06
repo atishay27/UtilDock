@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import { lastmodLookup } from './scripts/content-dates.mjs';
 
 /**
  * Kept in step with `src/lib/i18n/locales.ts` by hand, because this file is
@@ -36,6 +37,18 @@ function rootPath(pathname) {
   return PREFIXES.includes(first) ? `/${rest.join('/')}` : trimmed || '/';
 }
 
+/**
+ * `/es/json/diff/` → `es`. Anything unprefixed is English, which lives at the root.
+ * @param {string} pathname
+ */
+function localeOf(pathname) {
+  const [, first] = pathname.split('/');
+  return PREFIXES.includes(first) ? first : 'en';
+}
+
+// Read once at config load, not once per URL — this shells out to git.
+const lastmodFor = lastmodLookup();
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://utildock.dev',
@@ -52,13 +65,18 @@ export default defineConfig({
     // /og is a render target for the share card, not a page anyone should land on.
     sitemap({
       filter: (page) => !page.includes('/og'),
-      lastmod: new Date(),
       changefreq: 'weekly',
       // Emits the xhtml:link alternates that pair with the <head> hreflang tags.
       i18n: { defaultLocale: 'en', locales: LOCALES },
       serialize(item) {
+        const { pathname } = new URL(item.url);
+        const path = rootPath(pathname);
+
+        // Dated from the page's own content, so a deploy that changes nothing
+        // does not claim every URL changed. Undefined omits the tag entirely.
+        item.lastmod = lastmodFor(path, localeOf(pathname));
+
         // The tools are the point of the site; the legal pages are not.
-        const path = rootPath(new URL(item.url).pathname);
         if (path === '/') item.priority = 1.0;
         else if (path === '/json') item.priority = 0.9;
         else if (path.startsWith('/json/')) item.priority = 0.8;
