@@ -7,6 +7,15 @@
  * label rather than a control, which is exactly how it was being read.
  */
 import Icon from './Icon.astro';
+import { t } from '../lib/i18n';
+import { DEFAULT_LOCALE, type Locale } from '../lib/i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const ui = t(locale);
 ---
 
 {/* The 44px hit area is the button; the 32px box is only what you see. */}
@@ -14,8 +23,10 @@ import Icon from './Icon.astro';
   id="theme-toggle"
   type="button"
   class="ud-legend group flex h-11 items-center text-temper transition-colors hover:text-chalk"
-  aria-label="Switch to light theme"
-  title="Switch theme"
+  aria-label={ui.theme.toLight}
+  title={ui.theme.title}
+  data-to-light={ui.theme.toLight}
+  data-to-dark={ui.theme.toDark}
 >
   {/*
     Sibling flex spans, not display:contents. The light variant used to resolve
@@ -27,22 +38,26 @@ import Icon from './Icon.astro';
     class="flex h-8 items-center gap-2 border border-scribe px-2.5 transition-colors group-hover:border-cherry [:root[data-theme=light]_&]:hidden"
   >
     <Icon name="sun" size={14} class="shrink-0 text-heat" />
-    <span class="hidden sm:inline">Light</span>
+    <span class="hidden sm:inline">{ui.theme.light}</span>
   </span>
   <span
     class="hidden h-8 items-center gap-2 border border-scribe px-2.5 transition-colors group-hover:border-cherry [:root[data-theme=light]_&]:flex"
   >
     <Icon name="moon" size={14} class="shrink-0 text-cherry" />
-    <span class="hidden sm:inline">Dark</span>
+    <span class="hidden sm:inline">{ui.theme.dark}</span>
   </span>
 </button>
 
 <script>
   const toggle = document.getElementById('theme-toggle');
 
+  /* The two labels ride on the button as data attributes: this is a bundled
+     module, so it cannot read a component prop, and hard-coding English here
+     would leave every translated page announcing the control in English. */
   function label() {
     const light = document.documentElement.dataset.theme === 'light';
-    toggle?.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+    const next = light ? toggle?.dataset.toDark : toggle?.dataset.toLight;
+    if (next) toggle?.setAttribute('aria-label', next);
   }
 
   label();

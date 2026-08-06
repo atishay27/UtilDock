@@ -1,0 +1,101 @@
+---
+/**
+ * The header's language control.
+ *
+ * It carries the same `[data-menu]` hooks as the category menus, so the script
+ * already in `Header.astro` drives it — same hover-intent delays, same caret,
+ * same "opening one closes the others". A second dropdown with its own
+ * behaviour would be a new thing to learn and a second thing to maintain.
+ *
+ * Geometry is ThemeToggle's, exactly: a 44px hit target holding a 32px bordered
+ * box. That makes this the third member of an existing set rather than a new
+ * kind of object in the bar.
+ *
+ * **No colour on the trigger.** DESIGN.md is unambiguous that colour reports a
+ * temperature, and a language is not a state. The one cherry mark is the edge
+ * on the active row inside the panel, which is the sanctioned "active nav" use
+ * and is drawn exactly as the category menus draw their current tool.
+ *
+ * Each entry is a real `<a>` to the current page in that language, so the
+ * visitor keeps their place instead of being dropped on another front door.
+ */
+import Icon from './Icon.astro';
+import { t } from '../lib/i18n';
+import { DEFAULT_LOCALE, LOCALES, LOCALE_IDS, localizedPath, rootPath, type Locale } from '../lib/i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const ui = t(locale);
+const here = rootPath(Astro.url.pathname);
+const current = LOCALES[locale];
+---
+
+<div class="ud-menu relative" data-menu>
+  <button
+    type="button"
+    data-menu-trigger
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-label={ui.footer.languageAria}
+    class="ud-legend group flex h-11 items-center text-temper transition-colors hover:text-chalk"
+  >
+    <span
+      class="flex h-8 items-center gap-1.5 border border-scribe px-2.5 transition-colors group-hover:border-cherry"
+    >
+      <span lang={current.hreflang}>{current.short}</span>
+      <Icon name="chevron-down" size={11} class="ud-menu-caret shrink-0 transition-transform" />
+    </span>
+  </button>
+
+  {/* Right-aligned: anchored left it would run off the viewport, since this
+      sits at the end of the bar. */}
+  <div
+    data-menu-panel
+    hidden
+    class="ud-menu-panel absolute top-full right-0 w-56 border-2 border-scribe-strong bg-anvil"
+  >
+    <p class="ud-legend border-b border-scribe bg-bench px-4 py-2.5 text-faint">
+      {ui.footer.language}
+    </p>
+
+    <ul>
+      {
+        LOCALE_IDS.map((id, index) => {
+          const meta = LOCALES[id];
+          const active = id === locale;
+          return (
+            <li>
+              <a
+                href={localizedPath(here, id)}
+                hreflang={meta.hreflang}
+                lang={meta.hreflang}
+                title={meta.english}
+                aria-current={active ? 'true' : undefined}
+                class:list={[
+                  'relative flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-anvil-lit',
+                  /* The divider trails each row except the last: the panel
+                     already draws a 2px edge, and a hairline landing on it read
+                     as a doubled line. The category menus escape this only
+                     because a trailing link covers the seam. */
+                  index < LOCALE_IDS.length - 1 && 'border-b border-scribe',
+                  /* anvil-lit alone is a 5-value lift in the light theme —
+                     invisible. The edge carries it instead. */
+                  active ? 'bg-bench text-chalk' : 'text-temper hover:text-chalk',
+                ]}
+              >
+                {active && <span class="absolute inset-y-0 left-0 w-[2px] bg-cherry" />}
+                {meta.native}
+                <span class:list={['ud-legend', active ? 'text-cherry' : 'text-faint']}>
+                  {meta.code}
+                </span>
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</div>

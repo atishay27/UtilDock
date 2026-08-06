@@ -1,0 +1,62 @@
+---
+/**
+ * Renders the three inline marks a dictionary string is allowed to carry.
+ *
+ * The values come from `src/lib/i18n/**`, which is where translation happens,
+ * so they are treated as data rather than as markup: every token below goes
+ * through an Astro expression and is escaped. Nothing here reaches `set:html`,
+ * which means a stray tag in a translated sentence renders as the characters
+ * someone typed instead of becoming part of the page.
+ *
+ * Links are relative-aware: a `[label](/privacy)` in a dictionary is written
+ * against the site root, and `href` is what puts it in the current locale.
+ */
+import { parseRich } from '../lib/i18n/format';
+import { href } from '../lib/i18n';
+import type { Locale } from '../lib/i18n/locales';
+
+interface Props {
+  text: string;
+  locale: Locale;
+  /** Class for `**bold**`. */
+  strong?: string;
+  /** Class for `[label](href)`. */
+  link?: string;
+}
+
+const {
+  text,
+  locale,
+  strong = 'font-medium text-chalk',
+  link = 'text-cherry underline underline-offset-4',
+} = Astro.props;
+
+const tokens = parseRich(text);
+
+/** Absolute, mail and anchor targets are left alone; site paths get a prefix. */
+function target(to: string): string {
+  return to.startsWith('/') && !to.startsWith('//') ? href(to, locale) : to;
+}
+
+const external = (to: string) => /^https?:/.test(to);
+---
+
+{
+  tokens.map((token) =>
+    token.t === 'strong' ? (
+      <strong class={strong}>{token.v}</strong>
+    ) : token.t === 'code' ? (
+      <code class="bg-anvil-lit px-1 py-0.5 font-mono text-xs">{token.v}</code>
+    ) : token.t === 'link' ? (
+      <a
+        href={target(token.href)}
+        class={link}
+        rel={external(token.href) ? 'noopener noreferrer' : undefined}
+      >
+        {token.v}
+      </a>
+    ) : (
+      token.v
+    ),
+  )
+}

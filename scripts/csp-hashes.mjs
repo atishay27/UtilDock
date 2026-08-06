@@ -26,7 +26,22 @@ async function htmlFiles(dir) {
   return out;
 }
 
-/** Every inline <script> body in the build, deduplicated. */
+/**
+ * Script types the browser never executes.
+ *
+ * A <script> whose type is not a JavaScript MIME type is a *data block*: the
+ * HTML spec abandons "prepare the script" before the CSP check is reached, so
+ * script-src does not apply to it and a hash for it buys nothing.
+ *
+ * Skipping them is not a micro-optimisation. Every one of these is JSON-LD, and
+ * JSON-LD is per page — it carries the tool's name and description, so it
+ * differs in every language. Hashing them made script-src grow by six entries
+ * per locale, which at eight locales is fifty-odd hashes shipped in a response
+ * header on every request, to permit code that never runs.
+ */
+const DATA_BLOCK = /\stype\s*=\s*["']?(application\/(ld\+)?json)["']?/i;
+
+/** Every executable inline <script> body in the build, deduplicated. */
 async function inlineScripts() {
   const bodies = new Set();
   for (const file of await htmlFiles(dist)) {
@@ -35,6 +50,7 @@ async function inlineScripts() {
       const [, attrs, body] = match;
       // Anything with a src is covered by 'self'; empty blocks need no hash.
       if (/\ssrc=/.test(attrs) || body.length === 0) continue;
+      if (DATA_BLOCK.test(attrs)) continue;
       bodies.add(body);
     }
   }

@@ -1,6 +1,8 @@
 ---
 import '../styles/global.css';
 import { SITE } from '../lib/site';
+import { alternates, defaultAlternate, t } from '../lib/i18n';
+import { DEFAULT_LOCALE, LOCALES, rootPath, type Locale } from '../lib/i18n/locales';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Analytics from '../components/Analytics.astro';
@@ -13,6 +15,7 @@ interface Props {
   keywords?: string[];
   structuredData?: unknown;
   noindex?: boolean;
+  locale?: Locale;
 }
 
 const {
@@ -22,7 +25,18 @@ const {
   keywords = [],
   structuredData,
   noindex = false,
+  locale = DEFAULT_LOCALE,
 } = Astro.props;
+
+const ui = t(locale);
+const meta = LOCALES[locale];
+
+/* The same page in every language, addressed from its unprefixed path. Emitted
+   on every locale including English, because hreflang is only honoured when the
+   set is reciprocal — a page that lists alternates but is not listed back by
+   them is dropped from the cluster entirely. */
+const root = rootPath(Astro.url.pathname);
+const localeAlternates = noindex ? [] : alternates(root);
 
 /* The sitemap emits directory URLs, so the canonical has to agree with it or the
    two disagree about which of /json/diff and /json/diff/ is the real page. */
@@ -35,7 +49,7 @@ const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
 ---
 
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang={meta.hreflang} data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -49,7 +63,7 @@ const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
     />
 
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content={meta.ogLocale} />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -68,6 +82,17 @@ const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {
+      localeAlternates.map((alternate) => (
+        <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
+      ))
+    }
+    {
+      localeAlternates.length > 0 && (
+        <link rel="alternate" hreflang="x-default" href={defaultAlternate(root)} />
+      )
+    }
     <meta id="theme-color" name="theme-color" content="#0a0a0c" />
 
     {/* Self-hosted; the display face carries the first viewport, so it leads. */}
@@ -108,14 +133,14 @@ const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:bg-cherry focus:px-4 focus:py-2 focus:font-semibold focus:text-on-cherry"
     >
-      Skip to content
+      {ui.chrome.skipToContent}
     </a>
-    <Header />
+    <Header locale={locale} />
     <main id="main" class="flex-1">
       <slot />
     </main>
-    <Footer />
-    <ConsentBanner />
+    <Footer locale={locale} />
+    <ConsentBanner locale={locale} />
 
     <script is:inline>
       if ('serviceWorker' in navigator && location.hostname !== 'localhost') {

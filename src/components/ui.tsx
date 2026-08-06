@@ -127,6 +127,8 @@ interface PanelProps {
   dropHandlers?: Partial<Record<string, unknown>>;
   /** Change this when an operation lands; the panel takes the blow. */
   strikeKey?: string | number;
+  /** Overlay shown while a file is dragged over the panel. */
+  dropLabel?: string;
   /**
    * Share row tracks with sibling panels so headers, bodies and footers align
    * even when one panel's controls wrap. Requires the parent to declare
@@ -145,6 +147,7 @@ export function Panel({
   highlighted = false,
   dropHandlers,
   strikeKey,
+  dropLabel,
   aligned = false,
 }: PanelProps) {
   const struck = useStrike(strikeKey);
@@ -179,9 +182,9 @@ export function Panel({
           />
         )}
         {children}
-        {highlighted && (
+        {highlighted && dropLabel && (
           <div className="ud-legend pointer-events-none absolute inset-0 grid place-items-center bg-ground/85 text-cherry">
-            Drop the stock here
+            {dropLabel}
           </div>
         )}
       </div>
@@ -232,14 +235,22 @@ export function Gauge({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
-export function FileButton({ onText }: { onText: (text: string, filename: string) => void }) {
+export function FileButton({
+  onText,
+  label,
+  title,
+}: {
+  onText: (text: string, filename: string) => void;
+  label: string;
+  title: string;
+}) {
   return (
     <label
       className="ud-legend inline-flex cursor-pointer items-center gap-1.5 border border-scribe-strong bg-anvil px-2.5 py-1.5 text-chalk transition-colors hover:border-cherry hover:text-cherry"
-      title="Read a local file — it is read on this machine, never uploaded"
+      title={title}
     >
       <Icon name="upload" size={14} strokeWidth={2} />
-      Load
+      {label}
       <input
         type="file"
         accept=".json,.jsonc,.txt,application/json,text/plain"
@@ -255,7 +266,19 @@ export function FileButton({ onText }: { onText: (text: string, filename: string
   );
 }
 
-export function CopyButton({ text, disabled }: { text: string; disabled?: boolean }) {
+export function CopyButton({
+  text,
+  disabled,
+  label,
+  copiedLabel,
+  title,
+}: {
+  text: string;
+  disabled?: boolean;
+  label: string;
+  copiedLabel: string;
+  title: string;
+}) {
   const { copy, copied } = useCopy();
   return (
     <Button
@@ -263,9 +286,9 @@ export function CopyButton({ text, disabled }: { text: string; disabled?: boolea
       onClick={() => void copy(text)}
       disabled={disabled || !text}
       className={copied ? 'text-sound' : ''}
-      title="Copy to clipboard"
+      title={title}
     >
-      {copied ? 'Copied' : 'Copy'}
+      {copied ? copiedLabel : label}
     </Button>
   );
 }

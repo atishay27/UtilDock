@@ -1,0 +1,15 @@
+---
+/* One page per non-default locale. English is not generated here — it owns the
+   unprefixed route, and emitting /en/… as well would publish two addresses for
+   the same page. */
+import Home from '../../components/pages/Home.astro';
+import { PREFIXED_LOCALES, type Locale } from '../../lib/i18n/locales';
+
+export function getStaticPaths() {
+  return PREFIXED_LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+---
+
+<Home locale={locale} />

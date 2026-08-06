@@ -9,21 +9,56 @@
  * Bump VERSION when any of that changes.
  */
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const ASSET_CACHE = `utildock-assets-${VERSION}`;
 const PAGE_CACHE = `utildock-pages-${VERSION}`;
 
-/** The shell worth having before the first offline visit. */
-const PRECACHE = ['/', '/json', '/json/viewer', '/json/validator', '/json/diff', '/json/formatter'];
+/** The shell worth having before the first offline visit, per language. */
+const PAGES = ['/', '/json', '/json/viewer', '/json/validator', '/json/diff', '/json/formatter'];
+
+/**
+ * Kept in step with `src/lib/i18n/locales.ts` by hand — this file ships as-is
+ * and imports nothing. English is absent because it has no prefix.
+ */
+const LOCALES = ['es', 'de', 'fr', 'pt-br', 'ja', 'ru', 'zh'];
+
+function localePrefix(pathname) {
+  const first = pathname.split('/')[1];
+  return LOCALES.includes(first) ? `/${first}` : '';
+}
+
+/**
+ * Precache the six pages of one language, once per worker lifetime.
+ *
+ * Priming happens on the first navigation rather than on install, because
+ * install cannot know which of the eight languages this visitor reads and
+ * precaching all forty-eight pages to serve one of them is most of a megabyte
+ * of waste. The first navigation names the language; that is the moment we
+ * know what is worth having offline.
+ */
+const primed = new Set();
+
+function prime(prefix) {
+  if (primed.has(prefix)) return;
+  primed.add(prefix);
+  const urls = PAGES.map((page) => (page === '/' ? `${prefix}/` : `${prefix}${page}`));
+  // A failed precache must not break anything — the runtime caches pick these
+  // up on first visit anyway.
+  caches
+    .open(PAGE_CACHE)
+    .then((cache) => cache.addAll(urls))
+    .catch(() => undefined);
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(PAGE_CACHE)
-      // A failed precache must not block installation — the runtime caches
-      // will pick these up on first visit anyway.
-      .then((cache) => cache.addAll(PRECACHE).catch(() => undefined))
-      .then(() => self.skipWaiting()),
+      .then((cache) => cache.addAll(PAGES).catch(() => undefined))
+      .then(() => {
+        primed.add('');
+        return self.skipWaiting();
+      }),
   );
 });
 
@@ -52,7 +87,7 @@ async function cacheFirst(request, cacheName) {
   return response;
 }
 
-async function networkFirst(request, cacheName) {
+async function networkFirst(request, cacheName, prefix = '') {
   const cache = await caches.open(cacheName);
   try {
     const response = await fetch(request);
@@ -61,8 +96,11 @@ async function networkFirst(request, cacheName) {
   } catch (error) {
     const hit = await cache.match(request);
     if (hit) return hit;
-    // Offline and never visited: fall back to the home page shell.
-    const home = await cache.match('/');
+    // Offline and never visited: fall back to the home page shell — in the
+    // language of the address that was asked for, not in English. Landing a
+    // Russian reader on the English homepage is a worse failure than the one
+    // it is recovering from.
+    const home = (prefix && (await cache.match(`${prefix}/`))) || (await cache.match('/'));
     if (home) return home;
     throw error;
   }
@@ -93,7 +131,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate' || request.destination === 'document') {
-    event.respondWith(networkFirst(request, PAGE_CACHE));
+    const prefix = localePrefix(url.pathname);
+    prime(prefix);
+    event.respondWith(networkFirst(request, PAGE_CACHE, prefix));
     return;
   }
 

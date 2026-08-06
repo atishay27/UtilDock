@@ -1,21 +1,32 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import Rich from '../components/Rich.astro';
 import { SITE, absoluteUrl } from '../lib/site';
 import { getCategory, getTool, relatedTools, splitName } from '../lib/tools';
+import { href, localizedCategory, localizedTool, localizedTools, t } from '../lib/i18n';
+import { DEFAULT_LOCALE, localizedPath, type Locale } from '../lib/i18n/locales';
+import { fill } from '../lib/i18n/format';
 import Icon from '../components/Icon.astro';
 
 interface Props {
   toolId: string;
+  locale?: Locale;
 }
 
-const { toolId } = Astro.props;
-const tool = getTool(toolId);
-const category = getCategory(tool.category);
-const related = relatedTools(tool.id);
-const url = absoluteUrl(tool.href);
-const categoryUrl = category.href ? absoluteUrl(category.href) : undefined;
+const { toolId, locale = DEFAULT_LOCALE } = Astro.props;
+const ui = t(locale);
+const tool = localizedTool(getTool(toolId), locale);
+const category = localizedCategory(getCategory(tool.category), locale);
+const related = localizedTools(relatedTools(tool.id), locale);
+
+/* Structured data has to nominate the page it is actually on: a Spanish page
+   describing itself with the English URL merges the two in the index and the
+   translated one stops being a result of its own. */
+const url = absoluteUrl(localizedPath(tool.href, locale));
+const categoryUrl = category.href ? absoluteUrl(localizedPath(category.href, locale)) : undefined;
 const name = splitName(tool);
 const faqs = tool.faqs ?? [];
+const about = ui.toolAbout[tool.id as keyof typeof ui.toolAbout];
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -37,7 +48,12 @@ const structuredData = {
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: absoluteUrl('/') },
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: ui.chrome.home,
+          item: absoluteUrl(localizedPath('/', locale)),
+        },
         ...(categoryUrl
           ? [{ '@type': 'ListItem', position: 2, name: category.name, item: categoryUrl }]
           : []),
@@ -70,6 +86,7 @@ const structuredData = {
   description={tool.description}
   keywords={tool.keywords}
   structuredData={structuredData}
+  locale={locale}
 >
   <div class="mx-auto max-w-[1600px] px-4 pt-5 pb-10 sm:px-6">
     {/* The workpiece plate: name, and what this station does.
@@ -80,12 +97,12 @@ const structuredData = {
         set the plate's alignment against a figure that carried no meaning. */}
     <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-scribe-strong pb-4">
       <div>
-        <nav aria-label="Breadcrumb" class="ud-legend flex items-center gap-2">
-          <a href="/" class="transition-colors hover:text-chalk">Home</a>
+        <nav aria-label={ui.chrome.breadcrumb} class="ud-legend flex items-center gap-2">
+          <a href={href('/', locale)} class="transition-colors hover:text-chalk">{ui.chrome.home}</a>
           <span aria-hidden="true">/</span>
           {
             category.href ? (
-              <a href={category.href} class="transition-colors hover:text-chalk">
+              <a href={href(category.href, locale)} class="transition-colors hover:text-chalk">
                 {category.name}
               </a>
             ) : (
@@ -99,7 +116,7 @@ const structuredData = {
         </h1>
       </div>
       <p class="ud-legend max-w-md leading-relaxed">
-        {tool.tagline} · runs in this tab, never sent anywhere
+        {tool.tagline} · {ui.tool.taglineSuffix}
       </p>
     </div>
 
@@ -111,21 +128,36 @@ const structuredData = {
     <div class="mt-16 grid gap-x-12 gap-y-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div class="max-w-2xl">
         <h2 class="border-t-2 border-cherry pt-4 text-[1.75rem] text-chalk">
-          How the {tool.name} works
+          {fill(ui.tool.howItWorks, { name: tool.name })}
         </h2>
         <p class="mt-4 text-sm leading-relaxed text-temper">{tool.overview ?? tool.description}</p>
-        <slot name="about" />
+
+        {/* The per-tool prose used to be a slot filled by each page. It is
+            indexable copy, so it has to translate like everything else, and a
+            slot cannot carry eight versions of itself — it lives in the
+            dictionary now and every tool page gets it from the same place. */}
+        {
+          about && (
+            <div class="mt-4 space-y-4 text-sm leading-relaxed text-temper">
+              {about.map((paragraph) => (
+                <p>
+                  <Rich text={paragraph} locale={locale} />
+                </p>
+              ))}
+            </div>
+          )
+        }
       </div>
 
       {
         related.length > 0 && (
           <aside>
-            <h2 class="ud-legend border-t border-scribe-strong pt-4">Other tools</h2>
+            <h2 class="ud-legend border-t border-scribe-strong pt-4">{ui.tool.otherTools}</h2>
             <ul class="mt-2">
               {related.map((item) => (
                 <li>
                   <a
-                    href={item.href}
+                    href={href(item.href, locale)}
                     class="group flex items-baseline justify-between gap-3 border-b border-scribe py-3 transition-colors hover:bg-anvil"
                   >
                     <span class="ud-struck text-lg text-chalk">
@@ -152,7 +184,7 @@ const structuredData = {
       faqs.length > 0 && (
         <section class="mt-16">
           <h2 class="border-t-2 border-cherry pt-4 text-[1.75rem] text-chalk">
-            Common questions
+            {ui.tool.commonQuestions}
           </h2>
           <div class="mt-6 grid gap-x-12 md:grid-cols-2">
             {faqs.map((faq) => (

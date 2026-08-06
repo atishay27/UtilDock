@@ -1,10 +1,29 @@
 ---
 import { CATEGORIES, TOOLS } from '../lib/tools';
-import { SITE } from '../lib/site';
 import { ANALYTICS_ENABLED } from '../lib/analytics';
+import { href, localizedCategory, localizedTool, t } from '../lib/i18n';
+import { DEFAULT_LOCALE, LOCALES, LOCALE_IDS, localizedPath, rootPath, type Locale } from '../lib/i18n/locales';
+import { fill } from '../lib/i18n/format';
 import Logo from './Logo.astro';
 
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const ui = t(locale);
 const year = new Date().getFullYear();
+
+/* The picker offers the page you are on, not the homepage of another language.
+   Sending someone who is reading about the comparator back to a Spanish front
+   door is the single most common way a language switcher wastes a click. */
+const here = rootPath(Astro.url.pathname);
+
+/* The tagline and the blurb are two sentences printed as one line, and how they
+   join is not the same everywhere. A latin full stop needs a space after it;
+   the CJK 。 is a full-width glyph that already carries its own trailing space,
+   so adding another opens a visible gap mid-sentence. */
+const joiner = /[。．！？]\s*$/.test(ui.footer.tagline) ? '' : ' ';
 ---
 
 <footer class="border-t-2 border-scribe-strong bg-bench">
@@ -16,55 +35,131 @@ const year = new Date().getFullYear();
           UtilDock
         </div>
         <p class="mt-4 max-w-xs text-sm leading-relaxed text-temper">
-          {SITE.tagline} Free, ad-free, and everything runs in your own browser.
+          {/* Explicit, because two expressions on adjacent lines render flush
+              against each other — it read as "разработчика.Бесплатно". */}
+          {ui.footer.tagline}{joiner}{ui.footer.blurb}
         </p>
         <div class="ud-billet mt-6 h-1 w-40"></div>
       </div>
 
       {
-        CATEGORIES.map((category) => (
-          <div>
-            <p class="ud-legend">
-              {category.href ? (
-                <a href={category.href} class="transition-colors hover:text-chalk">
-                  {category.name} tools
-                </a>
-              ) : (
-                category.name
-              )}
-            </p>
-            <ul class="mt-4 space-y-2.5 text-sm">
-              {TOOLS.filter((t) => t.category === category.id).map((tool) => (
-                <li>
-                  {tool.status === 'live' ? (
-                    <a href={tool.href} class="text-temper transition-colors hover:text-cherry">
-                      {tool.name}
-                    </a>
-                  ) : (
-                    <span class="text-faint">{tool.name} — coming soon</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
+        CATEGORIES.map((raw) => {
+          const category = localizedCategory(raw, locale);
+          return (
+            <div>
+              <p class="ud-legend">
+                {category.href ? (
+                  <a href={href(category.href, locale)} class="transition-colors hover:text-chalk">
+                    {fill(ui.chrome.categoryTools, { category: category.name })}
+                  </a>
+                ) : (
+                  category.name
+                )}
+              </p>
+              <ul class="mt-4 space-y-2.5 text-sm">
+                {TOOLS.filter((tool) => tool.category === raw.id)
+                  .map((tool) => localizedTool(tool, locale))
+                  .map((tool) => (
+                    <li>
+                      {tool.status === 'live' ? (
+                        <a
+                          href={href(tool.href, locale)}
+                          class="text-temper transition-colors hover:text-cherry"
+                        >
+                          {tool.name}
+                        </a>
+                      ) : (
+                        <span class="text-faint">
+                          {tool.name} — {ui.chrome.comingSoon}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          );
+        })
       }
     </div>
   </div>
 
+  {/*
+    One row where there is room for one.
+
+    Three cells rather than a flex row with `justify-between`: with unequal
+    outer widths that would set the copyright wherever the two ends left it,
+    which is not the middle. `1fr auto 1fr` centres it against the bar, not
+    against its neighbours.
+
+    Three widths, not two. The three-cell row waits until `lg`: at `sm` the
+    Russian build alone runs to some 830px across — "Конфиденциальность" is a
+    long word and the language row is eight codes wide — and the cells collide
+    well before that. And below `sm` even two columns fail, because the Russian
+    site nav is 270px wide in a 167px column and spills left across the
+    copyright. So: one column, then two, then three.
+  */}
   <div class="border-t border-scribe">
     <div
-      class="ud-legend mx-auto flex max-w-[1600px] flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+      class="ud-legend mx-auto grid max-w-[1600px] items-center gap-x-6 gap-y-3 px-4 py-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1fr_auto_1fr]"
     >
-      <p>© {year} UtilDock</p>
-      <nav class="flex gap-6" aria-label="Site">
-        <a href="/about" class="transition-colors hover:text-chalk">About</a>
-        <a href="/privacy" class="transition-colors hover:text-chalk">Privacy</a>
+      {/*
+        The fallback path, deliberately fine print.
+
+        The header control is the real one; this row exists for two things that
+        control cannot do. It is plain markup, so it still works with the
+        dropdown's script unavailable — and that matters most for the one
+        control someone may need *because* they cannot read the page. And it is
+        eight in-body links to the locale variants, which is how a crawler finds
+        them beyond what hreflang alone signals.
+
+        Codes rather than names: at this weight the row is an index, and the
+        native name rides in `title` and the accessible name for anyone who
+        needs to resolve it.
+      */}
+      <nav
+        class="-ml-1.5 flex flex-wrap items-center gap-x-1 gap-y-1 sm:col-span-2 lg:col-span-1 lg:justify-self-start"
+        aria-label={ui.footer.languageAria}
+      >
+        {
+          LOCALE_IDS.map((id) => {
+            const meta = LOCALES[id];
+            const active = id === locale;
+            return (
+              <a
+                href={localizedPath(here, id)}
+                hreflang={meta.hreflang}
+                lang={meta.hreflang}
+                title={meta.native}
+                aria-label={meta.native}
+                aria-current={active ? 'true' : undefined}
+                class:list={[
+                  'px-1.5 py-0.5 transition-colors',
+                  active
+                    ? 'text-chalk underline decoration-cherry underline-offset-4'
+                    : 'hover:text-chalk',
+                ]}
+              >
+                {meta.code}
+              </a>
+            );
+          })
+        }
+      </nav>
+
+      <p class="lg:justify-self-center">{fill(ui.footer.copyright, { year })}</p>
+
+      <nav class="flex flex-wrap gap-x-6 gap-y-1 sm:justify-self-end" aria-label={ui.chrome.navSite}>
+        <a href={href('/about', locale)} class="transition-colors hover:text-chalk">
+          {ui.footer.about}
+        </a>
+        <a href={href('/privacy', locale)} class="transition-colors hover:text-chalk">
+          {ui.footer.privacy}
+        </a>
         {/* Reopens the consent choice; the banner script owns the click. */}
         {
           ANALYTICS_ENABLED && (
             <button type="button" data-consent-open class="transition-colors hover:text-chalk">
-              Analytics
+              {ui.footer.analytics}
             </button>
           )
         }

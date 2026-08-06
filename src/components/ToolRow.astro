@@ -1,12 +1,17 @@
 ---
 import { splitName, type Tool } from '../lib/tools';
+import { href, t } from '../lib/i18n';
+import { DEFAULT_LOCALE, type Locale } from '../lib/i18n/locales';
 import Icon from './Icon.astro';
 
 interface Props {
+  /** Already localised by the caller — this component does not translate. */
   tool: Tool;
+  locale?: Locale;
 }
 
-const { tool } = Astro.props;
+const { tool, locale = DEFAULT_LOCALE } = Astro.props;
+const ui = t(locale);
 const live = tool.status === 'live';
 const Tag = live ? 'a' : 'div';
 /* The category was a separate chip; folded into the name so the row's link text
@@ -27,7 +32,7 @@ const name = splitName(tool);
   indifferent to how many lines each column holds.
 */}
 <Tag
-  href={live ? tool.href : undefined}
+  href={live ? href(tool.href, locale) : undefined}
   class:list={[
     'group relative grid items-center gap-x-10 gap-y-2 border-b border-scribe py-6 pl-4 transition-colors sm:grid-cols-[minmax(0,17rem)_1fr_auto] sm:py-7 sm:pl-6',
     live && 'hover:bg-anvil',
@@ -58,7 +63,7 @@ const name = splitName(tool);
       {
         !live && (
           <span class="ud-legend ml-1 border border-scribe px-1.5 py-0.5 align-middle whitespace-nowrap">
-            coming soon
+            {ui.chrome.comingSoon}
           </span>
         )
       }
@@ -98,7 +103,7 @@ const name = splitName(tool);
   {
     live && (
       <span class="ud-legend flex items-center gap-1.5 text-faint transition-colors group-hover:text-cherry">
-        Open
+        {ui.chrome.open}
         <Icon name="arrow-right" size={13} class="transition-transform group-hover:translate-x-0.5" />
       </span>
     )

@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolRow from '../ToolRow.astro';
+import { LIVE_TOOLS } from '../../lib/tools';
+import { href, localizedTools, t } from '../../lib/i18n';
+import { DEFAULT_LOCALE, type Locale } from '../../lib/i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const ui = t(locale);
+const tools = localizedTools(LIVE_TOOLS, locale);
+---
+
+<BaseLayout
+  title={ui.notFound.title}
+  description={ui.notFound.description}
+  locale={locale}
+  noindex
+>
+  <section class="ud-scale border-b border-scribe">
+    <div class="mx-auto max-w-[1600px] px-4 py-20 sm:px-6 sm:py-28">
+      <h1 class="max-w-[14ch] text-[clamp(2.75rem,9vw,7rem)] text-chalk">
+        {ui.notFound.headline}
+      </h1>
+      <p class="mt-6 max-w-lg text-lg leading-relaxed text-temper">{ui.notFound.body}</p>
+      <a
+        href={href('/', locale)}
+        class="ud-struck mt-8 inline-block border border-scribe-strong px-6 py-3 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
+      >
+        {ui.notFound.cta}
+      </a>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-[1600px] px-4 pt-12 sm:px-6">
+    <h2 class="ud-legend border-b-2 border-scribe-strong pb-3">{ui.notFound.allTools}</h2>
+    {tools.map((tool) => <ToolRow tool={tool} locale={locale} />)}
+  </section>
+</BaseLayout>

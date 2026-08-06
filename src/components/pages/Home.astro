@@ -1,0 +1,221 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolRow from '../ToolRow.astro';
+import Icon from '../Icon.astro';
+import { LIVE_TOOLS, populatedCategories } from '../../lib/tools';
+import { SITE, absoluteUrl } from '../../lib/site';
+import { href, localizedCategory, localizedTools, t } from '../../lib/i18n';
+import { DEFAULT_LOCALE, localizedPath, type Locale } from '../../lib/i18n/locales';
+import { fill } from '../../lib/i18n/format';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const ui = t(locale);
+const home = absoluteUrl(localizedPath('/', locale));
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE.url}/#website`,
+      name: SITE.name,
+      alternateName: ui.footer.tagline,
+      url: home,
+      description: ui.jsonHub.description,
+      inLanguage: locale,
+      publisher: { '@id': `${SITE.url}/#organization` },
+    },
+    {
+      '@type': 'Organization',
+      '@id': `${SITE.url}/#organization`,
+      name: SITE.name,
+      url: absoluteUrl('/'),
+      logo: new URL('/icon-512.png', SITE.url).href,
+      description: ui.jsonHub.description,
+    },
+    {
+      '@type': 'ItemList',
+      name: `Tools on ${SITE.name}`,
+      itemListElement: localizedTools(LIVE_TOOLS, locale).map((tool, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: tool.name,
+        description: tool.tagline,
+        url: absoluteUrl(localizedPath(tool.href, locale)),
+      })),
+    },
+  ],
+};
+
+/**
+ * The hero size follows the headline's length.
+ *
+ * English fits "Developer tools that never touch a server." on two lines at
+ * 9rem. Spanish needs four for the same sentence, German and Russian more, and
+ * four lines of 9rem is the entire viewport — the billet below it, which is the
+ * page's one divider and carries the three claims, never gets seen. Rather than
+ * hand-tune eight numbers or shorten every translation until it fits an English
+ * measure, the ceiling steps down as the sentence gets longer.
+ */
+const headlineLength = `${ui.home.headlineLead} ${ui.home.headlineAccent}`.length;
+const headlineMax = headlineLength > 58 ? '6rem' : headlineLength > 46 ? '7.25rem' : '9rem';
+
+/* The directory, grouped by category and built entirely from the registry. A
+   new category appears here by existing, which is the point: this page should
+   not need editing every time the dock grows. */
+const groups = populatedCategories().map((group) => ({
+  category: localizedCategory(group.category, locale),
+  tools: localizedTools(group.tools, locale),
+}));
+---
+
+<BaseLayout
+  title={ui.home.title}
+  description={ui.jsonHub.description}
+  keywords={ui.home.keywords}
+  structuredData={structuredData}
+  locale={locale}
+>
+  {/* FIRST VIEWPORT ---------------------------------------------------- */}
+  <section class="ud-scale relative overflow-hidden border-b border-scribe">
+    <div class="mx-auto max-w-[1600px] px-4 pt-16 pb-0 sm:px-6 sm:pt-24">
+      <h1
+        class="ud-strike max-w-[22ch] text-[clamp(3.25rem,11vw,var(--ud-hero-max))] text-chalk"
+        style={`--ud-delay: 120ms; --ud-hero-max: ${headlineMax}`}
+      >
+        {/* Not "JSON tools": the dock is meant to grow past JSON, and a headline
+             that names one format has to be rewritten the day it does. The
+             promise generalises; the inventory below is what changes. The full
+             stop rides inside the accent because this face sets it as a solid
+             square that reads as a stray block in the body colour. */}
+        {ui.home.headlineLead} <span class="text-cherry">{ui.home.headlineAccent}</span>
+      </h1>
+
+      <p
+        class="ud-strike mt-7 max-w-2xl text-lg leading-relaxed text-temper"
+        style="--ud-delay: 220ms"
+      >
+        {ui.home.lede}
+      </p>
+    </div>
+
+    {/* The billet: the system's signature object, and the page's one divider. */}
+    <div class="relative mt-12 sm:mt-16">
+      <div class="ud-billet ud-draw absolute inset-0" style="--ud-delay: 420ms"></div>
+      <div class="ud-scale pointer-events-none absolute inset-0 opacity-50"></div>
+
+      {/* Scale leaping off where the hammer struck. */}
+      <div class="pointer-events-none absolute inset-y-0 left-[6%] w-64" aria-hidden="true">
+        {
+          [
+            { x: 34, y: -34, d: 620, t: 18, l: 20 },
+            { x: 52, y: -50, d: 700, t: 40, l: 46 },
+            { x: 26, y: -26, d: 780, t: 62, l: 8 },
+            { x: 44, y: -42, d: 860, t: 30, l: 68 },
+            { x: 30, y: -56, d: 940, t: 55, l: 88 },
+          ].map((fleck) => (
+            <span
+              class="ud-shed absolute size-1.5 bg-stamp"
+              style={`--shed-x:${fleck.x}px; --shed-y:${fleck.y}px; --ud-delay:${fleck.d}ms; top:${fleck.t}%; left:${fleck.l}%`}
+            />
+          ))
+        }
+      </div>
+
+      {/*
+        What the bar carries is the claim, stamped into hot metal: the one piece
+        of copy that is true of every tool the dock will ever hold. Stamp
+        tokens, not theme tokens — the metal is hot in both registers, so a
+        theme-following colour vanishes on the light side.
+      */}
+      <ul
+        class="ud-strike relative mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-4 sm:px-6 sm:py-5"
+        style="--ud-delay: 300ms"
+      >
+        {
+          ui.home.assurances.map((assurance, index) => (
+            <li class="ud-struck flex items-center gap-4 text-lg text-stamp sm:text-xl">
+              {index > 0 && <span class="h-4 w-[2px] bg-stamp opacity-40" aria-hidden="true" />}
+              {assurance}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {/*
+    THE DIRECTORY --------------------------------------------------------
+
+    The page's one and only list of tools. Grouping by category is what makes it
+    survive growth: a new category is a new heading and its rows, and nothing on
+    this page is edited to add one.
+  */}
+  <section id="tools" class="mx-auto max-w-[1600px] scroll-mt-16 px-4 pt-16 sm:px-6 sm:pt-24">
+    {
+      groups.map((group, groupIndex) => (
+        <div class:list={[groupIndex > 0 && 'mt-20']}>
+          <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b-2 border-scribe-strong pb-4">
+            <div>
+              <h2 class="text-[clamp(2rem,5vw,3.5rem)] text-chalk">
+                {fill(ui.chrome.categoryTools, { category: group.category.name })}
+              </h2>
+              {/* The measure belongs on the paragraph. On the wrapper, 42ch was
+                  resolved against the body font and squeezed the blurb into a
+                  336px column with one orphaned word. */}
+              <p class="mt-2 max-w-2xl text-sm leading-relaxed text-temper">
+                {group.category.blurb}
+              </p>
+            </div>
+
+            {group.category.href && (
+              <a
+                href={href(group.category.href, locale)}
+                class="ud-legend group flex items-center gap-1.5 transition-colors hover:text-chalk"
+              >
+                {fill(ui.chrome.allCategoryTools, { category: group.category.name })}
+                <Icon
+                  name="arrow-right"
+                  size={13}
+                  class="text-cherry transition-transform group-hover:translate-x-0.5"
+                />
+              </a>
+            )}
+          </div>
+
+          {group.tools.map((tool) => (
+            <ToolRow tool={tool} locale={locale} />
+          ))}
+        </div>
+      ))
+    }
+  </section>
+
+  {/*
+    THE CLOSE -----------------------------------------------------------
+
+    Home keeps the claim in the headline and settles it here in one row; /json
+    and /privacy carry the reasoning.
+  */}
+  <section class="mt-20 border-y-2 border-scribe-strong bg-bench">
+    <div class="ud-scale">
+      <div
+        class="mx-auto flex max-w-[1600px] flex-col items-start gap-8 px-4 py-14 sm:px-6 md:flex-row md:items-center md:justify-between"
+      >
+        <p class="ud-struck max-w-[20ch] text-[clamp(1.75rem,4vw,3rem)] text-chalk">
+          {ui.home.closeLine}
+        </p>
+        <a
+          href={href('/privacy', locale)}
+          class="ud-struck shrink-0 border border-scribe-strong px-6 py-3 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
+        >
+          {ui.home.closeCta}
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

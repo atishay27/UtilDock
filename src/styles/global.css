@@ -139,9 +139,30 @@
   --color-boolean: var(--fg-boolean);
   --color-nullish: var(--fg-null);
 
-  --font-display: 'Big Shoulders Display', 'Haettenschweiler', 'Arial Narrow', sans-serif;
-  --font-sans: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /*
+    The three self-hosted faces carry the latin subset only — `npm run fonts`
+    asks Google for the U+0000-00FF block and nothing else. That is deliberate:
+    a CJK webfont is several megabytes, and the site is published in Japanese
+    and Chinese, so shipping one would cost every one of those visitors more
+    than the entire rest of the page.
+
+    So Cyrillic and CJK fall through, and the tail of each stack is where they
+    land. Naming the system faces explicitly matters most away from macOS:
+    bare `sans-serif` resolves to something reasonable in Hiragino territory,
+    but on Windows and Linux it can pick a face with no CJK coverage at all and
+    hand the text to a last-resort font. The result is a deliberate mix — the
+    condensed display face sets "JSON", the system face sets the kana beside it.
+  */
+  --font-cjk:
+    'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans CJK JP', 'Noto Sans CJK SC',
+    'Yu Gothic UI', 'Microsoft YaHei UI', 'PingFang SC', 'Source Han Sans SC';
+
+  --font-display:
+    'Big Shoulders Display', 'Haettenschweiler', 'Arial Narrow', var(--font-cjk), sans-serif;
+  --font-sans:
+    'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', var(--font-cjk), sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, var(--font-cjk), monospace;
 }
 
 @layer base {

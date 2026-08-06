@@ -7,10 +7,30 @@ import { useJsonWorker } from '../../lib/useJsonWorker';
 import { formatBytes, positionToOffset, type JsonError, type JsonStats } from '../../lib/json/types';
 import type { IndentStyle } from '../../lib/json/format';
 import { SAMPLE_DOCUMENT } from '../../lib/json/samples';
+import { fill } from '../../lib/i18n/format';
+import type { IslandStrings } from '../../lib/i18n/ui/en';
 
 type Mode = 'pretty' | 'minified';
 
-export default function JsonFormatter() {
+/**
+ * `strings` arrives as a prop rather than being imported.
+ *
+ * An import here would pull a dictionary — and through it, every locale's
+ * dictionary — into this island's chunk, which is the one cost this whole
+ * approach exists to avoid. As a prop, the JavaScript is byte-identical in
+ * every language and only the handful of strings this tool uses are serialised
+ * into the page.
+ */
+export default function JsonFormatter({
+  strings,
+}: {
+  /* Accepted so every tool island has the same signature, even though this one
+     has no counted phrases and so never needs `plural()`. */
+  lang: string;
+  strings: IslandStrings;
+}) {
+  const s = strings.formatter;
+  const c = strings.common;
   const [input, setInput] = usePersistentState('utildock:json-formatter:input', '');
   const [indent, setIndent] = usePersistentState<IndentStyle>('utildock:json-formatter:indent', '2');
   const [sortKeys, setSortKeys] = usePersistentState('utildock:json-formatter:sort', false);
@@ -62,19 +82,20 @@ export default function JsonFormatter() {
   return (
     <div className="grid gap-4 lg:h-[calc(100vh-19rem)] lg:min-h-[440px] lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)_auto]">
       <Panel
-        title="Input"
+        title={s.inputTitle}
         aligned
         highlighted={isOver}
         dropHandlers={dropHandlers}
+        dropLabel={c.dropHere}
         className="min-h-[300px]"
         actions={
           <>
-            <FileButton onText={(text) => setInput(text)} />
-            <Button icon="sparkle" onClick={() => setInput(SAMPLE_DOCUMENT)} title="Load a sample document">
-              Sample
+            <FileButton onText={(text) => setInput(text)} label={c.load} title={c.loadTitle} />
+            <Button icon="sparkle" onClick={() => setInput(SAMPLE_DOCUMENT)} title={c.sampleTitle}>
+              {c.sample}
             </Button>
             <Button icon="trash" variant="danger" onClick={() => setInput('')} disabled={isEmpty}>
-              Clear
+              {c.clear}
             </Button>
           </>
         }
@@ -83,45 +104,49 @@ export default function JsonFormatter() {
             <span>{formatBytes(new Blob([input]).size)}</span>
             {error ? (
               <Status tone="error">
-                Line {error.line}, column {error.column} — {error.message}
+                {fill(c.errorAt, {
+                  line: error.line,
+                  column: error.column,
+                  message: error.message,
+                })}
               </Status>
             ) : isEmpty ? (
-              <Status tone="idle">Paste or drop JSON to begin</Status>
+              <Status tone="idle">{s.idle}</Status>
             ) : (
-              <Status tone="ok">Valid JSON</Status>
+              <Status tone="ok">{c.validJson}</Status>
             )}
           </>
         }
       >
         <JsonEditor
-          label="JSON input"
+          label={s.inputLabel}
           value={input}
           onChange={setInput}
           markers={markers}
-          placeholder={'{\n  "paste": "your JSON here"\n}'}
+          placeholder={s.placeholder}
         />
       </Panel>
 
       <Panel
-        title={mode === 'pretty' ? 'Formatted' : 'Minified'}
+        title={mode === 'pretty' ? s.formattedTitle : s.minifiedTitle}
         aligned
         strikeKey={output}
         className="min-h-[300px]"
         actions={
           <>
             <Select
-              label="Indent"
+              label={s.indent}
               value={indent}
               disabled={mode === 'minified'}
               onChange={(event) => setIndent(event.target.value as IndentStyle)}
             >
-              <option value="2">2 spaces</option>
-              <option value="3">3 spaces</option>
-              <option value="4">4 spaces</option>
-              <option value="tab">Tab</option>
+              <option value="2">{fill(s.spaces, { count: 2 })}</option>
+              <option value="3">{fill(s.spaces, { count: 3 })}</option>
+              <option value="4">{fill(s.spaces, { count: 4 })}</option>
+              <option value="tab">{s.tab}</option>
             </Select>
-            <Toggle checked={sortKeys} onChange={setSortKeys} title="Sort object keys alphabetically">
-              Sort keys
+            <Toggle checked={sortKeys} onChange={setSortKeys} title={s.sortKeysTitle}>
+              {s.sortKeys}
             </Toggle>
             <div className="flex border border-scribe-strong">
               {(['pretty', 'minified'] as const).map((option, index) => (
@@ -136,7 +161,7 @@ export default function JsonFormatter() {
                       : 'bg-anvil text-temper hover:text-chalk'
                   }`}
                 >
-                  {option === 'pretty' ? 'Pretty' : 'Minify'}
+                  {option === 'pretty' ? s.pretty : s.minify}
                 </button>
               ))}
             </div>
@@ -150,8 +175,12 @@ export default function JsonFormatter() {
             <span>{formatBytes(new Blob([output]).size)}</span>
             {stats && (
               <span className="text-faint">
-                {stats.objects} objects · {stats.arrays} arrays · {stats.keys} keys · depth{' '}
-                {stats.depth}
+                {fill(c.stats, {
+                  objects: stats.objects,
+                  arrays: stats.arrays,
+                  keys: stats.keys,
+                  depth: stats.depth,
+                })}
               </span>
             )}
             {output && input && (
@@ -160,25 +189,32 @@ export default function JsonFormatter() {
                   const before = new Blob([input]).size;
                   const after = new Blob([output]).size;
                   const delta = Math.round(((after - before) / before) * 100);
-                  return delta === 0 ? 'same size' : `${delta > 0 ? '+' : ''}${delta} % scale shed`;
+                  return delta === 0
+                    ? s.sameSize
+                    : fill(s.sizeDelta, { delta: `${delta > 0 ? '+' : ''}${delta}` });
                 })()}
               </span>
             )}
             <span className="ml-auto flex items-center gap-1.5">
-              <CopyButton text={output} />
+              <CopyButton
+                text={output}
+                label={c.copy}
+                copiedLabel={c.copied}
+                title={c.copyTitle}
+              />
               <Button
                 icon="download"
                 onClick={() =>
-                  downloadText(output, mode === 'pretty' ? 'formatted.json' : 'minified.json')
+                  downloadText(output, mode === 'pretty' ? s.prettyFile : s.minifiedFile)
                 }
                 disabled={!output}
-                title="Download"
+                title={c.download}
               />
             </span>
           </>
         }
       >
-        <JsonEditor label="Formatted JSON output" value={output} readOnly wrap={mode === 'minified'} />
+        <JsonEditor label={s.outputLabel} value={output} readOnly wrap={mode === 'minified'} />
       </Panel>
     </div>
   );

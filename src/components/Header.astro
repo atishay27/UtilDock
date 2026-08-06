@@ -11,19 +11,39 @@
  * here. A category with nothing live yet renders as a marker rather than a
  * trigger: a menu that opens onto "coming soon" wastes the click.
  */
-import { CATEGORIES, toolsInCategory } from '../lib/tools';
+import { toolsInCategory } from '../lib/tools';
+import { href, localizedCategories, localizedTools, t } from '../lib/i18n';
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  LOCALE_IDS,
+  localizedPath,
+  rootPath,
+  type Locale,
+} from '../lib/i18n/locales';
+import { fill } from '../lib/i18n/format';
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
 import ThemeToggle from './ThemeToggle.astro';
+import LanguageMenu from './LanguageMenu.astro';
 
-const path = Astro.url.pathname.replace(/\/$/, '');
+interface Props {
+  locale?: Locale;
+}
 
-const menus = CATEGORIES.map((category) => {
-  const tools = toolsInCategory(category.id);
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const ui = t(locale);
+
+/* Compared against the registry's unprefixed hrefs, so the active-tool marker
+   works the same on /json/viewer and on /es/json/viewer. */
+const path = rootPath(Astro.url.pathname).replace(/\/$/, '');
+
+const menus = localizedCategories(locale).map((category) => {
+  const tools = localizedTools(toolsInCategory(category.id), locale);
   return {
     category,
-    live: tools.filter((t) => t.status === 'live'),
-    planned: tools.filter((t) => t.status !== 'live'),
+    live: tools.filter((tool) => tool.status === 'live'),
+    planned: tools.filter((tool) => tool.status !== 'live'),
   };
 });
 ---
@@ -31,15 +51,15 @@ const menus = CATEGORIES.map((category) => {
 <header class="sticky top-0 z-40 border-b border-scribe bg-ground">
   <div class="mx-auto flex h-14 max-w-[1600px] items-center gap-2 px-4 sm:px-6">
     <a
-      href="/"
+      href={href('/', locale)}
       class="ud-struck flex h-11 shrink-0 items-center gap-2.5 text-[1.35rem] text-chalk"
-      aria-label="UtilDock home"
+      aria-label={ui.chrome.homeAria}
     >
       <Logo size={24} />
       UtilDock
     </a>
 
-    <nav aria-label="Tools" class="ml-4 hidden items-center gap-1 md:flex">
+    <nav aria-label={ui.chrome.navTools} class="ml-4 hidden items-center gap-1 md:flex">
       {
         menus.map(({ category, live, planned }) => {
           const within = category.href ? path.startsWith(category.href) : false;
@@ -48,7 +68,7 @@ const menus = CATEGORIES.map((category) => {
             return (
               <span class="ud-legend flex items-center gap-2 px-3 py-2 text-faint">
                 {category.name}
-                <span class="border border-scribe px-1.5 py-0.5 text-faint">soon</span>
+                <span class="border border-scribe px-1.5 py-0.5 text-faint">{ui.chrome.soon}</span>
               </span>
             );
           }
@@ -65,7 +85,7 @@ const menus = CATEGORIES.map((category) => {
                   within ? 'text-chalk' : 'text-temper hover:text-chalk',
                 ]}
               >
-                {category.name} tools
+                {fill(ui.chrome.categoryTools, { category: category.name })}
                 <Icon name="chevron-down" size={12} class="ud-menu-caret transition-transform" />
               </button>
 
@@ -84,7 +104,7 @@ const menus = CATEGORIES.map((category) => {
                     return (
                       <li>
                         <a
-                          href={tool.href}
+                          href={href(tool.href, locale)}
                           aria-current={active ? 'page' : undefined}
                           class:list={[
                             'group relative flex items-start gap-3 border-b border-scribe px-4 py-3 transition-colors hover:bg-anvil-lit',
@@ -119,17 +139,17 @@ const menus = CATEGORIES.map((category) => {
                     <li class="flex items-center gap-3 border-b border-scribe px-4 py-2.5">
                       <Icon name={tool.icon} size={17} class="shrink-0 text-scribe-strong" />
                       <span class="ud-struck text-[1.05rem] text-faint">{tool.name}</span>
-                      <span class="ud-legend ml-auto text-faint">soon</span>
+                      <span class="ud-legend ml-auto text-faint">{ui.chrome.soon}</span>
                     </li>
                   ))}
                 </ul>
 
                 {category.href && (
                   <a
-                    href={category.href}
+                    href={href(category.href, locale)}
                     class="ud-legend group flex items-center gap-1.5 px-4 py-3 text-temper transition-colors hover:text-chalk"
                   >
-                    All {category.name} tools
+                    {fill(ui.chrome.allCategoryTools, { category: category.name })}
                     <Icon
                       name="arrow-right"
                       size={12}
@@ -151,45 +171,49 @@ const menus = CATEGORIES.map((category) => {
           The outer element is the 44px target; the inner one is the visible
           box, sized to match ThemeToggle's exactly. Bordering the target itself
           drew an 11-high box next to the toggle's 8-high one. */}
-      <a href="/privacy" class="hidden h-11 items-center lg:inline-flex">
+      <a href={href('/privacy', locale)} class="hidden h-11 items-center lg:inline-flex">
         <span
           class="ud-legend flex h-8 items-center gap-2 border border-scribe px-2.5 text-temper transition-colors hover:border-cherry hover:text-chalk"
         >
           <Icon name="lock" size={12} class="shrink-0 text-sound" />
-          Nothing leaves this tab
+          {ui.chrome.privacyPill}
         </span>
       </a>
-      <ThemeToggle />
+      {/* Hidden below md, where the mobile panel carries it instead: a third
+          control in a 390px bar is one too many, and the panel is where mobile
+          navigation already lives. */}
+      <div class="hidden md:block"><LanguageMenu locale={locale} /></div>
+      <ThemeToggle locale={locale} />
       <button
         id="nav-toggle"
         type="button"
         class="ud-legend group flex h-11 items-center gap-1.5 border border-scribe px-3 text-temper transition-colors hover:border-cherry hover:text-chalk md:hidden"
-        aria-label="Open tools menu"
+        aria-label={ui.chrome.openToolsMenu}
         aria-expanded="false"
         aria-controls="mobile-nav"
       >
         {/* The icon states what the next tap does, matching the label. */}
         <span class="contents group-[[aria-expanded=true]]:hidden"><Icon name="menu" size={14} /></span>
         <span class="hidden group-[[aria-expanded=true]]:contents"><Icon name="x" size={14} /></span>
-        Tools
+        {ui.chrome.toolsButton}
       </button>
     </div>
   </div>
 
-  <nav id="mobile-nav" aria-label="Tools" class="hidden border-t border-scribe bg-anvil md:hidden">
+  <nav id="mobile-nav" aria-label={ui.chrome.navTools} class="hidden border-t border-scribe bg-anvil md:hidden">
     {
       menus.map(({ category, live, planned }) => (
         <div>
           <p class="ud-legend flex items-center gap-2 border-b border-scribe bg-bench px-4 py-2 text-faint">
             {category.name}
             {live.length === 0 && (
-              <span class="border border-scribe px-1.5 py-0.5">soon</span>
+              <span class="border border-scribe px-1.5 py-0.5">{ui.chrome.soon}</span>
             )}
           </p>
 
           {live.map((tool) => (
             <a
-              href={tool.href}
+              href={href(tool.href, locale)}
               aria-current={path === tool.href ? 'page' : undefined}
               class:list={[
                 'relative flex min-h-11 items-center gap-3 border-b border-scribe px-4 py-3',
@@ -210,19 +234,51 @@ const menus = CATEGORIES.map((category) => {
             <span class="flex min-h-11 items-center gap-3 border-b border-scribe px-4 py-3">
               <Icon name={tool.icon} size={17} class="shrink-0 text-scribe-strong" />
               <span class="ud-struck text-[1.05rem] text-faint">{tool.name}</span>
-              <span class="ud-legend ml-auto text-faint">soon</span>
+              <span class="ud-legend ml-auto text-faint">{ui.chrome.soon}</span>
             </span>
           ))}
         </div>
       ))
     }
 
+    {/* Native names, not codes: this is the one control someone may be reaching
+        for precisely because they cannot read the words around it. */}
+    <p class="ud-legend flex items-center gap-2 border-b border-scribe bg-bench px-4 py-2 text-faint">
+      {ui.footer.language}
+    </p>
+    <ul class="flex flex-wrap gap-x-1 gap-y-1 border-b border-scribe px-3 py-3">
+      {
+        LOCALE_IDS.map((id) => {
+          const meta = LOCALES[id];
+          const active = id === locale;
+          return (
+            <li>
+              <a
+                href={localizedPath(rootPath(Astro.url.pathname), id)}
+                hreflang={meta.hreflang}
+                lang={meta.hreflang}
+                aria-current={active ? 'true' : undefined}
+                class:list={[
+                  'flex min-h-11 items-center border px-3 text-sm transition-colors',
+                  active
+                    ? 'border-cherry text-chalk'
+                    : 'border-scribe text-temper hover:border-scribe-strong hover:text-chalk',
+                ]}
+              >
+                {meta.native}
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+
     <a
-      href="/privacy"
+      href={href('/privacy', locale)}
       class="ud-legend flex min-h-11 items-center gap-2 px-4 py-3 text-temper transition-colors hover:text-chalk"
     >
       <Icon name="lock" size={12} class="shrink-0 text-sound" />
-      Your JSON stays in this tab
+      {ui.chrome.privacyPillMobile}
     </a>
   </nav>
 </header>

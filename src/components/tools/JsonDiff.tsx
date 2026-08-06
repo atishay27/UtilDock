@@ -8,6 +8,8 @@ import { useJsonWorker } from '../../lib/useJsonWorker';
 import { formatBytes, positionToOffset, type JsonError } from '../../lib/json/types';
 import type { Cell, ChangeKind, DiffResult, DiffRow, Token } from '../../lib/json/diff';
 import { SAMPLE_DIFF_LEFT, SAMPLE_DIFF_RIGHT } from '../../lib/json/samples';
+import { fill, parseRich, plural } from '../../lib/i18n/format';
+import type { IslandStrings } from '../../lib/i18n/ui/en';
 
 type SideError = { side: 'left' | 'right'; error: JsonError } | null;
 
@@ -22,7 +24,26 @@ const CONTEXT = 2;
 const SPLIT_COLUMNS = '1.5rem minmax(0,1fr) 1.5rem 1.5rem minmax(0,1fr)';
 const UNIFIED_COLUMNS = '1.5rem minmax(0,1fr)';
 
-export default function JsonDiff() {
+/** Renders the `**bold**` a couple of these strings carry. */
+function Rich({ text }: { text: string }) {
+  return (
+    <>
+      {parseRich(text).map((token, index) =>
+        token.t === 'strong' ? (
+          <strong key={index} className="text-chalk">
+            {token.v}
+          </strong>
+        ) : (
+          <span key={index}>{token.v}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+export default function JsonDiff({ lang, strings }: { lang: string; strings: IslandStrings }) {
+  const s = strings.diff;
+  const c = strings.common;
   const [left, setLeft] = usePersistentState('utildock:json-diff:left', '');
   const [right, setRight] = usePersistentState('utildock:json-diff:right', '');
   const [result, setResult] = useState<DiffResult | null>(null);
@@ -75,14 +96,15 @@ export default function JsonDiff() {
       {showEditors && (
         <div className="grid gap-4 lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)_auto]">
           <Panel
-            title="Original"
+            title={s.originalTitle}
             aligned
             highlighted={leftDrop.isOver}
             dropHandlers={leftDrop.dropHandlers}
+            dropLabel={c.dropHere}
             className="h-[26vh] min-h-[200px]"
             actions={
               <>
-                <FileButton onText={(text) => setLeft(text)} />
+                <FileButton onText={(text) => setLeft(text)} label={c.load} title={c.loadTitle} />
                 <Button icon="trash" variant="danger" onClick={() => setLeft('')} disabled={!left} />
               </>
             }
@@ -91,31 +113,35 @@ export default function JsonDiff() {
                 <span>{formatBytes(new Blob([left]).size)}</span>
                 {sideError?.side === 'left' && (
                   <Status tone="error">
-                    Line {sideError.error.line}, column {sideError.error.column} —{' '}
-                    {sideError.error.message}
+                    {fill(c.errorAt, {
+                      line: sideError.error.line,
+                      column: sideError.error.column,
+                      message: sideError.error.message,
+                    })}
                   </Status>
                 )}
               </>
             }
           >
             <JsonEditor
-              label="Original JSON"
+              label={s.originalLabel}
               value={left}
               onChange={setLeft}
               markers={leftMarkers}
-              placeholder={'{\n  "the": "original document"\n}'}
+              placeholder={s.originalPlaceholder}
             />
           </Panel>
 
           <Panel
-            title="Changed"
+            title={s.changedTitle}
             aligned
             highlighted={rightDrop.isOver}
             dropHandlers={rightDrop.dropHandlers}
+            dropLabel={c.dropHere}
             className="h-[26vh] min-h-[200px]"
             actions={
               <>
-                <FileButton onText={(text) => setRight(text)} />
+                <FileButton onText={(text) => setRight(text)} label={c.load} title={c.loadTitle} />
                 <Button
                   icon="trash"
                   variant="danger"
@@ -129,19 +155,22 @@ export default function JsonDiff() {
                 <span>{formatBytes(new Blob([right]).size)}</span>
                 {sideError?.side === 'right' && (
                   <Status tone="error">
-                    Line {sideError.error.line}, column {sideError.error.column} —{' '}
-                    {sideError.error.message}
+                    {fill(c.errorAt, {
+                      line: sideError.error.line,
+                      column: sideError.error.column,
+                      message: sideError.error.message,
+                    })}
                   </Status>
                 )}
               </>
             }
           >
             <JsonEditor
-              label="Changed JSON"
+              label={s.changedLabel}
               value={right}
               onChange={setRight}
               markers={rightMarkers}
-              placeholder={'{\n  "the": "document to compare against"\n}'}
+              placeholder={s.changedPlaceholder}
             />
           </Panel>
         </div>
@@ -155,18 +184,18 @@ export default function JsonDiff() {
         strikeKey={`${totals}:${result?.rows.length ?? 0}`}
         header={
           <>
-            <Button icon="sparkle" onClick={loadSample}>
-              Sample
+            <Button icon="sparkle" onClick={loadSample} title={c.sampleTitle}>
+              {c.sample}
             </Button>
-            <Button icon="convert" onClick={swap} disabled={!left && !right} title="Swap the two sides">
-              Swap
+            <Button icon="convert" onClick={swap} disabled={!left && !right} title={s.swapTitle}>
+              {s.swap}
             </Button>
             <Button
               icon={showEditors ? 'chevron-up' : 'chevron-down'}
               onClick={() => setShowEditors(!showEditors)}
-              title={showEditors ? 'Hide the editors and give the comparison the page' : 'Show the editors again'}
+              title={showEditors ? s.hideTitle : s.showTitle}
             >
-              {showEditors ? 'Hide input' : 'Edit input'}
+              {showEditors ? s.hideInput : s.editInput}
             </Button>
           </>
         }
@@ -177,6 +206,8 @@ export default function JsonDiff() {
            of nothing. Height is claimed the moment both sides have text, so it
            settles once rather than jumping on every keystroke. */
         idle={!left.trim() || !right.trim()}
+        lang={lang}
+        strings={strings}
       />
     </div>
   );
@@ -206,9 +237,23 @@ interface DiffPanelProps {
   strikeKey: string;
   tall: boolean;
   idle: boolean;
+  lang: string;
+  strings: IslandStrings;
 }
 
-function DiffPanel({ left, right, result, sideError, header, strikeKey, tall, idle }: DiffPanelProps) {
+function DiffPanel({
+  left,
+  right,
+  result,
+  sideError,
+  header,
+  strikeKey,
+  tall,
+  idle,
+  lang,
+  strings,
+}: DiffPanelProps) {
+  const s = strings.diff;
   const [unified, setUnified] = useState(false);
   const [showUnchanged, setShowUnchanged] = useState(false);
   const [openFolds, setOpenFolds] = useState<Set<number>>(() => new Set());
@@ -302,7 +347,7 @@ function DiffPanel({ left, right, result, sideError, header, strikeKey, tall, id
 
   return (
     <Panel
-      title="Comparison"
+      title={s.comparisonTitle}
       strikeKey={strikeKey}
       className={
         idle
@@ -316,17 +361,17 @@ function DiffPanel({ left, right, result, sideError, header, strikeKey, tall, id
           {hasChanges && (
             <>
               <div className="flex items-center gap-1">
-                <Tally kind="removed" count={result!.counts.removed} onJump={jumpKind} />
-                <Tally kind="added" count={result!.counts.added} onJump={jumpKind} />
-                <Tally kind="changed" count={result!.counts.changed} onJump={jumpKind} />
-                <Tally kind="moved" count={result!.counts.moved} onJump={jumpKind} />
+                <Tally kind="removed" count={result!.counts.removed} onJump={jumpKind} strings={s} />
+                <Tally kind="added" count={result!.counts.added} onJump={jumpKind} strings={s} />
+                <Tally kind="changed" count={result!.counts.changed} onJump={jumpKind} strings={s} />
+                <Tally kind="moved" count={result!.counts.moved} onJump={jumpKind} strings={s} />
               </div>
               <div className="flex items-center gap-0.5 border border-scribe-strong">
                 <button
                   type="button"
                   onClick={() => step(-1)}
-                  title="Previous difference (Alt + ↑)"
-                  aria-label="Previous difference"
+                  title={s.prevTitle}
+                  aria-label={s.prev}
                   className="grid size-6 place-items-center text-temper hover:bg-anvil-lit hover:text-chalk"
                 >
                   <Icon name="chevron-up" size={13} strokeWidth={2.5} />
@@ -337,8 +382,8 @@ function DiffPanel({ left, right, result, sideError, header, strikeKey, tall, id
                 <button
                   type="button"
                   onClick={() => step(1)}
-                  title="Next difference (Alt + ↓)"
-                  aria-label="Next difference"
+                  title={s.nextTitle}
+                  aria-label={s.next}
                   className="grid size-6 place-items-center text-temper hover:bg-anvil-lit hover:text-chalk"
                 >
                   <Icon name="chevron-down" size={13} strokeWidth={2.5} />
@@ -346,15 +391,15 @@ function DiffPanel({ left, right, result, sideError, header, strikeKey, tall, id
               </div>
               <Button
                 onClick={() => setShowUnchanged(!showUnchanged)}
-                title="Show every unchanged line instead of folding them away"
+                title={s.showAllTitle}
               >
-                {showUnchanged ? 'Fold same' : 'Show all'}
+                {showUnchanged ? s.foldSame : s.showAll}
               </Button>
               <Button
                 onClick={() => setUnified(!unified)}
-                title={unified ? 'Show the two documents side by side' : 'Stack the two documents in one column'}
+                title={unified ? s.splitTitle : s.stackTitle}
               >
-                {unified ? 'Split' : 'Stack'}
+                {unified ? s.split : s.stack}
               </Button>
             </>
           )}
@@ -364,15 +409,10 @@ function DiffPanel({ left, right, result, sideError, header, strikeKey, tall, id
       footer={
         result && !result.identical ? (
           <>
-            <Legend />
-            {result.truncated && (
-              <Status tone="warn">Comparison truncated — the documents are very large</Status>
-            )}
+            <Legend strings={s} />
+            {result.truncated && <Status tone="warn">{s.truncated}</Status>}
             {/* A keyboard hint is noise on a touch screen. */}
-            <span className="ml-auto hidden text-faint sm:inline">
-              Alt + <span className="ud-force">↑</span> / <span className="ud-force">↓</span> steps
-              through differences
-            </span>
+            <span className="ml-auto hidden text-faint sm:inline">{s.keyboardHint}</span>
           </>
         ) : undefined
       }
@@ -388,6 +428,8 @@ function DiffPanel({ left, right, result, sideError, header, strikeKey, tall, id
         scroller={scroller}
         onOpenFold={(id) => setOpenFolds((current) => new Set(current).add(id))}
         onJump={jumpTo}
+        lang={lang}
+        strings={strings}
       />
     </Panel>
   );
@@ -465,28 +507,23 @@ const KIND_MARK: Record<ChangeKind, string> = {
   moved: '⇅',
 };
 
-const KIND_LABEL: Record<ChangeKind, string> = {
-  added: 'added',
-  removed: 'removed',
-  changed: 'changed',
-  moved: 'moved',
-};
-
 function Tally({
   kind,
   count,
   onJump,
+  strings,
 }: {
   kind: ChangeKind;
   count: number;
   onJump: (kind: ChangeKind) => void;
+  strings: IslandStrings['diff'];
 }) {
   if (count === 0) return null;
   return (
     <button
       type="button"
       onClick={() => onJump(kind)}
-      title={`Jump to the next ${KIND_LABEL[kind]} difference`}
+      title={fill(strings.jumpTo, { kind: strings.kinds[kind] })}
       className={`ud-legend inline-flex items-center gap-1 border border-transparent px-1.5 py-1 transition-colors hover:border-scribe-strong ${KIND_TEXT[kind]}`}
     >
       <span aria-hidden="true" className="ud-force text-sm leading-none">
@@ -497,22 +534,22 @@ function Tally({
   );
 }
 
-function Legend() {
+function Legend({ strings }: { strings: IslandStrings['diff'] }) {
   return (
     <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
       <span className="inline-flex items-center gap-1.5">
         <span className="size-2.5 bg-fault/35 ring-1 ring-fault/60" />
-        only in original
+        {strings.onlyOriginal}
       </span>
       <span className="inline-flex items-center gap-1.5">
         <span className="size-2.5 bg-sound/35 ring-1 ring-sound/60" />
-        only in changed
+        {strings.onlyChanged}
       </span>
       <span className="inline-flex items-center gap-1.5">
         <span className="ud-force text-warn" aria-hidden="true">
           →
         </span>
-        replaced
+        {strings.replaced}
       </span>
     </span>
   );
@@ -529,6 +566,8 @@ interface BodyProps {
   scroller: React.RefObject<HTMLDivElement | null>;
   onOpenFold: (id: number) => void;
   onJump: (block: number) => void;
+  lang: string;
+  strings: IslandStrings;
 }
 
 function Body({
@@ -542,7 +581,10 @@ function Body({
   scroller,
   onOpenFold,
   onJump,
+  lang,
+  strings,
 }: BodyProps) {
+  const s = strings.diff;
   const [scrollTop, setScrollTop] = useState(0);
   const [height, setHeight] = useState(600);
 
@@ -557,8 +599,10 @@ function Body({
   if (sideError) {
     return (
       <Centered>
-        The {sideError.side === 'left' ? 'original' : 'changed'} document has a syntax error on line{' '}
-        {sideError.error.line}. Fix it and the comparison will run.
+        {fill(s.sideError, {
+          side: sideError.side === 'left' ? s.sideOriginal : s.sideChanged,
+          line: sideError.error.line,
+        })}
       </Centered>
     );
   }
@@ -566,13 +610,12 @@ function Body({
   if (!left.trim() || !right.trim()) {
     return (
       <Centered>
-        Paste a document into each side — or press <strong className="text-chalk">Sample</strong> to
-        try it with a pair that differs in a few interesting ways.
+        <Rich text={s.idle} />
       </Centered>
     );
   }
 
-  if (!result) return <Centered>Comparing…</Centered>;
+  if (!result) return <Centered>{s.comparing}</Centered>;
 
   if (result.identical) {
     return (
@@ -581,10 +624,9 @@ function Body({
           <span className="mx-auto grid size-11 place-items-center border border-sound/40 bg-sound/10 text-sound">
             <Icon name="check" size={20} />
           </span>
-          <p className="mt-3 font-medium text-chalk">The two documents are equivalent</p>
+          <p className="mt-3 font-medium text-chalk">{s.identicalTitle}</p>
           <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-temper">
-            Every value matches. Differences in key order, indentation and whitespace are ignored,
-            since none of them change what the JSON means.
+            {s.identicalBody}
           </p>
         </div>
       </div>
@@ -603,15 +645,15 @@ function Body({
       >
         {unified ? (
           <div className="col-span-2 px-2 py-1.5">
-            <span className="text-fault">− original</span>
+            <span className="text-fault">{s.unifiedOriginal}</span>
             <span className="px-1.5 text-scribe-strong">/</span>
-            <span className="text-sound">+ changed</span>
+            <span className="text-sound">{s.unifiedChanged}</span>
           </div>
         ) : (
           <>
-            <div className="col-span-2 px-2 py-1.5 text-fault">Original</div>
+            <div className="col-span-2 px-2 py-1.5 text-fault">{s.headerOriginal}</div>
             <div className="border-x border-scribe" />
-            <div className="col-span-2 px-2 py-1.5 text-sound">Changed</div>
+            <div className="col-span-2 px-2 py-1.5 text-sound">{s.headerChanged}</div>
           </>
         )}
       </div>
@@ -631,6 +673,8 @@ function Body({
                     count={item.count}
                     columns={columns}
                     onClick={() => onOpenFold(item.id)}
+                    lang={lang}
+                    strings={s}
                   />
                 ) : (
                   <Line
@@ -639,6 +683,7 @@ function Body({
                     side={item.side}
                     unified={unified}
                     columns={columns}
+                    common={strings.common}
                   />
                 ),
               )}
@@ -723,10 +768,14 @@ function FoldRow({
   count,
   columns,
   onClick,
+  lang,
+  strings,
 }: {
   count: number;
   columns: string;
   onClick: () => void;
+  lang: string;
+  strings: IslandStrings['diff'];
 }) {
   return (
     <div className="grid" style={{ gridTemplateColumns: columns, height: ROW_HEIGHT }}>
@@ -734,10 +783,10 @@ function FoldRow({
         type="button"
         onClick={onClick}
         className="ud-legend col-span-full flex items-center gap-2 border-y border-scribe/60 bg-bench/60 px-2 text-faint transition-colors hover:bg-anvil-lit hover:text-chalk"
-        title="Show these identical lines"
+        title={strings.showIdentical}
       >
         <Icon name="chevron-down" size={11} strokeWidth={2.5} />
-        {count} identical {count === 1 ? 'line' : 'lines'}
+        {plural(lang, strings.identicalLines, count)}
       </button>
     </div>
   );
@@ -749,11 +798,13 @@ function Line({
   side,
   unified,
   columns,
+  common,
 }: {
   row: DiffRow;
   side: 'both' | 'left' | 'right';
   unified: boolean;
   columns: string;
+  common: IslandStrings['common'];
 }) {
   const { copy, copied } = useCopy(1200);
 
@@ -767,7 +818,7 @@ function Line({
       >
         <Gutter kind={kind} moved={row.moved} />
         <Content cell={cell} kind={kind} />
-        <CopyPath path={row.path} copy={copy} copied={copied} />
+        <CopyPath path={row.path} copy={copy} copied={copied} common={common} />
       </div>
     );
   }
@@ -786,7 +837,7 @@ function Line({
       <Spine row={row} />
       <Gutter kind={rightKind} align="right" />
       <Content cell={row.right} kind={rightKind} />
-      <CopyPath path={row.path} copy={copy} copied={copied} />
+      <CopyPath path={row.path} copy={copy} copied={copied} common={common} />
     </div>
   );
 }
@@ -893,20 +944,22 @@ function CopyPath({
   path,
   copy,
   copied,
+  common,
 }: {
   path: string;
   copy: (text: string) => Promise<void>;
   copied: boolean;
+  common: IslandStrings['common'];
 }) {
   return (
     <button
       type="button"
       onClick={() => void copy(path)}
-      title={`Copy path — ${path}`}
+      title={fill(common.copyPathTitle, { path })}
       className="ud-legend absolute top-0 right-4 hidden h-full items-center gap-1 bg-anvil px-2 text-faint group-hover:flex hover:text-chalk"
     >
       <Icon name={copied ? 'check' : 'copy'} size={11} />
-      {copied ? 'copied' : 'path'}
+      {copied ? common.pathCopied : common.path}
     </button>
   );
 }

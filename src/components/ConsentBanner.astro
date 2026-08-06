@@ -22,6 +22,16 @@
  * and seeing the new state is the point.
  */
 import { ANALYTICS_ENABLED } from '../lib/analytics';
+import { href, t } from '../lib/i18n';
+import { DEFAULT_LOCALE, type Locale } from '../lib/i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const ui = t(locale);
+const privacyAnchor = `${href('/privacy', locale)}#analytics`;
 ---
 
 {
@@ -29,7 +39,7 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
     <section
       id="consent-banner"
       class="ud-consent fixed inset-x-0 bottom-0 z-40"
-      aria-label="Analytics"
+      aria-label={ui.consent.region}
       tabindex="-1"
       hidden
     >
@@ -40,17 +50,15 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
             {/* One heading across all three states. The footer button, this
                 heading and the /privacy anchor are all the same word, so the
                 control a visitor is looking for is named once. */}
-            <h2 class="ud-struck text-xl text-chalk sm:text-2xl">Analytics</h2>
+            <h2 class="ud-struck text-xl text-chalk sm:text-2xl">{ui.consent.heading}</h2>
 
             <p data-when="undecided" class="mt-2 text-sm leading-relaxed text-temper">
-              We would like to use Google Analytics to count page views, so we know which tools to
-              improve. It sets a cookie. Nothing you paste is ever included — your JSON never leaves
-              this tab either way.{' '}
+              {ui.consent.undecided}{' '}
               <a
-                href="/privacy#analytics"
+                href={privacyAnchor}
                 class="text-chalk underline decoration-scribe-strong underline-offset-4 transition-colors hover:text-cherry"
               >
-                Privacy Policy
+                {ui.consent.privacyPolicy}
               </a>
               .
             </p>
@@ -60,16 +68,15 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
             <div data-when="granted">
               <p class="ud-legend mt-2 flex items-center gap-2 text-chalk">
                 <span class="h-2 w-2 shrink-0 bg-cherry" aria-hidden="true" />
-                Currently on
+                {ui.consent.currentlyOn}
               </p>
               <p class="mt-2 text-sm leading-relaxed text-temper">
-                Google Analytics is counting page views in this browser. Nothing you paste is ever
-                included.{' '}
+                {ui.consent.granted}{' '}
                 <a
-                  href="/privacy#analytics"
+                  href={privacyAnchor}
                   class="text-chalk underline decoration-scribe-strong underline-offset-4 transition-colors hover:text-cherry"
                 >
-                  What it collects
+                  {ui.consent.whatItCollects}
                 </a>
                 .
               </p>
@@ -78,16 +85,15 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
             <div data-when="denied">
               <p class="ud-legend mt-2 flex items-center gap-2 text-temper">
                 <span class="h-2 w-2 shrink-0 bg-scribe-strong" aria-hidden="true" />
-                Currently off
+                {ui.consent.currentlyOff}
               </p>
               <p class="mt-2 text-sm leading-relaxed text-temper">
-                Nothing is requested from Google in this browser, and any analytics cookie already
-                written has been deleted. Every tool works exactly the same either way.{' '}
+                {ui.consent.denied}{' '}
                 <a
-                  href="/privacy#analytics"
+                  href={privacyAnchor}
                   class="text-chalk underline decoration-scribe-strong underline-offset-4 transition-colors hover:text-cherry"
                 >
-                  Privacy Policy
+                  {ui.consent.privacyPolicy}
                 </a>
                 .
               </p>
@@ -101,7 +107,7 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
               data-consent="granted"
               class="ud-struck border-2 border-scribe-strong px-5 py-2.5 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
             >
-              Allow analytics
+              {ui.consent.allow}
             </button>
             <button
               type="button"
@@ -109,7 +115,7 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
               data-consent="denied"
               class="ud-struck border-2 border-scribe-strong px-5 py-2.5 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
             >
-              No thanks
+              {ui.consent.decline}
             </button>
 
             {/* Reopened: one button changes the thing, one leaves. The label
@@ -121,7 +127,7 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
               data-consent="denied"
               class="ud-struck border-2 border-scribe-strong px-5 py-2.5 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
             >
-              Turn it off
+              {ui.consent.turnOff}
             </button>
             <button
               type="button"
@@ -129,7 +135,7 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
               data-consent="granted"
               class="ud-struck border-2 border-scribe-strong px-5 py-2.5 text-lg text-chalk transition-colors hover:border-cherry hover:text-cherry"
             >
-              Turn it on
+              {ui.consent.turnOn}
             </button>
             <button
               type="button"
@@ -137,7 +143,7 @@ import { ANALYTICS_ENABLED } from '../lib/analytics';
               data-consent-close
               class="ud-legend px-2 py-2.5 transition-colors hover:text-chalk"
             >
-              Close
+              {ui.consent.close}
             </button>
           </div>
         </div>

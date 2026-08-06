@@ -56,7 +56,9 @@ Astro 7 static output + React 19 islands + Tailwind 4 (CSS-first, no config file
 
 - `src/lib/tools.ts` — **the registry, and the single source of truth.** It drives the homepage
   grid, header nav, footer, related-tools rail and per-page JSON-LD. Adding a tool means: one
-  entry here, one page under `src/pages/`, one component under `src/components/tools/`.
+  entry here, one page under `src/pages/`, one component under `src/components/tools/`. Its
+  English copy stays inline; translations are *overrides* keyed by tool id (see i18n below), so
+  adding a tool never means touching eight files.
 - `src/lib/json/ops.ts` — the request/response protocol between UI and worker. `worker.ts` runs it
   off the main thread; `useJsonWorker.ts` is the React side and drops replies from superseded
   keystrokes. **All parsing, validation and diffing goes through here** — that is what keeps
@@ -72,6 +74,35 @@ Astro 7 static output + React 19 islands + Tailwind 4 (CSS-first, no config file
 - Tailwind v4 has no config file; the theme lives in `@theme inline` in `global.css`.
 - `src/components/JsonEditor.tsx` — the shared CodeMirror wrapper. Pass `theme="none"`; @uiw
   otherwise injects a light theme with a white background that fights the token theme.
+
+## Languages
+
+The site publishes in eight: English at the site root, and `es de fr pt-br ja ru zh` under a path
+segment. **English URLs never move** — they are indexed and ranking, and `/en/…` does not exist.
+
+- `src/lib/i18n/locales.ts` — the locale list. Adding one means an entry here, a `ui/<seg>.ts`, a
+  `tools/<seg>.ts`, three lines in `i18n/index.ts`, one in `astro.config.mjs` and one in
+  `public/sw.js`. The last two are plain JS and cannot import the TS module, so they are kept in
+  step by hand — the comments in both say so.
+- `src/lib/i18n/ui/en.ts` — **the string contract.** Every other locale is typed `UIStrings`, so a
+  missing key is an `astro check` error rather than an English word mid-paragraph. There is no
+  runtime fallback for these, on purpose.
+- `src/lib/i18n/format.ts` — `fill()`, `plural()` and `parseRich()`. The only i18n module a React
+  island may import: it pulls in no dictionary. **An island that imports a dictionary drags all
+  eight into the client bundle**, which is the one thing this design exists to prevent. Islands
+  receive a `strings` prop instead, so their JavaScript is byte-identical in every language.
+- Plurals go through `Intl.PluralRules`, which is why `ru` carries `few`/`many` and `ja`/`zh`
+  carry only `other`. Do not hand-roll a count.
+- Prose strings take exactly three marks — `**bold**`, `` `code` ``, `[label](/path)` — rendered
+  by `src/components/Rich.astro`. Nothing from a dictionary reaches `set:html`.
+- Pages: `src/pages/<route>.astro` is English, `src/pages/[lang]/<route>.astro` is everything
+  else, and both are thin wrappers around one component in `src/components/pages/`.
+- `/privacy` carries a note on translated pages saying the English governs. Keep it. A
+  mistranslated privacy claim is a false statement about what the software does.
+
+The self-hosted faces are **latin-subset only**. Cyrillic and CJK fall through to the system
+faces named at the tail of each stack in `global.css` — shipping a CJK webfont would cost those
+visitors more than the whole rest of the page.
 
 ## Deploy
 

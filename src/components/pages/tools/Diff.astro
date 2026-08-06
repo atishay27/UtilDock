@@ -1,0 +1,18 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import JsonDiff from '../../tools/JsonDiff';
+import { langTag, t } from '../../../lib/i18n';
+import { DEFAULT_LOCALE, type Locale } from '../../../lib/i18n/locales';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+---
+
+<ToolLayout toolId="json-diff" locale={locale}>
+  {/* The island's JavaScript is identical in every language; only these
+      strings differ, and they are serialised into the page as props. */}
+  <JsonDiff client:load lang={langTag(locale)} strings={t(locale).islands} />
+</ToolLayout>

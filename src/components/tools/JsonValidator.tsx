@@ -9,8 +9,18 @@ import { useJsonWorker } from '../../lib/useJsonWorker';
 import { formatBytes, positionToOffset, type JsonError } from '../../lib/json/types';
 import type { SchemaIssue, ValidationResult } from '../../lib/json/validate';
 import { SAMPLE_BROKEN, SAMPLE_DOCUMENT, SAMPLE_SCHEMA } from '../../lib/json/samples';
+import { fill, plural } from '../../lib/i18n/format';
+import type { IslandStrings } from '../../lib/i18n/ui/en';
 
-export default function JsonValidator() {
+export default function JsonValidator({
+  lang,
+  strings,
+}: {
+  lang: string;
+  strings: IslandStrings;
+}) {
+  const s = strings.validator;
+  const c = strings.common;
   const [input, setInput] = usePersistentState('utildock:json-validator:input', '');
   const [schema, setSchema] = usePersistentState('utildock:json-validator:schema', '');
   const [useSchema, setUseSchema] = usePersistentState('utildock:json-validator:use-schema', false);
@@ -69,12 +79,16 @@ export default function JsonValidator() {
   const isEmpty = !input.trim();
 
   const verdict = (() => {
-    if (isEmpty) return { tone: 'idle' as const, text: 'Paste or drop JSON to validate it' };
-    if (!result) return { tone: 'idle' as const, text: 'Checking…' };
+    if (isEmpty) return { tone: 'idle' as const, text: s.idle };
+    if (!result) return { tone: 'idle' as const, text: s.checking };
     if (syntaxError) {
       return {
         tone: 'error' as const,
-        text: `Invalid JSON — line ${syntaxError.line}, column ${syntaxError.column}: ${syntaxError.message}`,
+        text: fill(s.invalidAt, {
+          line: syntaxError.line,
+          column: syntaxError.column,
+          message: syntaxError.message,
+        }),
       };
     }
     if (result.schema?.status === 'schema-error') {
@@ -83,33 +97,31 @@ export default function JsonValidator() {
     if (result.schema?.status === 'invalid') {
       return {
         tone: 'error' as const,
-        text: `Valid JSON, but ${issues.length} schema ${issues.length === 1 ? 'violation' : 'violations'}`,
+        text: plural(lang, s.schemaViolations, issues.length),
       };
     }
     if (result.schema?.status === 'valid') {
-      return { tone: 'ok' as const, text: 'Valid JSON and matches the schema' };
+      return { tone: 'ok' as const, text: s.validAndMatches };
     }
-    return { tone: 'ok' as const, text: 'Valid JSON' };
+    return { tone: 'ok' as const, text: c.validJson };
   })();
 
   return (
     <div className="grid gap-4 lg:h-[calc(100vh-19rem)] lg:min-h-[460px] lg:grid-cols-2">
       <Panel
-        title="Document"
+        title={s.documentTitle}
         highlighted={isOver}
         dropHandlers={dropHandlers}
+        dropLabel={c.dropHere}
         className="min-h-[320px]"
         actions={
           <>
-            <FileButton onText={(text) => setInput(text)} />
-            <Button icon="sparkle" onClick={() => setInput(SAMPLE_DOCUMENT)} title="Load a valid sample">
-              Sample
+            <FileButton onText={(text) => setInput(text)} label={c.load} title={c.loadTitle} />
+            <Button icon="sparkle" onClick={() => setInput(SAMPLE_DOCUMENT)} title={s.sampleValidTitle}>
+              {c.sample}
             </Button>
-            <Button
-              onClick={() => setInput(SAMPLE_BROKEN)}
-              title="Load a document with deliberate syntax errors"
-            >
-              Broken
+            <Button onClick={() => setInput(SAMPLE_BROKEN)} title={s.brokenTitle}>
+              {s.broken}
             </Button>
             <Button icon="trash" variant="danger" onClick={() => setInput('')} disabled={isEmpty} />
           </>
@@ -122,25 +134,25 @@ export default function JsonValidator() {
         }
       >
         <JsonEditor
-          label="JSON document to validate"
+          label={s.documentLabel}
           value={input}
           onChange={setInput}
           markers={markers}
           editorRef={editor}
-          placeholder={'{\n  "paste": "the JSON you want to check"\n}'}
+          placeholder={s.placeholder}
         />
       </Panel>
 
       <div className="grid min-h-0 gap-4" style={{ gridTemplateRows: useSchema ? '1fr 1fr' : '1fr' }}>
         {useSchema && (
           <Panel
-            title="JSON Schema"
+            title={s.schemaTitle}
             className="min-h-[220px]"
             actions={
               <>
-                <FileButton onText={(text) => setSchema(text)} />
-                <Button icon="sparkle" onClick={() => setSchema(SAMPLE_SCHEMA)}>
-                  Sample
+                <FileButton onText={(text) => setSchema(text)} label={c.load} title={c.loadTitle} />
+                <Button icon="sparkle" onClick={() => setSchema(SAMPLE_SCHEMA)} title={c.sampleTitle}>
+                  {c.sample}
                 </Button>
                 <Button
                   icon="trash"
@@ -152,24 +164,20 @@ export default function JsonValidator() {
             }
           >
             <JsonEditor
-              label="JSON Schema"
+              label={s.schemaTitle}
               value={schema}
               onChange={setSchema}
-              placeholder={'{\n  "type": "object",\n  "required": ["id"]\n}'}
+              placeholder={s.schemaPlaceholder}
             />
           </Panel>
         )}
 
         <Panel
-          title="Result"
+          title={s.resultTitle}
           className="min-h-[220px]"
           actions={
-            <Toggle
-              checked={useSchema}
-              onChange={setUseSchema}
-              title="Also check the document against a JSON Schema"
-            >
-              Check against a schema
+            <Toggle checked={useSchema} onChange={setUseSchema} title={s.useSchemaTitle}>
+              {s.useSchema}
             </Toggle>
           }
         >
@@ -179,6 +187,7 @@ export default function JsonValidator() {
             result={result}
             issues={issues}
             onSelectIssue={revealIssue}
+            strings={s}
           />
         </Panel>
       </div>
@@ -192,14 +201,20 @@ interface ResultBodyProps {
   result: ValidationResult | null;
   issues: SchemaIssue[];
   onSelectIssue: (issue: SchemaIssue) => void;
+  strings: IslandStrings['validator'];
 }
 
-function ResultBody({ isEmpty, syntaxError, result, issues, onSelectIssue }: ResultBodyProps) {
+function ResultBody({
+  isEmpty,
+  syntaxError,
+  result,
+  issues,
+  onSelectIssue,
+  strings,
+}: ResultBodyProps) {
   if (isEmpty) {
     return (
-      <Empty icon="check-shield">
-        Paste a document into the Document panel. It is checked as you type, entirely in this tab.
-      </Empty>
+      <Empty icon="check-shield">{strings.emptyBody}</Empty>
     );
   }
 
@@ -217,8 +232,7 @@ function ResultBody({ isEmpty, syntaxError, result, issues, onSelectIssue }: Res
           </div>
         </div>
         <p className="mt-4 text-xs leading-relaxed text-faint">
-          The parser stops at the first problem it hits. Fix this one and any errors further down
-          the document will appear.
+          {strings.firstProblem}
         </p>
       </div>
     );
@@ -252,7 +266,9 @@ function ResultBody({ isEmpty, syntaxError, result, issues, onSelectIssue }: Res
                 <p className="mt-1 text-sm text-chalk">{issue.message}</p>
               </div>
               {issue.from && (
-                <span className="shrink-0 font-mono text-xs text-faint">L{issue.from.line}</span>
+                <span className="shrink-0 font-mono text-xs text-faint">
+                  {fill(strings.atLine, { line: issue.from.line })}
+                </span>
               )}
             </button>
           </li>
@@ -263,9 +279,7 @@ function ResultBody({ isEmpty, syntaxError, result, issues, onSelectIssue }: Res
 
   return (
     <Empty icon="check">
-      {result?.schema?.status === 'valid'
-        ? 'The document is valid JSON and satisfies every rule in the schema.'
-        : 'The document is valid JSON.'}
+      {result?.schema?.status === 'valid' ? strings.okSchema : strings.okPlain}
     </Empty>
   );
 }

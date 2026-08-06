@@ -1,27 +1,7 @@
 ---
-import ToolLayout from '../../layouts/ToolLayout.astro';
-import JsonFormatter from '../../components/tools/JsonFormatter';
+/* English keeps the unprefixed URL it has always had. The body lives in
+   Formatter.astro so the eight locales render from one source. */
+import Formatter from '../../components/pages/tools/Formatter.astro';
 ---
 
-<ToolLayout toolId="json-formatter">
-  <JsonFormatter client:load />
-
-  <div slot="about" class="mt-4 space-y-4 text-sm leading-relaxed text-temper">
-    <p>
-      Paste or drop a document into the input panel and the formatted result appears as you type.
-      Choose two, three or four spaces, or tabs — whichever your project uses. Switch to <strong
-        class="font-medium text-chalk">Minify</strong
-      > to strip every byte of whitespace, which is what you want before embedding JSON in an
-      environment variable or a URL.
-    </p>
-    <p>
-      <strong class="font-medium text-chalk">Sort keys</strong> rewrites every object with its keys
-      in alphabetical order. Two documents that differ only in key order become byte-identical, which
-      makes them diff cleanly in version control.
-    </p>
-    <p>
-      Parsing runs in a Web Worker, so even multi-megabyte documents format without the page going
-      unresponsive while you type.
-    </p>
-  </div>
-</ToolLayout>
+<Formatter locale="en" />

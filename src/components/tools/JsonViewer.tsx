@@ -8,11 +8,16 @@ import { useJsonWorker } from '../../lib/useJsonWorker';
 import { formatBytes, positionToOffset, type JsonError, type JsonStats } from '../../lib/json/types';
 import { allContainerPaths, buildRows, pathsToDepth, search, type Row } from '../../lib/json/tree';
 import { SAMPLE_DOCUMENT } from '../../lib/json/samples';
+import { fill, plural } from '../../lib/i18n/format';
+import type { IslandStrings } from '../../lib/i18n/ui/en';
 
 const ROW_HEIGHT = 24;
 const OVERSCAN = 12;
 
-export default function JsonViewer() {
+/** `lang` is the BCP 47 tag; `plural()` needs it for the count phrases. */
+export default function JsonViewer({ lang, strings }: { lang: string; strings: IslandStrings }) {
+  const s = strings.viewer;
+  const c = strings.common;
   const [input, setInput] = usePersistentState('utildock:json-viewer:input', '');
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(['$']));
@@ -83,16 +88,17 @@ export default function JsonViewer() {
   return (
     <div className="grid gap-4 lg:h-[calc(100vh-19rem)] lg:min-h-[460px] lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)_auto]">
       <Panel
-        title="Source"
+        title={s.sourceTitle}
         aligned
         highlighted={isOver}
         dropHandlers={dropHandlers}
+        dropLabel={c.dropHere}
         className="min-h-[320px]"
         actions={
           <>
-            <FileButton onText={(text) => setInput(text)} />
-            <Button icon="sparkle" onClick={() => setInput(SAMPLE_DOCUMENT)}>
-              Sample
+            <FileButton onText={(text) => setInput(text)} label={c.load} title={c.loadTitle} />
+            <Button icon="sparkle" onClick={() => setInput(SAMPLE_DOCUMENT)} title={c.sampleTitle}>
+              {c.sample}
             </Button>
             <Button icon="trash" variant="danger" onClick={() => setInput('')} disabled={isEmpty} />
           </>
@@ -102,27 +108,31 @@ export default function JsonViewer() {
             <span>{formatBytes(new Blob([input]).size)}</span>
             {error ? (
               <Status tone="error">
-                Line {error.line}, column {error.column} — {error.message}
+                {fill(c.errorAt, {
+                  line: error.line,
+                  column: error.column,
+                  message: error.message,
+                })}
               </Status>
             ) : isEmpty ? (
-              <Status tone="idle">Paste or drop JSON to explore it</Status>
+              <Status tone="idle">{s.idle}</Status>
             ) : (
-              <Status tone="ok">Valid JSON</Status>
+              <Status tone="ok">{c.validJson}</Status>
             )}
           </>
         }
       >
         <JsonEditor
-          label="JSON source"
+          label={s.sourceLabel}
           value={input}
           onChange={setInput}
           markers={markers}
-          placeholder={'{\n  "paste": "the JSON you want to explore"\n}'}
+          placeholder={s.placeholder}
         />
       </Panel>
 
       <Panel
-        title="Tree"
+        title={s.treeTitle}
         aligned
         className="min-h-[320px]"
         actions={
@@ -137,8 +147,8 @@ export default function JsonViewer() {
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Filter keys and values"
-                aria-label="Filter the tree"
+                placeholder={s.filter}
+                aria-label={s.filterAria}
                 disabled={value === undefined}
                 /* w-44 cut the placeholder off mid-word at every width. */
                 className="w-52 border border-scribe bg-anvil-lit py-1.5 pr-2 pl-8 text-[13px] text-chalk transition-colors placeholder:text-faint hover:border-scribe-strong focus:w-64"
@@ -147,16 +157,16 @@ export default function JsonViewer() {
             <Button
               onClick={() => value !== undefined && setExpanded(allContainerPaths(value))}
               disabled={value === undefined}
-              title="Expand every node"
+              title={s.expandAllTitle}
             >
-              Expand all
+              {s.expandAll}
             </Button>
             <Button
               onClick={() => setExpanded(new Set(['$']))}
               disabled={value === undefined}
-              title="Collapse back to the root"
+              title={s.collapseTitle}
             >
-              Collapse
+              {s.collapse}
             </Button>
           </>
         }
@@ -165,19 +175,24 @@ export default function JsonViewer() {
             {stats ? (
               <>
                 <span>
-                  {stats.objects} objects · {stats.arrays} arrays · {stats.keys} keys · depth{' '}
-                  {stats.depth}
+                  {fill(c.stats, {
+                    objects: stats.objects,
+                    arrays: stats.arrays,
+                    keys: stats.keys,
+                    depth: stats.depth,
+                  })}
                 </span>
                 {debouncedQuery.trim() && (
                   <span className="text-cherry">
-                    {searchOutcome?.matches.size ?? 0} matching{' '}
-                    {searchOutcome?.matches.size === 1 ? 'node' : 'nodes'}
+                    {plural(lang, s.matching, searchOutcome?.matches.size ?? 0)}
                   </span>
                 )}
-                <span className="ml-auto text-faint">{rows.length} rows shown</span>
+                <span className="ml-auto text-faint">
+                  {fill(s.rowsShown, { count: rows.length })}
+                </span>
               </>
             ) : (
-              <span className="text-faint">Nothing to show yet</span>
+              <span className="text-faint">{s.nothingYet}</span>
             )}
           </>
         }
@@ -187,13 +202,17 @@ export default function JsonViewer() {
             <p className="max-w-xs text-sm leading-relaxed text-temper">
               {/* Named panels rather than sides: below lg the two stack, and
                   "on the left" then points at nothing. */}
-              {error
-                ? 'Fix the syntax error in the Source panel and the tree will appear here.'
-                : 'The tree appears here as soon as the Source panel holds valid JSON.'}
+              {error ? s.emptyError : s.emptyValid}
             </p>
           </div>
         ) : (
-          <TreeRows rows={rows} matches={searchOutcome?.matches} onToggle={toggle} />
+          <TreeRows
+            rows={rows}
+            matches={searchOutcome?.matches}
+            onToggle={toggle}
+            strings={s}
+            common={c}
+          />
         )}
       </Panel>
     </div>
@@ -204,13 +223,15 @@ interface TreeRowsProps {
   rows: Row[];
   matches?: Set<string>;
   onToggle: (path: string) => void;
+  strings: IslandStrings['viewer'];
+  common: IslandStrings['common'];
 }
 
 /**
  * Windowed row list. Every row is exactly ROW_HEIGHT tall, so the visible slice
  * is pure arithmetic — no measurement, no per-row observers.
  */
-function TreeRows({ rows, matches, onToggle }: TreeRowsProps) {
+function TreeRows({ rows, matches, onToggle, strings, common }: TreeRowsProps) {
   const scroller = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [height, setHeight] = useState(600);
@@ -230,7 +251,7 @@ function TreeRows({ rows, matches, onToggle }: TreeRowsProps) {
   if (rows.length === 0) {
     return (
       <div className="grid h-full place-items-center p-6 text-center">
-        <p className="text-sm text-temper">No keys or values match that filter.</p>
+        <p className="text-sm text-temper">{strings.noFilterMatch}</p>
       </div>
     );
   }
@@ -241,7 +262,7 @@ function TreeRows({ rows, matches, onToggle }: TreeRowsProps) {
       onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       className="h-full overflow-auto font-mono text-[13px]"
       role="tree"
-      aria-label="JSON tree"
+      aria-label={strings.treeAria}
     >
       <div style={{ height: rows.length * ROW_HEIGHT, position: 'relative' }}>
         <div style={{ transform: `translateY(${start * ROW_HEIGHT}px)` }}>
@@ -251,6 +272,8 @@ function TreeRows({ rows, matches, onToggle }: TreeRowsProps) {
               row={row}
               isMatch={matches?.has(row.path) ?? false}
               onToggle={onToggle}
+              strings={strings}
+              common={common}
             />
           ))}
         </div>
@@ -263,10 +286,14 @@ function TreeRow({
   row,
   isMatch,
   onToggle,
+  strings,
+  common,
 }: {
   row: Row;
   isMatch: boolean;
   onToggle: (path: string) => void;
+  strings: IslandStrings['viewer'];
+  common: IslandStrings['common'];
 }) {
   const { copy, copied } = useCopy(1200);
   const isContainer = row.kind === 'object' || row.kind === 'array';
@@ -285,7 +312,7 @@ function TreeRow({
           type="button"
           onClick={() => onToggle(row.path)}
           className="mr-1 grid size-4 shrink-0 place-items-center text-faint hover:text-chalk"
-          aria-label={row.expanded ? 'Collapse' : 'Expand'}
+          aria-label={row.expanded ? strings.collapse : strings.expand}
         >
           <Icon name={row.expanded ? 'chevron-down' : 'chevron-right'} size={12} />
         </button>
@@ -307,11 +334,11 @@ function TreeRow({
       <button
         type="button"
         onClick={() => void copy(row.path)}
-        title={`Copy path — ${row.path}`}
+        title={fill(common.copyPathTitle, { path: row.path })}
         className="ml-2 hidden shrink-0 items-center gap-1 px-1.5 py-0.5 text-[11px] text-faint group-hover:inline-flex hover:bg-bench hover:text-chalk"
       >
         <Icon name={copied ? 'check' : 'copy'} size={11} />
-        {copied ? 'copied' : 'path'}
+        {copied ? common.pathCopied : common.path}
       </button>
     </div>
   );
