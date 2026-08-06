@@ -38,7 +38,7 @@ export const en = {
     closeToolsMenu: 'Close tools menu',
     toolsButton: 'Tools',
     privacyPill: 'Nothing leaves this tab',
-    privacyPillMobile: 'Your JSON stays in this tab',
+    privacyPillMobile: 'What you paste stays in this tab',
     open: 'Open',
   },
 
@@ -89,10 +89,10 @@ export const en = {
   },
 
   home: {
-    title: 'Free JSON tools that never leave your browser',
+    title: 'Free JSON and JWT tools, in your browser',
     headlineLead: 'Developer tools that never',
     headlineAccent: 'touch a server.',
-    lede: 'Small, sharp utilities that run entirely in this tab — free, ad-free and with no sign-up. JSON first: a formatter, a viewer, a validator and a comparator, with JWT next.',
+    lede: 'Small, sharp utilities that run entirely in this tab — free, ad-free and with no sign-up. A JSON formatter, viewer, validator and comparator, and a JWT decoder that checks signatures without ever seeing your key.',
     assurances: ['Nothing uploaded', 'Nothing logged', 'No account, no limits'],
     closeLine: 'Unplug the network. It still works.',
     closeCta: 'How that is true',
@@ -158,7 +158,7 @@ export const en = {
     ],
     todayHeading: 'What is here today',
     today:
-      'JSON came first because it is what most of us reach for most often. JWT decoding is next, and the list will keep growing — always under the same rules: fast, free, ad-free, and entirely client-side.',
+      'JSON came first because it is what most of us reach for most often, and a JWT decoder followed — including signature verification, which runs on the browser\'s own WebCrypto so the key never leaves your machine either. The list will keep growing, always under the same rules: fast, free, ad-free, and entirely client-side.',
   },
 
   privacy: {
@@ -246,6 +246,11 @@ export const en = {
       'Paste a document into each side. The comparison is structural rather than textual: both documents are parsed first, so reordered keys, different indentation and trailing whitespace never register as changes.',
       'Array elements are matched by identity where one exists — an **id**, **key**, **uuid** or **name** field — so inserting an element at the start reports one addition rather than rewriting everything after it.',
       'Long runs of identical lines fold away, leaving the changes with just enough structure around them to locate each one. Alt + ↑ and Alt + ↓ step through the differences.',
+    ],
+    'jwt-decoder': [
+      'Paste a token — with or without its `Bearer` prefix — and it splits into its three parts, coloured so you can see where each one ends. The header and payload are decoded to JSON, and the claims are listed again in plain words, with `exp`, `nbf` and `iat` shown as real dates and as how long ago or how far off they are.',
+      '**Decoding a JWT is not verifying it.** The first two parts are base64url, not encryption: anyone holding the token can read them, which is why a token is never a place to put a secret. Turn on **Check the signature** and paste the shared secret for an HS algorithm, or a public key for an RS, PS or ES one, and the signature is actually tested — HS256/384/512, RS256/384/512, PS256/384/512 and ES256/384/512, using the browser\'s own WebCrypto.',
+      'The key you paste is treated differently from every other input on this site: it is never written to `localStorage` and never restored on refresh. Nothing here — token or key — is uploaded, and there is no backend that could receive either.',
     ],
   },
 
@@ -399,6 +404,118 @@ export const en = {
         removed: 'removed',
         changed: 'changed',
         moved: 'moved',
+      },
+    },
+
+    jwt: {
+      tokenTitle: 'Token',
+      tokenLabel: 'JSON Web Token to decode',
+      placeholder: 'Paste a JSON Web Token — three parts, separated by dots',
+      idle: 'Paste a token to read it',
+      decoded: 'Decoded',
+
+      /* The segment legend under the input. The three colours are the whole
+         lesson: a JWT is three parts, and only the third one proves anything. */
+      segHeader: 'Header',
+      segPayload: 'Payload',
+      segSignature: 'Signature',
+      segChars: p({ one: '{count} char', other: '{count} chars' }),
+
+      sampleTitle: 'Load a real, correctly signed sample token',
+      expired: 'Expired',
+      expiredTitle: 'Load a token whose expiry has already passed',
+
+      /** Keyed by the fault codes in `lib/jwt/decode.ts`. */
+      faults: {
+        'not-a-token':
+          'That is not a JSON Web Token. A JWT is three base64url parts joined by dots.',
+        encrypted:
+          'This is an encrypted token (a JWE — five parts, not three). Its contents cannot be read without the decryption key, by this or any other tool.',
+        'too-few-parts':
+          'A JWT has three parts joined by dots. This has fewer, so something is missing from it.',
+        'too-many-parts': 'This has more dot-separated parts than a JWT or a JWE can have.',
+        'bad-base64':
+          'This part is not valid base64url, so it cannot be decoded. A truncated token is the usual cause.',
+        'bad-json': 'This part decoded, but what came out is not JSON.',
+        'not-an-object': "This part is JSON, but a token's header and payload must each be an object.",
+      },
+
+      headerTitle: 'Header',
+      payloadTitle: 'Payload',
+      headerLabel: 'Decoded header',
+      payloadLabel: 'Decoded payload',
+      algorithm: 'Algorithm',
+      keyId: 'Key id',
+      tokenType: 'Type',
+
+      claimsTitle: 'Claims',
+      registeredHeading: 'Registered claims',
+      customHeading: 'Custom claims',
+      noClaims: 'Paste a token into the Token panel and its claims are listed here, in plain words.',
+      noCustomClaims: 'This token carries nothing beyond the registered claims.',
+      noRegisteredClaims: 'This token carries none of the registered claims — not even an expiry.',
+
+      /** The seven claims RFC 7519 registers, named for people who are not reading the RFC. */
+      claimNames: {
+        iss: 'Issuer',
+        sub: 'Subject',
+        aud: 'Audience',
+        exp: 'Expires',
+        nbf: 'Not before',
+        iat: 'Issued',
+        jti: 'Token id',
+      },
+      claimHints: {
+        iss: 'Who issued this token',
+        sub: 'Who or what it is about',
+        aud: 'Who is meant to accept it',
+        exp: 'After this moment it must be rejected',
+        nbf: 'Before this moment it must be rejected',
+        iat: 'When it was issued',
+        jti: 'Its unique id, used for revocation',
+      },
+
+      windowExpired: 'Expired',
+      windowNotYet: 'Not valid yet',
+      windowValid: 'Inside its validity window',
+      windowUnbounded: 'No expiry set — this token never stops being accepted',
+
+      signatureTitle: 'Signature',
+      /* The single most useful sentence on the page: it is the misconception
+         that puts secrets in tokens and trusts unverified claims. */
+      decodeNotVerify:
+        'A JWT is **encoded, not encrypted** — anyone holding this token can read everything above without a key. Only a signature check tells you it is genuine and unaltered.',
+      verify: 'Check the signature',
+      verifyTitle: 'Check the signature against a key, here in this tab',
+      secretLabel: 'Shared secret',
+      secretPlaceholder: 'The secret this token was signed with',
+      keyLabel: 'Public key',
+      keyPlaceholder: 'A PEM public key, a single JWK, or a whole JWKS',
+      keyAria: 'Verification key',
+      base64Secret: 'Secret is base64url',
+      base64SecretTitle: 'Decode the secret from base64url before using it as key material',
+      /* Every other input on this site is restored on refresh. This one must
+         not be, and saying so is the point. */
+      keyNeverStored:
+        'The key is used and dropped — never saved in this browser, never sent anywhere.',
+      sampleSecretHint: 'The sample token is signed with `{secret}`.',
+      checking: 'Checking…',
+      notChecked: 'Not checked',
+
+      /** Keyed by the statuses in `lib/jwt/verify.ts`. */
+      verdicts: {
+        valid: 'Signature verified',
+        invalid: 'Signature does not match that key',
+        unsecured:
+          'Unsecured token — its `alg` is `none`, so it carries no signature and proves nothing. Most libraries reject these outright.',
+        unsupported: '{algorithm} is not an algorithm this tool can check.',
+        'bad-key':
+          'That key could not be read. Use a PEM block beginning `BEGIN PUBLIC KEY`, a JWK, or a JWKS.',
+        'no-key': 'Enter a key and the signature is checked as you type.',
+        'no-signature': 'This token has no signature part, so there is nothing to check.',
+        'kid-mismatch':
+          "No key in that set matches this token's `kid`, so there is nothing to check it against.",
+        error: 'The signature could not be checked in this browser.',
       },
     },
   },

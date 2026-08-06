@@ -17,7 +17,7 @@ export const ptbr: UIStrings = {
     closeToolsMenu: 'Fechar o menu de ferramentas',
     toolsButton: 'Ferramentas',
     privacyPill: 'Nada sai desta aba',
-    privacyPillMobile: 'Seu JSON fica nesta aba',
+    privacyPillMobile: 'O que você cola fica nesta aba',
     open: 'Abrir',
   },
 
@@ -68,10 +68,10 @@ export const ptbr: UIStrings = {
   },
 
   home: {
-    title: 'Ferramentas JSON grátis no seu navegador',
+    title: 'Ferramentas JSON e JWT grátis no seu navegador',
     headlineLead: 'Ferramentas que nunca',
     headlineAccent: 'tocam um servidor.',
-    lede: 'Utilitários pequenos e afiados que rodam inteiramente nesta aba — grátis, sem anúncios e sem cadastro. JSON primeiro: um formatador, um visualizador, um validador e um comparador, com JWT em seguida.',
+    lede: 'Utilitários pequenos e afiados que rodam inteiramente nesta aba — grátis, sem anúncios e sem cadastro. Um formatador, um visualizador, um validador e um comparador de JSON, e um decodificador de JWT que verifica assinaturas sem nunca ver sua chave.',
     assurances: ['Nada é enviado', 'Nada é registrado', 'Sem conta, sem limites'],
     closeLine: 'Desconecte a rede. Continua funcionando.',
     closeCta: 'Por que isso é verdade',
@@ -142,7 +142,7 @@ export const ptbr: UIStrings = {
     ],
     todayHeading: 'O que existe hoje',
     today:
-      'JSON veio primeiro porque é o que a maioria de nós usa com mais frequência. A decodificação de JWT é o próximo passo, e a lista vai continuar crescendo — sempre sob as mesmas regras: rápido, grátis, sem anúncios e inteiramente do lado do cliente.',
+      'JSON veio primeiro porque é o que a maioria de nós usa com mais frequência, e depois veio um decodificador de JWT — com verificação de assinatura incluída, que roda sobre a própria WebCrypto do navegador, então a chave também não sai da sua máquina. A lista vai continuar crescendo, sempre sob as mesmas regras: rápido, grátis, sem anúncios e inteiramente do lado do cliente.',
   },
 
   privacy: {
@@ -223,6 +223,11 @@ export const ptbr: UIStrings = {
       'Cole um documento de cada lado. A comparação é estrutural, não textual: os dois documentos são analisados primeiro, então chaves reordenadas, indentação diferente e espaços no fim da linha nunca contam como mudanças.',
       'Elementos de array são pareados por identidade quando existe uma — um campo **id**, **key**, **uuid** ou **name** — de modo que inserir um elemento no começo relata uma única adição em vez de reescrever tudo que vem depois.',
       'Sequências longas de linhas idênticas são recolhidas, deixando as mudanças com estrutura suficiente ao redor para localizar cada uma. Alt + ↑ e Alt + ↓ percorrem as diferenças.',
+    ],
+    'jwt-decoder': [
+      'Cole um token — com ou sem o prefixo `Bearer` — e ele se divide nas suas três partes, coloridas para você ver onde cada uma termina. O cabeçalho e o payload são decodificados em JSON, e as claims são listadas de novo em palavras simples, com `exp`, `nbf` e `iat` mostradas como datas reais e como há quanto tempo passaram ou quanto falta.',
+      '**Decodificar um JWT não é verificá-lo.** As duas primeiras partes são base64url, não criptografia: qualquer um com o token consegue lê-las, e é por isso que um token nunca é lugar para guardar segredo. Ligue **Verificar a assinatura** e cole o segredo compartilhado para um algoritmo HS, ou uma chave pública para um RS, PS ou ES, e a assinatura é realmente testada — HS256/384/512, RS256/384/512, PS256/384/512 e ES256/384/512, usando a própria WebCrypto do navegador.',
+      'A chave que você cola é tratada de forma diferente de qualquer outra entrada deste site: nunca é escrita no `localStorage` nem restaurada ao recarregar. Nada disso — nem o token nem a chave — é enviado, e não existe servidor que pudesse receber os dois.',
     ],
   },
 
@@ -375,6 +380,113 @@ export const ptbr: UIStrings = {
         removed: 'removido',
         changed: 'modificado',
         moved: 'movido',
+      },
+    },
+
+    jwt: {
+      tokenTitle: 'Token',
+      tokenLabel: 'JSON Web Token para decodificar',
+      placeholder: 'Cole um JSON Web Token — três partes separadas por pontos',
+      idle: 'Cole um token para lê-lo',
+      decoded: 'Decodificado',
+
+      segHeader: 'Cabeçalho',
+      segPayload: 'Payload',
+      segSignature: 'Assinatura',
+      segChars: p({ one: '{count} caractere', other: '{count} caracteres' }),
+
+      sampleTitle: 'Carregar um token de exemplo realmente assinado',
+      expired: 'Expirado',
+      expiredTitle: 'Carregar um token cuja expiração já passou',
+
+      faults: {
+        'not-a-token':
+          'Isso não é um JSON Web Token. Um JWT são três partes em base64url unidas por pontos.',
+        encrypted:
+          'Isto é um token criptografado (um JWE — cinco partes, não três). Seu conteúdo não pode ser lido sem a chave de descriptografia, nem por esta nem por nenhuma outra ferramenta.',
+        'too-few-parts':
+          'Um JWT tem três partes unidas por pontos. Este tem menos, então está faltando algo nele.',
+        'too-many-parts':
+          'Isto tem mais partes separadas por pontos do que um JWT ou um JWE pode ter.',
+        'bad-base64':
+          'Esta parte não é base64url válido, então não pode ser decodificada. O motivo mais comum é um token truncado.',
+        'bad-json': 'Esta parte foi decodificada, mas o que saiu não é JSON.',
+        'not-an-object':
+          'Esta parte é JSON, mas o cabeçalho e o payload de um token precisam ser objetos.',
+      },
+
+      headerTitle: 'Cabeçalho',
+      payloadTitle: 'Payload',
+      headerLabel: 'Cabeçalho decodificado',
+      payloadLabel: 'Payload decodificado',
+      algorithm: 'Algoritmo',
+      keyId: 'ID da chave',
+      tokenType: 'Tipo',
+
+      claimsTitle: 'Claims',
+      registeredHeading: 'Claims registradas',
+      customHeading: 'Claims personalizadas',
+      noClaims: 'Cole um token no painel Token e suas claims aparecem aqui, em palavras simples.',
+      noCustomClaims: 'Este token não carrega nada além das claims registradas.',
+      noRegisteredClaims:
+        'Este token não carrega nenhuma das claims registradas — nem sequer uma expiração.',
+
+      claimNames: {
+        iss: 'Emissor',
+        sub: 'Sujeito',
+        aud: 'Destinatário',
+        exp: 'Expira',
+        nbf: 'Não antes de',
+        iat: 'Emitido',
+        jti: 'ID do token',
+      },
+      claimHints: {
+        iss: 'Quem emitiu este token',
+        sub: 'Sobre quem ou o que ele trata',
+        aud: 'Quem deve aceitá-lo',
+        exp: 'Depois deste momento ele precisa ser rejeitado',
+        nbf: 'Antes deste momento ele precisa ser rejeitado',
+        iat: 'Quando foi emitido',
+        jti: 'Seu id único, usado para revogação',
+      },
+
+      windowExpired: 'Expirado',
+      windowNotYet: 'Ainda não é válido',
+      windowValid: 'Dentro da sua janela de validade',
+      windowUnbounded: 'Sem expiração — este token nunca deixa de ser aceito',
+
+      signatureTitle: 'Assinatura',
+      decodeNotVerify:
+        'Um JWT é **codificado, não criptografado** — qualquer um com este token consegue ler tudo acima sem chave nenhuma. Só a verificação da assinatura diz que ele é legítimo e não foi alterado.',
+      verify: 'Verificar a assinatura',
+      verifyTitle: 'Verificar a assinatura contra uma chave, aqui nesta aba',
+      secretLabel: 'Segredo compartilhado',
+      secretPlaceholder: 'O segredo com que este token foi assinado',
+      keyLabel: 'Chave pública',
+      keyPlaceholder: 'Uma chave pública PEM, um JWK, ou um JWKS inteiro',
+      keyAria: 'Chave de verificação',
+      base64Secret: 'O segredo é base64url',
+      base64SecretTitle:
+        'Decodificar o segredo a partir de base64url antes de usá-lo como material de chave',
+      keyNeverStored:
+        'A chave é usada e descartada — nunca salva neste navegador, nunca enviada a lugar nenhum.',
+      sampleSecretHint: 'O token de exemplo é assinado com `{secret}`.',
+      checking: 'Verificando…',
+      notChecked: 'Não verificada',
+
+      verdicts: {
+        valid: 'Assinatura verificada',
+        invalid: 'A assinatura não confere com essa chave',
+        unsecured:
+          'Token sem proteção — seu `alg` é `none`, então ele não carrega assinatura e não prova nada. A maioria das bibliotecas rejeita esses tokens de imediato.',
+        unsupported: '{algorithm} não é um algoritmo que esta ferramenta consegue verificar.',
+        'bad-key':
+          'Não foi possível ler essa chave. Use um bloco PEM começando com `BEGIN PUBLIC KEY`, um JWK, ou um JWKS.',
+        'no-key': 'Informe uma chave e a assinatura é verificada enquanto você digita.',
+        'no-signature': 'Este token não tem parte de assinatura, então não há o que verificar.',
+        'kid-mismatch':
+          'Nenhuma chave desse conjunto corresponde ao `kid` deste token, então não há contra o que verificá-lo.',
+        error: 'Não foi possível verificar a assinatura neste navegador.',
       },
     },
   },

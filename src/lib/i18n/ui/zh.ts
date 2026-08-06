@@ -18,7 +18,7 @@ export const zh: UIStrings = {
     closeToolsMenu: '关闭工具菜单',
     toolsButton: '工具',
     privacyPill: '没有任何内容离开此标签页',
-    privacyPillMobile: '你的 JSON 留在这个标签页里',
+    privacyPillMobile: '你粘贴的内容留在这个标签页里',
     open: '打开',
   },
 
@@ -69,10 +69,10 @@ export const zh: UIStrings = {
   },
 
   home: {
-    title: '永不离开浏览器的免费 JSON 工具',
+    title: '永不离开浏览器的免费 JSON 与 JWT 工具',
     headlineLead: '从不碰服务器的',
     headlineAccent: '开发者工具。',
-    lede: '小而锋利的实用工具，完全在这个标签页里运行——免费、无广告、无需注册。先是 JSON：格式化工具、查看器、校验器和比较工具，接下来是 JWT。',
+    lede: '小而锋利的实用工具，完全在这个标签页里运行——免费、无广告、无需注册。JSON 的格式化工具、查看器、校验器和比较工具，再加上一个从不接触你的密钥就能验证签名的 JWT 解码器。',
     assurances: ['不上传任何内容', '不记录任何日志', '无需账号，没有限制'],
     closeLine: '拔掉网络。它照样能用。',
     closeCta: '为什么是真的',
@@ -133,7 +133,7 @@ export const zh: UIStrings = {
     ],
     todayHeading: '目前有什么',
     today:
-      'JSON 排在最前，因为它是我们大多数人最常打交道的东西。接下来是 JWT 解码，这个列表还会继续增长——始终遵循同样的原则：快速、免费、无广告，并且完全在客户端运行。',
+      'JSON 排在最前，因为它是我们大多数人最常打交道的东西，随后加入的是 JWT 解码器——包括签名验证，它跑在浏览器自带的 WebCrypto 上，所以密钥同样不会离开你的机器。这个列表还会继续增长，始终遵循同样的原则：快速、免费、无广告，并且完全在客户端运行。',
   },
 
   privacy: {
@@ -214,6 +214,11 @@ export const zh: UIStrings = {
       '在两侧各粘贴一份文档。比较是结构性的而非文本性的：两份文档会先被解析，因此重新排序的键、不同的缩进和行尾空白都不会被算作变更。',
       '数组元素在存在标识时按标识配对——**id**、**key**、**uuid** 或 **name** 字段——因此在开头插入一个元素只会报告一处新增，而不是把后面的一切重写一遍。',
       '长段完全相同的行会被折叠起来，只留下变更本身以及刚好足以定位它们的结构。Alt + ↑ 和 Alt + ↓ 可以在差异之间逐个跳转。',
+    ],
+    'jwt-decoder': [
+      '粘贴一个令牌——带不带 `Bearer` 前缀都可以——它会被拆成三个部分，并用颜色区分，让你看清每一段在哪里结束。头部和负载会被解码成 JSON，声明还会用通俗的说法再列一遍，其中 `exp`、`nbf` 和 `iat` 会显示为真实日期，并标出已经过去多久或者还有多久。',
+      '**解码 JWT 不等于验证 JWT。** 前两部分是 base64url，不是加密：任何拿到令牌的人都能读到，所以令牌永远不是存放机密的地方。打开**验证签名**，为 HS 系列算法粘贴共享密钥，或者为 RS、PS、ES 系列粘贴公钥，签名就会被真正验证——支持 HS256/384/512、RS256/384/512、PS256/384/512 和 ES256/384/512，使用浏览器自带的 WebCrypto。',
+      '你粘贴的密钥与本站其他任何输入都不同：它绝不会写入 `localStorage`，刷新后也不会被恢复。令牌和密钥都不会被上传，而且根本不存在能接收它们的服务器。',
     ],
   },
 
@@ -355,6 +360,103 @@ export const zh: UIStrings = {
         removed: '删除',
         changed: '变更',
         moved: '移动',
+      },
+    },
+
+    jwt: {
+      tokenTitle: '令牌',
+      tokenLabel: '要解码的 JSON Web Token',
+      placeholder: '粘贴一个 JSON Web Token——由点号分隔的三个部分',
+      idle: '粘贴一个令牌即可读取',
+      decoded: '已解码',
+
+      segHeader: '头部',
+      segPayload: '负载',
+      segSignature: '签名',
+      segChars: p({ other: '{count} 个字符' }),
+
+      sampleTitle: '载入一个真实且已正确签名的示例令牌',
+      expired: '已过期',
+      expiredTitle: '载入一个有效期已经过去的令牌',
+
+      faults: {
+        'not-a-token': '这不是 JSON Web Token。JWT 是用点号连接的三段 base64url。',
+        encrypted:
+          '这是一个加密令牌（JWE——五段而不是三段）。没有解密密钥就无法读取其内容，本工具和其他任何工具都一样。',
+        'too-few-parts': 'JWT 由点号连接的三段组成。这个少于三段，说明缺了一部分。',
+        'too-many-parts': '这里用点号分隔的段数比 JWT 或 JWE 所能有的还多。',
+        'bad-base64': '这一段不是有效的 base64url，因此无法解码。最常见的原因是令牌被截断了。',
+        'bad-json': '这一段解码成功了，但出来的内容不是 JSON。',
+        'not-an-object': '这一段是 JSON，但令牌的头部和负载都必须是对象。',
+      },
+
+      headerTitle: '头部',
+      payloadTitle: '负载',
+      headerLabel: '解码后的头部',
+      payloadLabel: '解码后的负载',
+      algorithm: '算法',
+      keyId: '密钥 ID',
+      tokenType: '类型',
+
+      claimsTitle: '声明',
+      registeredHeading: '注册声明',
+      customHeading: '自定义声明',
+      noClaims: '在「令牌」面板里粘贴一个令牌，它的声明就会用通俗的说法列在这里。',
+      noCustomClaims: '这个令牌除了注册声明之外没有别的内容。',
+      noRegisteredClaims: '这个令牌不含任何注册声明——连过期时间都没有。',
+
+      claimNames: {
+        iss: '签发者',
+        sub: '主体',
+        aud: '受众',
+        exp: '过期时间',
+        nbf: '生效时间',
+        iat: '签发时间',
+        jti: '令牌 ID',
+      },
+      claimHints: {
+        iss: '谁签发了这个令牌',
+        sub: '它描述的是谁或什么',
+        aud: '谁应当接受它',
+        exp: '过了这一刻就必须拒绝',
+        nbf: '在这一刻之前必须拒绝',
+        iat: '它是什么时候签发的',
+        jti: '它的唯一标识，用于吊销',
+      },
+
+      windowExpired: '已过期',
+      windowNotYet: '尚未生效',
+      windowValid: '在有效期内',
+      windowUnbounded: '未设置过期时间——这个令牌永远不会失效',
+
+      signatureTitle: '签名',
+      decodeNotVerify:
+        'JWT 是**编码，不是加密**——任何拿到这个令牌的人，不需要密钥就能读到上面的全部内容。只有验证签名才能说明它是真的、没有被改动过。',
+      verify: '验证签名',
+      verifyTitle: '就在这个标签页里，用密钥验证签名',
+      secretLabel: '共享密钥',
+      secretPlaceholder: '签发这个令牌时使用的密钥',
+      keyLabel: '公钥',
+      keyPlaceholder: 'PEM 格式的公钥、单个 JWK，或者整个 JWKS',
+      keyAria: '验证用的密钥',
+      base64Secret: '密钥是 base64url',
+      base64SecretTitle: '在作为密钥材料使用之前，先把密钥从 base64url 解码',
+      keyNeverStored: '密钥用完即弃——绝不会保存在这个浏览器里，也绝不会发送到任何地方。',
+      sampleSecretHint: '示例令牌是用 `{secret}` 签名的。',
+      checking: '验证中…',
+      notChecked: '未验证',
+
+      verdicts: {
+        valid: '签名已验证',
+        invalid: '签名与该密钥不匹配',
+        unsecured:
+          '未加保护的令牌——它的 `alg` 是 `none`，因此不带签名，什么也证明不了。大多数库会直接拒绝这类令牌。',
+        unsupported: '{algorithm} 不是本工具能够验证的算法。',
+        'bad-key': '无法读取该密钥。请使用以 `BEGIN PUBLIC KEY` 开头的 PEM 块、JWK 或 JWKS。',
+        'no-key': '输入密钥后，签名会随着你的输入即时验证。',
+        'no-signature': '这个令牌没有签名部分，因此没有可验证的内容。',
+        'kid-mismatch': '该密钥集中没有与这个令牌的 `kid` 相符的密钥，因此无从验证。',
+        error: '在这个浏览器里无法验证签名。',
       },
     },
   },

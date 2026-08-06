@@ -5,7 +5,7 @@ export const categoriesPtbr: CategoryCopyOverrides = {
     blurb: 'Leia, verifique, compare e remodele JSON sem sair da página.',
   },
   jwt: {
-    blurb: 'Inspecione e verifique tokens. Em breve.',
+    blurb: 'Leia o que um token está declarando e confira que ele foi mesmo assinado.',
   },
 };
 
@@ -163,11 +163,46 @@ export const toolsPtbr: ToolCopyOverrides = {
 
   'jwt-decoder': {
     name: 'Decodificador JWT',
-    tagline: 'Decodifique e inspecione as claims de um token',
-    does: ['Cabeçalho e payload', 'Expiração e claims', 'Verificação de assinatura'],
-    title: 'Decodificador JWT',
+    tagline: 'Leia as claims de um token e prove sua assinatura',
+    does: [
+      'Cabeçalho e payload',
+      'Expiração em palavras simples',
+      'Verificação de assinatura',
+      'Segredo ou chave pública',
+    ],
+    title: 'Decodificador JWT — decodifique e verifique',
     description:
-      'Decodifique um JSON Web Token e inspecione seu cabeçalho, seu payload e suas claims.',
-    keywords: ['decodificador jwt', 'decodificar jwt', 'jwt decoder português'],
+      'Decodificador JWT gratuito. Leia o cabeçalho, o payload e a expiração de um JSON Web Token, e verifique sua assinatura. Token e chave nunca saem do seu navegador.',
+    overview:
+      'Um decodificador de JWT que divide um token nas suas três partes, decodifica o cabeçalho e o payload, e lista cada claim em palavras simples — com expiração, “não antes de” e data de emissão mostradas como datas reais em vez de segundos desde 1970. Ele também verifica a assinatura: cole o segredo compartilhado para um algoritmo HS ou uma chave pública para RS, PS ou ES, e a checagem roda na própria WebCrypto do seu navegador. Nem o token nem a chave são enviados a lugar nenhum, e a chave nem sequer é salva neste navegador.',
+    faqs: [
+      {
+        q: 'É seguro colar um JWT real neste decodificador?',
+        a: 'Sim. O token é decodificado por JavaScript na sua própria aba e não existe backend para onde enviá-lo — desconecte da rede e o decodificador continua funcionando. Com JWTs isso importa mais do que com quase qualquer outro dado: um token é uma credencial viva, e colá-lo num site que o envia para um servidor entrega tudo aquilo que ele concede.',
+      },
+      {
+        q: 'Decodificar um JWT significa que ele é válido?',
+        a: 'Não, e a diferença importa. O cabeçalho e o payload são codificados em base64url, não criptografados, então qualquer um com o token consegue lê-los — por isso um JWT nunca é lugar para guardar segredo. Só conferir a assinatura contra a chave certa diz que o token é legítimo, que não foi alterado e que dá para confiar nas suas claims.',
+      },
+      {
+        q: 'Quais algoritmos de assinatura ele consegue verificar?',
+        a: 'HS256, HS384 e HS512 com um segredo compartilhado, e RS256/384/512, PS256/384/512 e ES256/384/512 com uma chave pública informada como bloco PEM, JWK avulso ou JWKS inteiro — caso em que o kid do token escolhe a chave. A verificação usa a WebCrypto embutida no navegador, então nenhum material de chave é enviado para lugar algum.',
+      },
+      {
+        q: 'Minha chave ou meu segredo de assinatura ficam guardados?',
+        a: 'Não. Todas as outras ferramentas do site salvam sua entrada no localStorage para que um refresh não perca seu trabalho; a chave de verificação é deliberadamente excluída disso. Ela fica na memória, é usada para a checagem e some quando você sai da página.',
+      },
+      {
+        q: 'Por que meu token aparece como expirado?',
+        a: 'A claim exp é um NumericDate — segundos desde 1970 — e o decodificador a mostra como data real ao lado de há quanto tempo ela passou. Um token expirado é a causa mais comum de um 401 repentino numa API que funcionava um instante antes. Uma claim nbf no futuro faz o mesmo pela outra ponta.',
+      },
+    ],
+    keywords: [
+      'decodificador jwt',
+      'decodificar jwt',
+      'verificar assinatura jwt',
+      'jwt decoder português',
+      'json web token decodificar',
+    ],
   },
 };

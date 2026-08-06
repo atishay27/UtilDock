@@ -17,7 +17,7 @@ export const fr: UIStrings = {
     closeToolsMenu: 'Fermer le menu des outils',
     toolsButton: 'Outils',
     privacyPill: 'Rien ne quitte cet onglet',
-    privacyPillMobile: 'Votre JSON reste dans cet onglet',
+    privacyPillMobile: 'Ce que vous collez reste dans cet onglet',
     open: 'Ouvrir',
   },
 
@@ -68,10 +68,10 @@ export const fr: UIStrings = {
   },
 
   home: {
-    title: 'Outils JSON gratuits dans votre navigateur',
+    title: 'Outils JSON et JWT gratuits dans le navigateur',
     headlineLead: 'Des outils qui ne touchent',
     headlineAccent: 'jamais un serveur.',
-    lede: 'De petits utilitaires bien affûtés qui tournent entièrement dans cet onglet — gratuits, sans publicité et sans inscription. JSON d’abord : un formateur, une visionneuse, un validateur et un comparateur, JWT ensuite.',
+    lede: 'De petits utilitaires bien affûtés qui tournent entièrement dans cet onglet — gratuits, sans publicité et sans inscription. Un formateur, une visionneuse, un validateur et un comparateur JSON, et un décodeur JWT qui vérifie les signatures sans jamais voir votre clé.',
     assurances: ['Rien n’est envoyé', 'Rien n’est journalisé', 'Pas de compte, pas de limites'],
     closeLine: 'Débranchez le réseau. Ça marche toujours.',
     closeCta: 'Pourquoi c’est vrai',
@@ -140,7 +140,7 @@ export const fr: UIStrings = {
     ],
     todayHeading: 'Ce qu’il y a aujourd’hui',
     today:
-      'JSON est arrivé en premier parce que c’est ce vers quoi la plupart d’entre nous se tournent le plus souvent. Le décodage JWT est la prochaine étape, et la liste continuera de s’allonger — toujours selon les mêmes règles : rapide, gratuit, sans publicité et entièrement côté client.',
+      'JSON est arrivé en premier parce que c’est ce vers quoi la plupart d’entre nous se tournent le plus souvent, puis est venu un décodeur JWT — vérification de signature comprise, qui s’appuie sur la WebCrypto du navigateur, si bien que la clé non plus ne quitte votre machine. La liste continuera de s’allonger — toujours selon les mêmes règles : rapide, gratuit, sans publicité et entièrement côté client.',
   },
 
   privacy: {
@@ -221,6 +221,11 @@ export const fr: UIStrings = {
       'Collez un document de chaque côté. La comparaison est structurelle plutôt que textuelle : les deux documents sont d’abord analysés, si bien que des clés réordonnées, une indentation différente et des espaces en fin de ligne ne comptent jamais comme des changements.',
       'Les éléments de tableau sont appariés par identité lorsqu’il en existe une — un champ **id**, **key**, **uuid** ou **name** — de sorte qu’insérer un élément au début signale un seul ajout au lieu de réécrire tout ce qui suit.',
       'Les longues suites de lignes identiques se replient, laissant les changements avec juste ce qu’il faut de structure autour pour situer chacun. Alt + ↑ et Alt + ↓ parcourent les différences.',
+    ],
+    'jwt-decoder': [
+      'Collez un jeton — avec ou sans son préfixe `Bearer` — et il se sépare en ses trois parties, colorées pour que vous voyiez où chacune s’arrête. L’en-tête et la charge utile sont décodés en JSON, et les claims sont repris en toutes lettres, avec `exp`, `nbf` et `iat` affichés comme de vraies dates ainsi qu’en durée écoulée ou restante.',
+      '**Décoder un JWT n’est pas le vérifier.** Les deux premières parties sont en base64url, pas chiffrées : quiconque détient le jeton peut les lire, et c’est pourquoi un jeton n’est jamais un endroit où mettre un secret. Activez **Vérifier la signature** et collez le secret partagé pour un algorithme HS, ou une clé publique pour un RS, PS ou ES : la signature est réellement testée — HS256/384/512, RS256/384/512, PS256/384/512 et ES256/384/512, via la WebCrypto du navigateur lui-même.',
+      'La clé que vous collez est traitée différemment de toute autre saisie sur ce site : elle n’est jamais écrite dans le `localStorage` ni restaurée au rechargement. Rien de tout cela — ni le jeton, ni la clé — n’est envoyé, et aucun serveur ne pourrait les recevoir.',
     ],
   },
 
@@ -373,6 +378,114 @@ export const fr: UIStrings = {
         removed: 'supprimé',
         changed: 'modifié',
         moved: 'déplacé',
+      },
+    },
+
+    jwt: {
+      tokenTitle: 'Jeton',
+      tokenLabel: 'JSON Web Token à décoder',
+      placeholder: 'Collez un JSON Web Token — trois parties séparées par des points',
+      idle: 'Collez un jeton pour le lire',
+      decoded: 'Décodé',
+
+      segHeader: 'En-tête',
+      segPayload: 'Charge utile',
+      segSignature: 'Signature',
+      segChars: p({ one: '{count} caractère', other: '{count} caractères' }),
+
+      sampleTitle: 'Charger un jeton d’exemple réellement signé',
+      expired: 'Expiré',
+      expiredTitle: 'Charger un jeton dont l’expiration est déjà passée',
+
+      faults: {
+        'not-a-token':
+          'Ce n’est pas un JSON Web Token. Un JWT, ce sont trois parties en base64url reliées par des points.',
+        encrypted:
+          'Il s’agit d’un jeton chiffré (un JWE — cinq parties, pas trois). Son contenu ne peut pas être lu sans la clé de déchiffrement, ni par cet outil ni par aucun autre.',
+        'too-few-parts':
+          'Un JWT a trois parties reliées par des points. Celui-ci en a moins : il lui manque quelque chose.',
+        'too-many-parts':
+          'Ceci comporte plus de parties séparées par des points qu’un JWT ou un JWE ne peut en avoir.',
+        'bad-base64':
+          'Cette partie n’est pas du base64url valide et ne peut donc pas être décodée. Un jeton tronqué en est la cause habituelle.',
+        'bad-json': 'Cette partie a bien été décodée, mais ce qui en sort n’est pas du JSON.',
+        'not-an-object':
+          'Cette partie est du JSON, mais l’en-tête et la charge utile d’un jeton doivent chacun être un objet.',
+      },
+
+      headerTitle: 'En-tête',
+      payloadTitle: 'Charge utile',
+      headerLabel: 'En-tête décodé',
+      payloadLabel: 'Charge utile décodée',
+      algorithm: 'Algorithme',
+      keyId: 'ID de clé',
+      tokenType: 'Type',
+
+      claimsTitle: 'Claims',
+      registeredHeading: 'Claims enregistrés',
+      customHeading: 'Claims personnalisés',
+      noClaims:
+        'Collez un jeton dans le panneau Jeton et ses claims apparaîtront ici, en toutes lettres.',
+      noCustomClaims: 'Ce jeton ne contient rien d’autre que les claims enregistrés.',
+      noRegisteredClaims:
+        'Ce jeton ne contient aucun des claims enregistrés — pas même une expiration.',
+
+      claimNames: {
+        iss: 'Émetteur',
+        sub: 'Sujet',
+        aud: 'Destinataire',
+        exp: 'Expire',
+        nbf: 'Pas avant',
+        iat: 'Émis',
+        jti: 'ID du jeton',
+      },
+      claimHints: {
+        iss: 'Qui a émis ce jeton',
+        sub: 'De qui ou de quoi il parle',
+        aud: 'Qui est censé l’accepter',
+        exp: 'Passé cet instant, il doit être rejeté',
+        nbf: 'Avant cet instant, il doit être rejeté',
+        iat: 'Quand il a été émis',
+        jti: 'Son identifiant unique, utilisé pour la révocation',
+      },
+
+      windowExpired: 'Expiré',
+      windowNotYet: 'Pas encore valide',
+      windowValid: 'Dans sa période de validité',
+      windowUnbounded: 'Aucune expiration — ce jeton ne cesse jamais d’être accepté',
+
+      signatureTitle: 'Signature',
+      decodeNotVerify:
+        'Un JWT est **encodé, pas chiffré** — quiconque détient ce jeton peut lire tout ce qui précède sans aucune clé. Seule une vérification de signature vous dit qu’il est authentique et intact.',
+      verify: 'Vérifier la signature',
+      verifyTitle: 'Vérifier la signature avec une clé, ici même dans cet onglet',
+      secretLabel: 'Secret partagé',
+      secretPlaceholder: 'Le secret avec lequel ce jeton a été signé',
+      keyLabel: 'Clé publique',
+      keyPlaceholder: 'Une clé publique PEM, un JWK, ou un JWKS entier',
+      keyAria: 'Clé de vérification',
+      base64Secret: 'Le secret est en base64url',
+      base64SecretTitle:
+        'Décoder le secret depuis le base64url avant de l’utiliser comme matériel de clé',
+      keyNeverStored:
+        'La clé est utilisée puis abandonnée — jamais enregistrée dans ce navigateur, jamais envoyée nulle part.',
+      sampleSecretHint: 'Le jeton d’exemple est signé avec `{secret}`.',
+      checking: 'Vérification…',
+      notChecked: 'Non vérifiée',
+
+      verdicts: {
+        valid: 'Signature vérifiée',
+        invalid: 'La signature ne correspond pas à cette clé',
+        unsecured:
+          'Jeton non sécurisé — son `alg` vaut `none`, il ne porte donc aucune signature et ne prouve rien. La plupart des bibliothèques les rejettent d’emblée.',
+        unsupported: '{algorithm} n’est pas un algorithme que cet outil sait vérifier.',
+        'bad-key':
+          'Cette clé n’a pas pu être lue. Utilisez un bloc PEM commençant par `BEGIN PUBLIC KEY`, un JWK, ou un JWKS.',
+        'no-key': 'Saisissez une clé et la signature sera vérifiée au fil de la frappe.',
+        'no-signature': 'Ce jeton n’a pas de partie signature, il n’y a donc rien à vérifier.',
+        'kid-mismatch':
+          'Aucune clé de cet ensemble ne correspond au `kid` de ce jeton : il n’y a rien pour le vérifier.',
+        error: 'La signature n’a pas pu être vérifiée dans ce navigateur.',
       },
     },
   },

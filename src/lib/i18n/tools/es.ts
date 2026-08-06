@@ -5,7 +5,7 @@ export const categoriesEs: CategoryCopyOverrides = {
     blurb: 'Lee, comprueba, compara y transforma JSON sin salir de la página.',
   },
   jwt: {
-    blurb: 'Inspecciona y verifica tokens. Próximamente.',
+    blurb: 'Lee lo que declara un token y comprueba que de verdad está firmado.',
   },
 };
 
@@ -164,11 +164,46 @@ export const toolsEs: ToolCopyOverrides = {
 
   'jwt-decoder': {
     name: 'Decodificador JWT',
-    tagline: 'Decodifica e inspecciona las claims de un token',
-    does: ['Cabecera y payload', 'Caducidad y claims', 'Comprobación de firma'],
-    title: 'Decodificador JWT',
+    tagline: 'Lee las claims de un token y demuestra su firma',
+    does: [
+      'Cabecera y payload',
+      'Caducidad en lenguaje claro',
+      'Comprobación de firma',
+      'Secreto o clave pública',
+    ],
+    title: 'Decodificador JWT — decodifica y verifica',
     description:
-      'Decodifica un JSON Web Token e inspecciona su cabecera, su payload y sus claims.',
-    keywords: ['decodificador jwt', 'decodificar jwt', 'jwt decoder español'],
+      'Decodificador JWT gratuito. Lee la cabecera, el payload y la caducidad de un JSON Web Token, y verifica su firma. Ni el token ni la clave salen de tu navegador.',
+    overview:
+      'Un decodificador de JWT que divide un token en sus tres partes, decodifica la cabecera y el payload, y lista cada claim en lenguaje claro — con la caducidad, el «no antes de» y la fecha de emisión mostrados como fechas reales en lugar de segundos desde la época. También verifica la firma: pega el secreto compartido para un algoritmo HS o una clave pública para RS, PS o ES, y la comprobación se ejecuta sobre la propia WebCrypto de tu navegador. Ni el token ni la clave se suben nunca, y la clave ni siquiera se guarda en este navegador.',
+    faqs: [
+      {
+        q: '¿Es seguro pegar un JWT real en este decodificador?',
+        a: 'Sí. El token lo decodifica JavaScript en tu propia pestaña y no hay backend al que enviarlo: desconéctate de la red y el decodificador sigue funcionando. Con los JWT esto importa más que con casi cualquier otro dato, porque un token es una credencial viva, y pegarlo en un sitio que lo envía a un servidor entrega todo lo que ese token concede.',
+      },
+      {
+        q: '¿Decodificar un JWT significa que es válido?',
+        a: 'No, y la diferencia importa. La cabecera y el payload están codificados en base64url, no cifrados, así que cualquiera que tenga el token puede leerlos: por eso un JWT nunca es sitio para guardar un secreto. Solo comprobar la firma con la clave correcta te dice que el token es auténtico, que no ha sido alterado y que puedes fiarte de sus claims.',
+      },
+      {
+        q: '¿Qué algoritmos de firma puede verificar?',
+        a: 'HS256, HS384 y HS512 con un secreto compartido, y RS256/384/512, PS256/384/512 y ES256/384/512 con una clave pública dada como bloque PEM, como JWK suelto o como JWKS completo — en cuyo caso el kid del token elige la clave. La verificación usa la WebCrypto integrada en el navegador, así que ningún material de clave se envía a ninguna parte.',
+      },
+      {
+        q: '¿Se guarda mi clave o mi secreto de firma?',
+        a: 'No. Todas las demás herramientas del sitio guardan tu entrada en localStorage para que una recarga no pierda tu trabajo; la clave de verificación queda deliberadamente excluida. Se mantiene en memoria, se usa para la comprobación y desaparece cuando sales de la página.',
+      },
+      {
+        q: '¿Por qué mi token aparece como caducado?',
+        a: 'La claim exp es un NumericDate —segundos desde 1970— y el decodificador la muestra como fecha real junto a cuánto hace que pasó. Un token caducado es la causa más común de un 401 repentino en una API que funcionaba hace un momento. Una claim nbf en el futuro hace lo mismo por el otro extremo.',
+      },
+    ],
+    keywords: [
+      'decodificador jwt',
+      'decodificar jwt',
+      'verificar firma jwt',
+      'jwt decoder español',
+      'json web token decodificar',
+    ],
   },
 };

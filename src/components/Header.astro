@@ -62,7 +62,12 @@ const menus = localizedCategories(locale).map((category) => {
     <nav aria-label={ui.chrome.navTools} class="ml-4 hidden items-center gap-1 md:flex">
       {
         menus.map(({ category, live, planned }) => {
-          const within = category.href ? path.startsWith(category.href) : false;
+          /* A category need not have a hub page — JWT has one tool and no
+             index — so the active marker is derived from the tools too, or a
+             hubless category would never light up on its own tool's page. */
+          const within = [category.href, ...live.map((tool) => tool.href)].some(
+            (candidate) => candidate !== undefined && path.startsWith(candidate),
+          );
 
           if (live.length === 0) {
             return (

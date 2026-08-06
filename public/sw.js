@@ -9,12 +9,20 @@
  * Bump VERSION when any of that changes.
  */
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const ASSET_CACHE = `utildock-assets-${VERSION}`;
 const PAGE_CACHE = `utildock-pages-${VERSION}`;
 
 /** The shell worth having before the first offline visit, per language. */
-const PAGES = ['/', '/json', '/json/viewer', '/json/validator', '/json/diff', '/json/formatter'];
+const PAGES = [
+  '/',
+  '/json',
+  '/json/viewer',
+  '/json/validator',
+  '/json/diff',
+  '/json/formatter',
+  '/jwt/decoder',
+];
 
 /**
  * Kept in step with `src/lib/i18n/locales.ts` by hand — this file ships as-is
@@ -28,11 +36,11 @@ function localePrefix(pathname) {
 }
 
 /**
- * Precache the six pages of one language, once per worker lifetime.
+ * Precache one language's pages, once per worker lifetime.
  *
  * Priming happens on the first navigation rather than on install, because
  * install cannot know which of the eight languages this visitor reads and
- * precaching all forty-eight pages to serve one of them is most of a megabyte
+ * precaching all fifty-six pages to serve seven of them is most of a megabyte
  * of waste. The first navigation names the language; that is the moment we
  * know what is worth having offline.
  */

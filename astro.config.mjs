@@ -46,6 +46,9 @@ function localeOf(pathname) {
   return PREFIXES.includes(first) ? first : 'en';
 }
 
+/** Pages that are read rather than used. Everything else is a tool surface. */
+const READING_PAGES = ['/about', '/privacy'];
+
 // Read once at config load, not once per URL — this shells out to git.
 const lastmodFor = lastmodLookup();
 
@@ -76,14 +79,18 @@ export default defineConfig({
         // does not claim every URL changed. Undefined omits the tag entirely.
         item.lastmod = lastmodFor(path, localeOf(pathname));
 
-        // The tools are the point of the site; the legal pages are not.
+        /* The tools are the point of the site; the legal pages are not.
+           Stated as a shape rule rather than a list of routes: the home page,
+           then the reading pages, then category hubs at one segment and tools
+           at two. Adding a tool or a whole category needs no edit here, which
+           the previous version — which named `/json` twice — did. */
         if (path === '/') item.priority = 1.0;
-        else if (path === '/json') item.priority = 0.9;
-        else if (path.startsWith('/json/')) item.priority = 0.8;
-        else {
+        else if (READING_PAGES.includes(path)) {
           item.priority = 0.3;
           item.changefreq = /** @type {typeof item.changefreq} */ ('yearly');
-        }
+        } else if (path.split('/').length > 2) item.priority = 0.8;
+        else item.priority = 0.9;
+
         return item;
       },
     }),

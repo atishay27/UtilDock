@@ -5,7 +5,7 @@ export const categoriesDe: CategoryCopyOverrides = {
     blurb: 'JSON lesen, prüfen, vergleichen und umformen, ohne die Seite zu verlassen.',
   },
   jwt: {
-    blurb: 'Tokens untersuchen und verifizieren. Demnächst.',
+    blurb: 'Lies, was ein Token behauptet — und prüfe, dass es wirklich signiert wurde.',
   },
 };
 
@@ -154,11 +154,46 @@ export const toolsDe: ToolCopyOverrides = {
 
   'jwt-decoder': {
     name: 'JWT Decoder',
-    tagline: 'Token-Claims dekodieren und untersuchen',
-    does: ['Header und Payload', 'Ablauf und Claims', 'Signaturprüfung'],
-    title: 'JWT Decoder',
+    tagline: 'Die Claims eines Tokens lesen — und seine Signatur beweisen',
+    does: [
+      'Header und Payload',
+      'Ablauf in Klartext',
+      'Signaturprüfung',
+      'Secret oder Public Key',
+    ],
+    title: 'JWT Decoder — dekodieren und verifizieren',
     description:
-      'Ein JSON Web Token dekodieren und seinen Header, sein Payload und seine Claims untersuchen.',
-    keywords: ['jwt decoder', 'jwt dekodieren', 'jwt token anzeigen'],
+      'Kostenloser JWT-Decoder. Header, Payload und Ablaufzeit eines JSON Web Tokens lesen und seine Signatur verifizieren. Token und Schlüssel verlassen den Browser nie.',
+    overview:
+      'Ein JWT-Decoder, der ein Token in seine drei Teile zerlegt, Header und Payload dekodiert und jeden Claim in Klartext auflistet — Ablauf, „nicht vor“ und Ausstellungszeit als echte Daten statt als Sekunden seit 1970. Er verifiziert auch die Signatur: Füge das gemeinsame Secret für ein HS-Verfahren oder einen öffentlichen Schlüssel für RS, PS oder ES ein, und die Prüfung läuft über die WebCrypto deines eigenen Browsers. Weder Token noch Schlüssel werden je hochgeladen, und der Schlüssel wird nicht einmal in diesem Browser gespeichert.',
+    faqs: [
+      {
+        q: 'Ist es sicher, ein echtes JWT in diesen Decoder einzufügen?',
+        a: 'Ja. Das Token wird von JavaScript in deinem eigenen Tab dekodiert, und es gibt kein Backend, an das es gehen könnte — trenne die Netzwerkverbindung, und der Decoder arbeitet weiter. Bei JWTs zählt das mehr als bei fast allen anderen Daten: Ein Token ist eine aktive Zugangsberechtigung, und wer es auf einer Seite einfügt, die es an einen Server schickt, gibt alles preis, was es gewährt.',
+      },
+      {
+        q: 'Heißt dekodiert auch gültig?',
+        a: 'Nein, und der Unterschied ist wesentlich. Header und Payload sind base64url-codiert, nicht verschlüsselt — wer das Token hat, kann sie lesen. Deshalb gehört in ein JWT nie ein Geheimnis. Erst die Prüfung der Signatur gegen den richtigen Schlüssel sagt dir, dass das Token echt und unverändert ist und dass man seinen Claims trauen kann.',
+      },
+      {
+        q: 'Welche Signaturverfahren kann er prüfen?',
+        a: 'HS256, HS384 und HS512 mit einem gemeinsamen Secret sowie RS256/384/512, PS256/384/512 und ES256/384/512 mit einem öffentlichen Schlüssel als PEM-Block, einzelnem JWK oder ganzem JWKS — dann wählt die kid des Tokens den passenden Schlüssel aus. Die Prüfung nutzt die eingebaute WebCrypto des Browsers, es wird also kein Schlüsselmaterial irgendwohin gesendet.',
+      },
+      {
+        q: 'Wird mein Signaturschlüssel oder Secret gespeichert?',
+        a: 'Nein. Alle anderen Werkzeuge hier sichern deine Eingabe im localStorage, damit ein Neuladen die Arbeit nicht verliert; der Prüfschlüssel ist davon bewusst ausgenommen. Er bleibt im Arbeitsspeicher, wird für die Prüfung benutzt und ist fort, sobald du die Seite verlässt.',
+      },
+      {
+        q: 'Warum wird mein Token als abgelaufen angezeigt?',
+        a: 'Der exp-Claim ist ein NumericDate — Sekunden seit 1970 — und der Decoder zeigt ihn als echtes Datum samt der Angabe, wie lange er schon vorbei ist. Ein abgelaufenes Token ist die häufigste Ursache für ein plötzliches 401 von einer API, die eben noch funktionierte. Ein nbf-Claim in der Zukunft bewirkt dasselbe am anderen Ende.',
+      },
+    ],
+    keywords: [
+      'jwt decoder',
+      'jwt dekodieren',
+      'jwt signatur prüfen',
+      'json web token decoder',
+      'jwt token anzeigen',
+    ],
   },
 };

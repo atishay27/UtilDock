@@ -17,7 +17,7 @@ export const de: UIStrings = {
     closeToolsMenu: 'Werkzeugmenü schließen',
     toolsButton: 'Werkzeuge',
     privacyPill: 'Nichts verlässt diesen Tab',
-    privacyPillMobile: 'Dein JSON bleibt in diesem Tab',
+    privacyPillMobile: 'Was du einfügst, bleibt in diesem Tab',
     open: 'Öffnen',
   },
 
@@ -68,10 +68,10 @@ export const de: UIStrings = {
   },
 
   home: {
-    title: 'Kostenlose JSON-Werkzeuge im Browser',
+    title: 'Kostenlose JSON- und JWT-Werkzeuge im Browser',
     headlineLead: 'Werkzeuge, die nie',
     headlineAccent: 'einen Server berühren.',
-    lede: 'Kleine, scharfe Werkzeuge, die vollständig in diesem Tab laufen — kostenlos, werbefrei und ohne Anmeldung. JSON zuerst: ein Formatter, ein Viewer, ein Validator und ein Vergleich, JWT folgt.',
+    lede: 'Kleine, scharfe Werkzeuge, die vollständig in diesem Tab laufen — kostenlos, werbefrei und ohne Anmeldung. Ein JSON-Formatter, -Viewer, -Validator und -Vergleich, dazu ein JWT-Decoder, der Signaturen prüft, ohne deinen Schlüssel je zu sehen.',
     assurances: ['Nichts hochgeladen', 'Nichts protokolliert', 'Kein Konto, keine Grenzen'],
     closeLine: 'Zieh das Netzwerk ab. Es funktioniert weiter.',
     closeCta: 'Warum das stimmt',
@@ -137,7 +137,7 @@ export const de: UIStrings = {
     ],
     todayHeading: 'Was es heute gibt',
     today:
-      'JSON kam zuerst, weil die meisten von uns am häufigsten danach greifen. JWT-Decodierung ist als Nächstes dran, und die Liste wird weiter wachsen — immer nach denselben Regeln: schnell, kostenlos, werbefrei und vollständig clientseitig.',
+      'JSON kam zuerst, weil die meisten von uns am häufigsten danach greifen, und dann folgte ein JWT-Decoder — samt Signaturprüfung, die über die WebCrypto des Browsers läuft, sodass auch der Schlüssel dein Gerät nie verlässt. Die Liste wird weiter wachsen — immer nach denselben Regeln: schnell, kostenlos, werbefrei und vollständig clientseitig.',
   },
 
   privacy: {
@@ -218,6 +218,11 @@ export const de: UIStrings = {
       'Füge auf jeder Seite ein Dokument ein. Der Vergleich ist strukturell statt textuell: beide Dokumente werden zuerst geparst, sodass umsortierte Schlüssel, andere Einrückung und Leerraum am Zeilenende nie als Änderung zählen.',
       'Array-Elemente werden über ihre Identität zugeordnet, wo es eine gibt — ein Feld **id**, **key**, **uuid** oder **name** — sodass das Einfügen eines Elements am Anfang eine einzige Hinzufügung meldet, statt alles Nachfolgende neu zu schreiben.',
       'Lange Folgen identischer Zeilen werden eingeklappt und lassen die Änderungen mit gerade genug Struktur zurück, um jede einzelne zu verorten. Alt + ↑ und Alt + ↓ springen durch die Unterschiede.',
+    ],
+    'jwt-decoder': [
+      'Füge ein Token ein — mit oder ohne `Bearer`-Präfix — und es wird in seine drei Teile zerlegt, farblich getrennt, sodass du siehst, wo jeder endet. Header und Payload werden zu JSON decodiert, und die Claims werden noch einmal in verständlichen Worten aufgelistet: `exp`, `nbf` und `iat` als echte Daten und dazu, wie lange es her ist oder wie weit es hin ist.',
+      '**Ein JWT zu decodieren heißt nicht, es zu verifizieren.** Die ersten beiden Teile sind base64url, keine Verschlüsselung: wer das Token hat, kann sie lesen — deshalb gehört in ein Token nie ein Geheimnis. Schalte **Signatur prüfen** ein und füge das gemeinsame Secret für ein HS-Verfahren oder einen öffentlichen Schlüssel für RS, PS oder ES ein, dann wird die Signatur wirklich geprüft — HS256/384/512, RS256/384/512, PS256/384/512 und ES256/384/512, über die WebCrypto des Browsers selbst.',
+      'Der Schlüssel, den du einfügst, wird anders behandelt als jede andere Eingabe auf dieser Seite: Er wird nie in den `localStorage` geschrieben und beim Neuladen nicht wiederhergestellt. Nichts davon — weder Token noch Schlüssel — wird hochgeladen, und es gibt keinen Server, der beides empfangen könnte.',
     ],
   },
 
@@ -367,6 +372,114 @@ export const de: UIStrings = {
         removed: 'entfernt',
         changed: 'geändert',
         moved: 'verschoben',
+      },
+    },
+
+    jwt: {
+      tokenTitle: 'Token',
+      tokenLabel: 'Zu decodierendes JSON Web Token',
+      placeholder: 'Ein JSON Web Token einfügen — drei Teile, durch Punkte getrennt',
+      idle: 'Ein Token einfügen, um es zu lesen',
+      decoded: 'Decodiert',
+
+      segHeader: 'Header',
+      segPayload: 'Payload',
+      segSignature: 'Signatur',
+      segChars: p({ one: '{count} Zeichen', other: '{count} Zeichen' }),
+
+      sampleTitle: 'Ein echtes, korrekt signiertes Beispiel-Token laden',
+      expired: 'Abgelaufen',
+      expiredTitle: 'Ein Token laden, dessen Ablaufzeit bereits vorbei ist',
+
+      faults: {
+        'not-a-token':
+          'Das ist kein JSON Web Token. Ein JWT besteht aus drei base64url-Teilen, die durch Punkte verbunden sind.',
+        encrypted:
+          'Das ist ein verschlüsseltes Token (ein JWE — fünf Teile statt drei). Sein Inhalt lässt sich ohne den Entschlüsselungsschlüssel nicht lesen, weder mit diesem noch mit einem anderen Werkzeug.',
+        'too-few-parts':
+          'Ein JWT hat drei durch Punkte verbundene Teile. Dieses hat weniger, es fehlt also etwas.',
+        'too-many-parts':
+          'Das hat mehr durch Punkte getrennte Teile, als ein JWT oder ein JWE haben kann.',
+        'bad-base64':
+          'Dieser Teil ist kein gültiges base64url und lässt sich nicht decodieren. Meist liegt es an einem abgeschnittenen Token.',
+        'bad-json': 'Dieser Teil wurde decodiert, aber was dabei herauskam, ist kein JSON.',
+        'not-an-object':
+          'Dieser Teil ist JSON, aber Header und Payload eines Tokens müssen jeweils ein Objekt sein.',
+      },
+
+      headerTitle: 'Header',
+      payloadTitle: 'Payload',
+      headerLabel: 'Decodierter Header',
+      payloadLabel: 'Decodierter Payload',
+      algorithm: 'Algorithmus',
+      keyId: 'Schlüssel-ID',
+      tokenType: 'Typ',
+
+      claimsTitle: 'Claims',
+      registeredHeading: 'Registrierte Claims',
+      customHeading: 'Eigene Claims',
+      noClaims:
+        'Füge ein Token in das Token-Panel ein, dann erscheinen seine Claims hier — in verständlichen Worten.',
+      noCustomClaims: 'Dieses Token enthält nichts außer den registrierten Claims.',
+      noRegisteredClaims:
+        'Dieses Token enthält keinen der registrierten Claims — nicht einmal eine Ablaufzeit.',
+
+      claimNames: {
+        iss: 'Aussteller',
+        sub: 'Subjekt',
+        aud: 'Empfänger',
+        exp: 'Läuft ab',
+        nbf: 'Nicht vor',
+        iat: 'Ausgestellt',
+        jti: 'Token-ID',
+      },
+      claimHints: {
+        iss: 'Wer dieses Token ausgestellt hat',
+        sub: 'Worum oder um wen es geht',
+        aud: 'Wer es akzeptieren soll',
+        exp: 'Ab diesem Zeitpunkt muss es abgelehnt werden',
+        nbf: 'Vor diesem Zeitpunkt muss es abgelehnt werden',
+        iat: 'Wann es ausgestellt wurde',
+        jti: 'Seine eindeutige ID, für den Widerruf',
+      },
+
+      windowExpired: 'Abgelaufen',
+      windowNotYet: 'Noch nicht gültig',
+      windowValid: 'Innerhalb seines Gültigkeitszeitraums',
+      windowUnbounded: 'Keine Ablaufzeit — dieses Token wird nie ungültig',
+
+      signatureTitle: 'Signatur',
+      decodeNotVerify:
+        'Ein JWT ist **codiert, nicht verschlüsselt** — wer dieses Token hat, kann alles darüber ohne Schlüssel lesen. Erst eine Signaturprüfung sagt dir, dass es echt und unverändert ist.',
+      verify: 'Signatur prüfen',
+      verifyTitle: 'Die Signatur gegen einen Schlüssel prüfen, hier in diesem Tab',
+      secretLabel: 'Gemeinsames Secret',
+      secretPlaceholder: 'Das Secret, mit dem dieses Token signiert wurde',
+      keyLabel: 'Öffentlicher Schlüssel',
+      keyPlaceholder: 'Ein öffentlicher PEM-Schlüssel, ein einzelner JWK oder ein ganzes JWKS',
+      keyAria: 'Prüfschlüssel',
+      base64Secret: 'Secret ist base64url',
+      base64SecretTitle:
+        'Das Secret vor der Verwendung als Schlüsselmaterial aus base64url decodieren',
+      keyNeverStored:
+        'Der Schlüssel wird benutzt und verworfen — nie in diesem Browser gespeichert, nie irgendwohin gesendet.',
+      sampleSecretHint: 'Das Beispiel-Token ist mit `{secret}` signiert.',
+      checking: 'Wird geprüft…',
+      notChecked: 'Nicht geprüft',
+
+      verdicts: {
+        valid: 'Signatur verifiziert',
+        invalid: 'Signatur passt nicht zu diesem Schlüssel',
+        unsecured:
+          'Ungesichertes Token — sein `alg` ist `none`, es trägt also keine Signatur und beweist nichts. Die meisten Bibliotheken lehnen solche Token rundweg ab.',
+        unsupported: '{algorithm} ist kein Algorithmus, den dieses Werkzeug prüfen kann.',
+        'bad-key':
+          'Dieser Schlüssel ließ sich nicht lesen. Verwende einen PEM-Block, der mit `BEGIN PUBLIC KEY` beginnt, einen JWK oder ein JWKS.',
+        'no-key': 'Gib einen Schlüssel ein, dann wird die Signatur beim Tippen geprüft.',
+        'no-signature': 'Dieses Token hat keinen Signaturteil, es gibt also nichts zu prüfen.',
+        'kid-mismatch':
+          'Kein Schlüssel in diesem Set passt zur `kid` dieses Tokens, es gibt also nichts, wogegen geprüft werden könnte.',
+        error: 'Die Signatur konnte in diesem Browser nicht geprüft werden.',
       },
     },
   },

@@ -72,7 +72,7 @@ export const CATEGORIES: Category[] = [
   {
     id: 'jwt',
     name: 'JWT',
-    blurb: 'Inspect and verify tokens. Coming soon.',
+    blurb: 'Read what a token is claiming, and check that it was really signed.',
   },
 ];
 
@@ -229,13 +229,49 @@ export const TOOLS: Tool[] = [
     href: '/jwt/decoder',
     category: 'jwt',
     name: 'JWT Decoder',
-    tagline: 'Decode and inspect token claims',
-    does: ['Header and payload', 'Expiry and claims', 'Signature check'],
-    title: 'JWT Decoder',
-    description: 'Decode a JSON Web Token and inspect its header, payload and claims.',
-    keywords: ['jwt decoder', 'decode jwt'],
+    tagline: 'Read a token’s claims, and prove its signature',
+    does: [
+      'Header and payload',
+      'Expiry in plain words',
+      'Signature check',
+      'Secret or public key',
+    ],
+    title: 'JWT Decoder — decode and verify a token',
+    description:
+      'Free online JWT decoder. Read a JSON Web Token’s header, payload and expiry, and verify its signature. Token and key never leave your browser.',
+    overview:
+      'A JWT decoder that splits a token into its three parts, decodes the header and payload, and lists every claim in plain words — with expiry, not-before and issued-at shown as real dates rather than epoch seconds. It also verifies the signature: paste the shared secret for an HS algorithm or a public key for RS, PS or ES, and the check runs on your browser’s own WebCrypto. Neither the token nor the key is ever uploaded, and the key is never even saved to this browser.',
+    faqs: [
+      {
+        q: 'Is it safe to paste a real JWT into this decoder?',
+        a: 'Yes. The token is decoded by JavaScript in your own tab and there is no backend to send it to — disconnect from the network and the decoder still works. That matters more for JWTs than for most data: a token is a live credential, and pasting one into a site that posts it to a server hands over whatever it grants.',
+      },
+      {
+        q: 'Does decoding a JWT mean it is valid?',
+        a: 'No, and the difference matters. The header and payload are base64url-encoded, not encrypted, so anyone holding a token can read them — that is why a JWT is never a place to put a secret. Only checking the signature against the right key tells you the token is genuine and unaltered, and that its claims can be trusted.',
+      },
+      {
+        q: 'Which signature algorithms can it verify?',
+        a: 'HS256, HS384 and HS512 with a shared secret, and RS256/384/512, PS256/384/512 and ES256/384/512 with a public key given as a PEM block, a single JWK, or a whole JWKS — in which case the token’s kid picks the key. Verification uses the browser’s built-in WebCrypto, so no key material is sent anywhere.',
+      },
+      {
+        q: 'Is my signing key or secret stored?',
+        a: 'No. Every other tool on this site saves your input to localStorage so a refresh does not lose your work; the verification key is deliberately excluded. It is held in memory, used for the check, and gone when you leave the page.',
+      },
+      {
+        q: 'Why does my token show as expired?',
+        a: 'The exp claim is a NumericDate — seconds since 1970 — and the decoder shows it as a real date alongside how long ago it passed. An expired token is the most common cause of a sudden 401 from an API that was working a moment earlier. A nbf claim in the future does the same thing at the other end.',
+      },
+    ],
+    keywords: [
+      'jwt decoder',
+      'decode jwt',
+      'jwt verify signature',
+      'json web token decoder',
+      'jwt debugger',
+    ],
     icon: 'key',
-    status: 'planned',
+    status: 'live',
   },
 ];
 

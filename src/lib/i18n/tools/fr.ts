@@ -5,7 +5,7 @@ export const categoriesFr: CategoryCopyOverrides = {
     blurb: 'Lisez, vérifiez, comparez et remodelez du JSON sans quitter la page.',
   },
   jwt: {
-    blurb: 'Inspectez et vérifiez des jetons. Bientôt disponible.',
+    blurb: 'Lisez ce qu’un jeton déclare, et vérifiez qu’il a bien été signé.',
   },
 };
 
@@ -168,11 +168,46 @@ export const toolsFr: ToolCopyOverrides = {
 
   'jwt-decoder': {
     name: 'Décodeur JWT',
-    tagline: 'Décodez et inspectez les claims d’un jeton',
-    does: ['En-tête et payload', 'Expiration et claims', 'Vérification de signature'],
-    title: 'Décodeur JWT',
+    tagline: 'Lisez les claims d’un jeton, et prouvez sa signature',
+    does: [
+      'En-tête et charge utile',
+      'Expiration en clair',
+      'Vérification de signature',
+      'Secret ou clé publique',
+    ],
+    title: 'Décodeur JWT — décoder et vérifier',
     description:
-      'Décodez un JSON Web Token et inspectez son en-tête, son payload et ses claims.',
-    keywords: ['décodeur jwt', 'décoder jwt', 'jwt decoder français'],
+      'Décodeur JWT gratuit. Lisez l’en-tête, la charge utile et l’expiration d’un JSON Web Token, et vérifiez sa signature. Ni le jeton ni la clé ne quittent votre navigateur.',
+    overview:
+      'Un décodeur JWT qui sépare un jeton en ses trois parties, décode l’en-tête et la charge utile, et liste chaque claim en toutes lettres — expiration, « pas avant » et date d’émission affichées comme de vraies dates plutôt qu’en secondes depuis 1970. Il vérifie aussi la signature : collez le secret partagé pour un algorithme HS ou une clé publique pour RS, PS ou ES, et le contrôle s’exécute via la WebCrypto de votre propre navigateur. Ni le jeton ni la clé ne sont jamais envoyés, et la clé n’est même pas enregistrée dans ce navigateur.',
+    faqs: [
+      {
+        q: 'Peut-on coller un vrai JWT dans ce décodeur sans risque ?',
+        a: 'Oui. Le jeton est décodé par du JavaScript dans votre propre onglet et il n’existe aucun backend où l’envoyer — coupez le réseau, le décodeur fonctionne toujours. Cela compte davantage pour les JWT que pour la plupart des données : un jeton est une identification vivante, et le coller sur un site qui l’envoie à un serveur revient à céder tout ce qu’il autorise.',
+      },
+      {
+        q: 'Décoder un JWT signifie-t-il qu’il est valide ?',
+        a: 'Non, et la distinction compte. L’en-tête et la charge utile sont encodés en base64url, pas chiffrés : quiconque détient le jeton peut les lire, et c’est pourquoi un JWT n’est jamais un endroit où mettre un secret. Seule la vérification de la signature avec la bonne clé vous dit que le jeton est authentique, intact, et que ses claims sont dignes de confiance.',
+      },
+      {
+        q: 'Quels algorithmes de signature peut-il vérifier ?',
+        a: 'HS256, HS384 et HS512 avec un secret partagé, ainsi que RS256/384/512, PS256/384/512 et ES256/384/512 avec une clé publique fournie sous forme de bloc PEM, de JWK isolé ou de JWKS entier — auquel cas le kid du jeton choisit la clé. La vérification s’appuie sur la WebCrypto intégrée au navigateur : aucun matériel de clé n’est transmis.',
+      },
+      {
+        q: 'Ma clé ou mon secret de signature sont-ils enregistrés ?',
+        a: 'Non. Tous les autres outils du site enregistrent votre saisie dans le localStorage pour qu’un rechargement ne fasse pas perdre votre travail ; la clé de vérification en est délibérément exclue. Elle reste en mémoire, sert au contrôle, et disparaît dès que vous quittez la page.',
+      },
+      {
+        q: 'Pourquoi mon jeton apparaît-il comme expiré ?',
+        a: 'Le claim exp est un NumericDate — des secondes depuis 1970 — et le décodeur l’affiche comme une vraie date, accompagnée du temps écoulé depuis. Un jeton expiré est la cause la plus fréquente d’un 401 soudain sur une API qui fonctionnait l’instant d’avant. Un claim nbf situé dans le futur produit le même effet à l’autre extrémité.',
+      },
+    ],
+    keywords: [
+      'décodeur jwt',
+      'décoder jwt',
+      'vérifier signature jwt',
+      'jwt decoder français',
+      'json web token décoder',
+    ],
   },
 };

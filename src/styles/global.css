@@ -248,6 +248,19 @@
 }
 
 @layer components {
+  /* The JWT decoder lays a transparent textarea over a coloured copy of the
+     same text, so the two wrap identically only while their content boxes are
+     the same width. A reserved scrollbar gutter on the input — which Windows
+     and Linux draw and macOS does not — would shift every wrap point by a few
+     pixels and slide the colours off the characters they belong to. */
+  .ud-hide-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .ud-hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   /* --- Material -------------------------------------------------------- */
 
   /* Scale flecks: the shell that shatters off hot iron. Gradients rather than

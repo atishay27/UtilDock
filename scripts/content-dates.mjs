@@ -31,6 +31,7 @@ const PAGE_SOURCES = {
   '/json/viewer': ['src/components/pages/tools/Viewer.astro', REGISTRY],
   '/json/validator': ['src/components/pages/tools/Validator.astro', REGISTRY],
   '/json/diff': ['src/components/pages/tools/Diff.astro', REGISTRY],
+  '/jwt/decoder': ['src/components/pages/tools/JwtDecoder.astro', REGISTRY],
   '/about': ['src/components/pages/About.astro'],
   '/privacy': ['src/components/pages/Privacy.astro'],
 };
