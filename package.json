@@ -13,6 +13,7 @@
     "assets": "node scripts/generate-assets.mjs",
     "check": "astro check",
     "fonts": "node scripts/fetch-fonts.mjs",
+    "indexnow": "node scripts/indexnow.mjs",
     "prebuild": "node scripts/unshallow.mjs",
     "postbuild": "node scripts/csp-hashes.mjs"
   },

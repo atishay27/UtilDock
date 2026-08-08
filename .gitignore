@@ -41,6 +41,11 @@ Thumbs.db
 .claude/
 .impeccable/
 
+# Which URLs IndexNow has already been told about. Machine-local by design: it
+# records what *this* checkout submitted, and committing it would make one
+# person's deploy suppress everyone else's submissions.
+.indexnow/
+
 # ---------------------------------------------------------------------------
 # Logs
 # ---------------------------------------------------------------------------
