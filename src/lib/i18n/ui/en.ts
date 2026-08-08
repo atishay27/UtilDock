@@ -252,6 +252,22 @@ export const en = {
       '**Decoding a JWT is not verifying it.** The first two parts are base64url, not encryption: anyone holding the token can read them, which is why a token is never a place to put a secret. Turn on **Check the signature** and paste the shared secret for an HS algorithm, or a public key for an RS, PS or ES one, and the signature is actually tested — HS256/384/512, RS256/384/512, PS256/384/512 and ES256/384/512, using the browser\'s own WebCrypto.',
       'The key you paste is treated differently from every other input on this site: it is never written to `localStorage` and never restored on refresh. Nothing here — token or key — is uploaded, and there is no backend that could receive either.',
     ],
+    'jwt-encoder': [
+      'Write the header and the payload as JSON, choose an algorithm, and the token is assembled and signed as you type. The **expiry presets** stamp `iat`, `exp` and optionally `nbf` into the payload from a single instant, so the three can never disagree by a second — which is the sort of thing that only fails inside someone else\'s clock-skew tolerance.',
+      '`alg` is always written from the algorithm you chose, whatever your header says. That is not a convenience: a header claiming one algorithm over a signature made with another is the setup for the best-known JWT vulnerability, and there is no legitimate token this tool would refuse to make as a result. Every other header field you write is kept exactly as you typed it.',
+      'HS secrets shorter than the hash are **rejected by default** — RFC 7518 requires 32 bytes for HS256, 48 for HS384 and 64 for HS512, and a browser will sign with four characters quite happily even though the result can be cracked offline in seconds. The check can be switched off, because reproducing a weak token is sometimes the whole point.',
+      'The signing key is treated the way the decoder treats its verification key, and more carefully still: it is never written to `localStorage`, never restored on refresh, never in an analytics event, and there is no backend that could receive it. A signing key is the most dangerous secret in a system that uses JWTs, so for a production key, minting tokens in your own environment remains the better habit.',
+    ],
+    'text-counter': [
+      'Paste or type into the panel and every count updates at once — words, characters with and without spaces, sentences, paragraphs, lines and UTF-8 bytes. Nothing has to be pressed.',
+      'Counting uses the browser\'s own **Unicode text segmentation** rather than splitting on spaces, and the difference is not academic. Japanese and Chinese put no space between words, so a whitespace split reports an entire paragraph as one word; the same split cuts "l\'objet" in two. Segmentation knows where words really break in every script the site publishes in, and reading time for CJK is measured in characters per minute rather than words.',
+      'The **limits** panel tracks the caps people actually write against — a 280-character post, a 160-character SMS, a 60-character page title, a 155-character meta description — and the frequency table shows which words you leaned on, which is the quickest way to catch yourself repeating one.',
+    ],
+    'text-formatter': [
+      'Every operation is a switch, and nothing runs until you turn it on. Collapse repeated spaces, strip trailing whitespace, remove blank or duplicate lines, sort lines, convert case, or tidy the punctuation of English prose — in any combination. The result appears beside the input as you type, and **Replace input** folds it back so you can run another pass.',
+      'The tool reports what each switch changed — "12 duplicate lines removed", "3 repeated words" — rather than handing back a rewritten document and leaving you to spot the difference. A rule that fired when it should not have is then visible instead of buried.',
+      '**It does not fix grammar, and does not claim to.** Agreement, tense and article choice need either a server or a WebAssembly language model; this site has no backend, and its Content-Security-Policy does not permit WebAssembly. What is here instead is the mechanical layer — repeated words, spacing around punctuation, straight quotes, capitalisation — where the right answer is a rule rather than a judgement. Those four are English typographic convention and are off by default, since French spaces its punctuation differently and CJK does not space it at all.',
+    ],
   },
 
   /**
@@ -517,6 +533,210 @@ export const en = {
           "No key in that set matches this token's `kid`, so there is nothing to check it against.",
         error: 'The signature could not be checked in this browser.',
       },
+    },
+
+    jwtEncoder: {
+      headerTitle: 'Header',
+      payloadTitle: 'Payload',
+      tokenTitle: 'Signed token',
+      headerLabel: 'JWT header as JSON',
+      payloadLabel: 'JWT payload as JSON',
+      tokenLabel: 'The signed token',
+      headerPlaceholder: '{\n  "kid": "your-key-id"\n}',
+      payloadPlaceholder: '{\n  "sub": "user_123",\n  "name": "Ada Lovelace"\n}',
+
+      algorithm: 'Algorithm',
+      algorithmTitle: 'How this token will be signed — also written into the header',
+      /* `alg: none` is in the list because it is in the specification, and
+         because the way you test that a verifier rejects one is to have one. */
+      unsecured: 'none — unsigned',
+      unsecuredWarning:
+        'This is an **unsecured token**: `alg` is `none`, it carries no signature, and it proves nothing. Most libraries reject these outright. Useful only for testing that yours does.',
+
+      signingTitle: 'Signing key',
+      secretLabel: 'Shared secret',
+      secretPlaceholder: 'The secret to sign this token with',
+      keyLabel: 'Private key',
+      keyPlaceholder: 'A PKCS#8 private key, or a private JWK',
+      keyAria: 'Signing key',
+      base64Secret: 'Secret is base64url',
+      base64SecretTitle: 'Decode the secret from base64url before using it as key material',
+      keyNeverStored:
+        'The key is used and dropped — never saved in this browser, never sent anywhere.',
+      keyIsDangerous:
+        'A signing key mints tokens your systems will accept. For a production key, prefer your own environment.',
+      allowWeak: 'Allow a short secret',
+      allowWeakTitle:
+        'Sign even when the secret is shorter than RFC 7518 requires — for reproducing a weak token',
+      sampleSecretHint: 'The sample signs with `{secret}`.',
+
+      claimsTitle: 'Time claims',
+      stamp: 'Stamp',
+      stampTitle: 'Write iat, exp and nbf into the payload from this moment',
+      expiresIn: 'Expires in',
+      includeNotBefore: 'Also set nbf',
+      includeNotBeforeTitle: 'Add a not-before claim, set to now',
+      expiryPresets: {
+        '15m': '15 minutes',
+        '1h': '1 hour',
+        '24h': '24 hours',
+        '7d': '7 days',
+        '30d': '30 days',
+      },
+      stamped: 'Stamped iat and exp into the payload',
+
+      segHeader: 'Header',
+      segPayload: 'Payload',
+      segSignature: 'Signature',
+      segChars: p({ one: '{count} char', other: '{count} chars' }),
+
+      idle: 'Write a payload and choose a key to mint a token',
+      signing: 'Signing…',
+      signed: 'Token signed',
+      signedUnsecured: 'Unsecured token built — it carries no signature',
+      tokenFile: 'token.jwt',
+      emptyToken:
+        'The signed token appears here. Nothing is uploaded to produce it — the signature is computed by this browser.',
+
+      /** Keyed by the fault codes in `lib/jwt/encode.ts`. */
+      faults: {
+        'bad-header-json': 'The header is not valid JSON, so there is nothing to encode yet.',
+        'bad-payload-json': 'The payload is not valid JSON, so there is nothing to encode yet.',
+        'header-not-object': 'A token header must be a JSON object, not an array or a bare value.',
+        'payload-not-object':
+          'A token payload must be a JSON object, not an array or a bare value.',
+        unsupported: 'That is not an algorithm this tool can sign with.',
+        'no-key': 'Enter a key and the token is signed as you type.',
+        'bad-key':
+          'That key could not be read. Use a PEM block beginning `BEGIN PRIVATE KEY`, or a private JWK — the one carrying a `d` value.',
+        'weak-secret':
+          '{algorithm} requires a secret of at least {required} bytes; this one is {actual}. A shorter secret can be brute-forced offline. Turn on **Allow a short secret** to sign anyway.',
+        error: 'The token could not be signed in this browser.',
+      },
+    },
+
+    counter: {
+      inputTitle: 'Text',
+      inputLabel: 'Text to count',
+      placeholder: 'Paste or type the text you want to measure…',
+      idle: 'Paste or type text to count it',
+      counting: 'Counting…',
+
+      countsTitle: 'Counts',
+      words: 'Words',
+      characters: 'Characters',
+      charactersNoSpaces: 'Without spaces',
+      sentences: 'Sentences',
+      paragraphs: 'Paragraphs',
+      lines: 'Lines',
+      bytes: 'UTF-8 bytes',
+
+      timeTitle: 'Time to read',
+      readingTime: 'Reading',
+      speakingTime: 'Speaking aloud',
+      underAMinute: 'under a minute',
+      minutesAndSeconds: '{minutes} min {seconds} s',
+      justSeconds: '{seconds} s',
+
+      averagesTitle: 'Averages',
+      averageWordLength: 'Word length',
+      averageSentenceLength: 'Words per sentence',
+      longestWord: 'Longest word',
+      charsUnit: p({ one: '{count} char', other: '{count} chars' }),
+      wordsUnit: p({ one: '{count} word', other: '{count} words' }),
+
+      limitsTitle: 'Limits',
+      limitNames: {
+        tweet: 'Post (X)',
+        sms: 'SMS',
+        'page-title': 'Page title',
+        'meta-description': 'Meta description',
+      },
+      remaining: '{count} left',
+      over: '{count} over',
+      limitsNote: 'The two SEO limits are approximations — search engines truncate on width.',
+
+      frequencyTitle: 'Most used words',
+      frequencyEmpty: 'The words you use most appear here once there is text to count.',
+      frequencyCount: p({ one: '{count} time', other: '{count} times' }),
+
+      emptyBody:
+        'Paste text into the panel on the left. Every count updates as you type, entirely in this tab.',
+      /* Shown when the browser has no Intl.Segmenter. Saying so is better than
+         quietly reporting a worse number as though it were the real one. */
+      impreciseNotice:
+        'This browser has no Unicode text segmentation, so words are counted by splitting on spaces. The figure will be wrong for Chinese, Japanese and Korean.',
+      cjkNotice:
+        'Counted as CJK: words are segmented rather than split on spaces, and reading time is measured in characters per minute.',
+    },
+
+    textFormatter: {
+      inputTitle: 'Input',
+      outputTitle: 'Formatted',
+      optionsTitle: 'What to fix',
+      inputLabel: 'Text to format',
+      outputLabel: 'Formatted text',
+      placeholder: 'Paste the text you want to tidy up…',
+      idle: 'Paste text and choose what to fix',
+      formatting: 'Formatting…',
+
+      whitespaceHeading: 'Whitespace',
+      trimLineEnds: 'Trailing spaces',
+      trimLineEndsTitle: 'Remove spaces and tabs at the end of every line',
+      collapseSpaces: 'Repeated spaces',
+      collapseSpacesTitle: 'Collapse runs of spaces or tabs into one, keeping indentation',
+      collapseBlankLines: 'Extra blank lines',
+      collapseBlankLinesTitle: 'Collapse two or more blank lines into one',
+      removeBlankLines: 'All blank lines',
+      removeBlankLinesTitle: 'Remove every blank line',
+      trimDocument: 'Leading and trailing',
+      trimDocumentTitle: 'Trim whitespace from the start and end of the whole document',
+      tabsToSpaces: 'Tabs to spaces',
+      tabsToSpacesTitle: 'Replace every tab with two spaces',
+
+      linesHeading: 'Lines',
+      removeDuplicateLines: 'Duplicate lines',
+      removeDuplicateLinesTitle: 'Keep the first occurrence of each line; blank lines are kept',
+      sortLines: 'Sort',
+      sortModes: {
+        none: 'Do not sort',
+        asc: 'A to Z',
+        desc: 'Z to A',
+      },
+
+      caseHeading: 'Case',
+      caseModes: {
+        none: 'Leave as is',
+        lower: 'lowercase',
+        upper: 'UPPERCASE',
+        title: 'Title Case',
+        sentence: 'Sentence case',
+      },
+
+      writingHeading: 'Punctuation',
+      fixRepeatedWords: 'Repeated words',
+      fixRepeatedWordsTitle: 'Collapse an accidentally doubled word, such as “the the”',
+      spaceAfterPunctuation: 'Space after punctuation',
+      spaceAfterPunctuationTitle:
+        'Add the missing space after a comma or full stop — never inside numbers, URLs or e.g.',
+      removeSpaceBeforePunctuation: 'Space before punctuation',
+      removeSpaceBeforePunctuationTitle: 'Remove a space left before a comma, full stop or colon',
+      smartQuotes: 'Curly quotes',
+      smartQuotesTitle: 'Turn straight quotes into typographic ones; code in backticks is skipped',
+
+
+      changesTitle: 'What changed',
+      noChanges: 'Nothing needed changing.',
+      nothingEnabled: 'Turn on at least one option and the result appears here.',
+      replaceInput: 'Replace input',
+      replaceInputTitle: 'Put the result back in the input so you can run another pass',
+      /* Just "Reset": the options column is 15rem, and "Reset options" pushed
+         the panel heading onto its own row. */
+      reset: 'Reset',
+      resetTitle: 'Return every switch to its default',
+      outputFile: 'formatted.txt',
+      emptyBody:
+        'The tidied text appears here. Nothing is uploaded — every transform runs in this tab.',
     },
   },
 };

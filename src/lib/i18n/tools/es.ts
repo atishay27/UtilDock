@@ -7,6 +7,10 @@ export const categoriesEs: CategoryCopyOverrides = {
   jwt: {
     blurb: 'Lee lo que declara un token y comprueba que de verdad está firmado.',
   },
+  text: {
+    name: 'Texto',
+    blurb: 'Mide un escrito y déjalo ordenado.',
+  },
 };
 
 /**
@@ -204,6 +208,124 @@ export const toolsEs: ToolCopyOverrides = {
       'verificar firma jwt',
       'jwt decoder español',
       'json web token decodificar',
+    ],
+  },
+
+  'jwt-encoder': {
+    name: 'Codificador JWT',
+    tagline: 'Crea un token a partir de claims y fírmalo de verdad',
+    does: ['Cabecera y payload', 'HS / RS / PS / ES', 'Presets de caducidad', 'Firma con WebCrypto'],
+    title: 'Codificador JWT — crea y firma un token',
+    description:
+      'Codificador JWT gratuito. Crea un JSON Web Token con tus propias claims y fírmalo con HS, RS, PS o ES. La clave nunca sale de tu navegador.',
+    overview:
+      'Un codificador de JWT que produce un token realmente firmado, no una imitación en base64. Escribe la cabecera y el payload como JSON, elige un algoritmo y pega el secreto compartido para un algoritmo HS o una clave privada PKCS#8 para RS, PS o ES: la firma la calcula la propia WebCrypto de tu navegador. La caducidad, la fecha de emisión y el «no antes de» se pueden estampar desde presets, así que no volverás a convertir un epoch a mano.',
+    faqs: [
+      {
+        q: '¿Es seguro pegar una clave de firma en este codificador?',
+        a: 'La clave se usa en tu propia pestaña y se descarta: nunca se guarda en el almacenamiento, nunca entra en un evento de analítica y no hay backend que pudiera recibirla. Dicho eso, una clave de firma es el secreto más peligroso de cualquier sistema que use JWT, porque quien la tenga puede acuñar tokens que tus servicios aceptarán. Para una clave de producción, generar los tokens en tu propio entorno sigue siendo mejor costumbre; esta herramienta está pensada para desarrollo, pruebas y aprendizaje.',
+      },
+      {
+        q: '¿Con qué algoritmos puede firmar?',
+        a: 'HS256, HS384 y HS512 con un secreto compartido, y RS256/384/512, PS256/384/512 y ES256/384/512 con una clave privada en bloque PEM PKCS#8 o como JWK privado. También produce el token no asegurado con `alg: none`, claramente marcado como algo que no demuestra nada, porque reproducir uno es la forma de comprobar que tu verificador lo rechaza.',
+      },
+      {
+        q: '¿Por qué rechaza mi secreto corto?',
+        a: 'La RFC 7518 exige una clave HMAC al menos tan larga como el hash: 32 bytes para HS256, 48 para HS384 y 64 para HS512. Los navegadores firman tan tranquilos con un secreto de cuatro caracteres, y el token resultante se rompe sin conexión en segundos. El codificador lo bloquea por defecto y te deja saltártelo, ya que reproducir un token débil es a veces justo lo que hace falta.',
+      },
+      {
+        q: '¿Puede sobrescribir el algoritmo de mi cabecera?',
+        a: 'Siempre escribe `alg` a partir del algoritmo que elegiste, y es deliberado. Una cabecera que declara un algoritmo sobre una firma hecha con otro no es un token: es el punto de partida de la vulnerabilidad de JWT más conocida. Cualquier otro campo de cabecera que escribas —`kid`, `cty`, lo que sea— se conserva tal cual.',
+      },
+    ],
+    keywords: [
+      'codificador jwt',
+      'generador jwt',
+      'crear jwt',
+      'firmar jwt online',
+      'generar json web token',
+    ],
+  },
+
+  'text-counter': {
+    name: 'Contador de texto',
+    tagline: 'Palabras, caracteres, frases y párrafos a la vez',
+    does: [
+      'Palabras y caracteres',
+      'Frases y párrafos',
+      'Tiempo de lectura',
+      'Frecuencia de palabras',
+    ],
+    title: 'Contador de palabras y caracteres',
+    description:
+      'Contador de palabras y caracteres gratuito. Cuenta palabras, caracteres, frases y párrafos mientras escribes, con tiempo de lectura. En tu navegador.',
+    overview:
+      'Un contador de palabras que lo cuenta todo a la vez: palabras, caracteres con y sin espacios, frases, párrafos, líneas y bytes UTF-8, actualizándose mientras escribes. También estima el tiempo de lectura y de lectura en voz alta, sigue los límites contra los que la gente escribe de verdad y lista las palabras que más has usado. El recuento usa la segmentación de texto Unicode del navegador, así que el japonés y el chino se cuentan por palabras en vez de aparecer como una única palabra enorme.',
+    faqs: [
+      {
+        q: '¿Cómo cuenta las palabras en japonés o chino?',
+        a: 'Correctamente, cosa que la mayoría de contadores no hace. El japonés y el chino no separan las palabras con espacios, así que contar dividiendo por espacios convierte un párrafo entero en una sola palabra. Esta herramienta usa la segmentación de texto Unicode integrada en el navegador, que sabe dónde se separan las palabras de verdad en cualquier alfabeto, y mide el tiempo de lectura del CJK en caracteres por minuto en lugar de palabras por minuto.',
+      },
+      {
+        q: '¿Qué cuenta como frase o como párrafo?',
+        a: 'Las frases las decide el algoritmo Unicode de separación de frases, de modo que «Dr. Smith fue a Washington D.C. ayer» es una frase y no tres, y se reconoce el punto ideográfico. Un párrafo es un bloque separado por una línea en blanco; si el texto no tiene ninguna línea en blanco, cada línea no vacía cuenta como uno.',
+      },
+      {
+        q: '¿Cómo se calcula el tiempo de lectura?',
+        a: 'A 238 palabras por minuto para texto alfabético, que es la mediana de lectura silenciosa adulta de prosa general, y a 400 caracteres por minuto para CJK. El tiempo hablado usa los ritmos más lentos que logra un ponente real, unas 140 palabras por minuto. Son estimaciones, no medidas: la escritura técnica densa va más despacio que una novela.',
+      },
+      {
+        q: '¿Se sube mi texto a alguna parte?',
+        a: 'No. El recuento es JavaScript ejecutándose en tu propia pestaña, dentro de un Web Worker para que un documento largo no congele la página. Desconéctate de la red y sigue funcionando. Esto importa más de lo que parece en un contador de texto, porque lo que la gente cuenta suelen ser borradores, cartas de presentación y escritos sin publicar.',
+      },
+    ],
+    keywords: [
+      'contador de palabras',
+      'contador de caracteres',
+      'contar palabras online',
+      'contador de frases',
+      'contar párrafos',
+    ],
+  },
+
+  'text-formatter': {
+    name: 'Formateador de texto',
+    tagline: 'Quita el desorden de un texto que escribió otro',
+    does: [
+      'Quitar espacios de más',
+      'Borrar líneas duplicadas',
+      'Cambiar mayúsculas',
+      'Ordenar la puntuación',
+    ],
+    title: 'Formateador de texto — limpia texto desordenado',
+    description:
+      'Formateador y limpiador de texto gratuito. Quita espacios de más y líneas duplicadas, cambia mayúsculas y ordena la puntuación. En tu navegador.',
+    overview:
+      'Un formateador de texto que conduces tú, no uno que decide por ti. Cada operación es un interruptor: contraer espacios repetidos, quitar espacios finales, eliminar líneas duplicadas o en blanco, ordenar líneas, pasar a mayúsculas, minúsculas, tipo título o tipo frase, y ordenar la puntuación de la prosa en inglés. Nada se ejecuta si no lo activas, y la herramienta informa de exactamente qué cambió cada interruptor, así que el resultado es algo que aceptar y no algo que releer.',
+    faqs: [
+      {
+        q: '¿Puede corregir la gramática?',
+        a: 'No, y lo dice en lugar de fingir. La corrección gramatical de verdad —concordancia, tiempo verbal, elección de artículo— necesita un servidor o un modelo de lenguaje en WebAssembly, y este sitio no tiene backend y su Content-Security-Policy no permite WebAssembly. Lo que sí hace es la capa mecánica que la gente suele querer decir: palabras repetidas, espacios que faltan tras la puntuación, espacios antes de la puntuación, comillas rectas y mayúsculas. Eso es tipografía, donde la respuesta correcta es una regla y no un juicio.',
+      },
+      {
+        q: '¿Qué conserva «eliminar líneas duplicadas»?',
+        a: 'La primera aparición de cada línea, en su posición original, comparando la línea entera de forma exacta. Las líneas en blanco nunca se deduplican, ya que son lo que separa los párrafos y contraerlas reorganizaría el documento en un único bloque sin avisar.',
+      },
+      {
+        q: '¿Cómo trata el tipo título las siglas?',
+        a: 'No las toca. Cualquier palabra con una mayúscula después de la primera letra —JSON, iPhone, McCarthy— pasa intacta, porque pasarla a minúsculas para volver a poner la inicial en mayúscula convertiría JSON en Json. Las palabras menores como «de» o «la» se quedan en minúscula salvo que abran o cierren la línea.',
+      },
+      {
+        q: '¿Estropeará mi código, mis URL o mis números decimales?',
+        a: 'Las reglas de puntuación están escritas justo para evitarlo. Nunca se inserta un espacio tras una coma o dos puntos seguidos de un dígito, así que 1.000 y 12:30 sobreviven. El punto solo gana un espacio entre una secuencia en minúsculas y una mayúscula, lo que deja intactos e.g., Node.js, 3.14 y utildock.dev. La regla de comillas tipográficas omite todo lo que va entre acentos graves.',
+      },
+    ],
+    keywords: [
+      'formateador de texto',
+      'quitar espacios de más',
+      'eliminar líneas duplicadas',
+      'limpiar texto online',
+      'cambiar mayúsculas online',
     ],
   },
 };

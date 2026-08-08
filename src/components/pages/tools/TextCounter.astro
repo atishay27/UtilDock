@@ -1,0 +1,28 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import TextCounter from '../../tools/TextCounter';
+import { langTag, t } from '../../../lib/i18n';
+import { DEFAULT_LOCALE, type Locale } from '../../../lib/i18n/locales';
+import { COUNTER_SAMPLES } from '../../../lib/text/samples';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+---
+
+<ToolLayout toolId="text-counter" locale={locale}>
+  {/* The island's JavaScript is identical in every language; only these
+      strings differ, and they are serialised into the page as props.
+
+      The sample is picked here rather than inside the island so that one
+      language's prose reaches the page instead of all eight — and so that the
+      JSON and JWT pages, which share the same strings object, carry none. */}
+  <TextCounter
+    client:load
+    lang={langTag(locale)}
+    strings={t(locale).islands}
+    sample={COUNTER_SAMPLES[locale]}
+  />
+</ToolLayout>

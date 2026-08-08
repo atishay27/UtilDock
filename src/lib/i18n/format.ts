@@ -87,3 +87,19 @@ export function parseRich(input: string): RichToken[] {
   if (last < input.length) tokens.push({ t: 'text', v: input.slice(last) });
   return tokens;
 }
+
+/**
+ * The same string with its markup removed rather than rendered.
+ *
+ * Some strings are shown in two places: as prose in a panel, where `**bold**`
+ * and `` `code` `` should become elements, and again on a one-line status
+ * footer, which is plain text. Without this the footer prints the asterisks and
+ * backticks literally. Stripping here rather than keeping a second, markup-free
+ * copy of each string means a translator never has to maintain two versions of
+ * the same sentence and watch them drift apart.
+ */
+export function plainText(input: string): string {
+  return parseRich(input)
+    .map((token) => token.v)
+    .join('');
+}

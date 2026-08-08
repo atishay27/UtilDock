@@ -7,6 +7,10 @@ export const categoriesDe: CategoryCopyOverrides = {
   jwt: {
     blurb: 'Lies, was ein Token behauptet — und prüfe, dass es wirklich signiert wurde.',
   },
+  text: {
+    name: 'Text',
+    blurb: 'Einen Text vermessen und ihn sauber abrichten.',
+  },
 };
 
 /**
@@ -194,6 +198,119 @@ export const toolsDe: ToolCopyOverrides = {
       'jwt signatur prüfen',
       'json web token decoder',
       'jwt token anzeigen',
+    ],
+  },
+
+  'jwt-encoder': {
+    name: 'JWT-Encoder',
+    tagline: 'Ein Token aus Claims bauen — und wirklich signieren',
+    does: ['Header und Payload', 'HS / RS / PS / ES', 'Ablauf-Presets', 'Signiert mit WebCrypto'],
+    title: 'JWT-Encoder — Token bauen und signieren',
+    description:
+      'Kostenloser JWT-Encoder. Baue ein JSON Web Token aus eigenen Claims und signiere es mit HS, RS, PS oder ES. Der Schlüssel verlässt den Browser nie.',
+    overview:
+      'Ein JWT-Encoder, der ein echt signiertes Token erzeugt statt einer Base64-Attrappe. Schreibe Header und Payload als JSON, wähle einen Algorithmus und füge das gemeinsame Secret für ein HS-Verfahren oder einen privaten PKCS#8-Schlüssel für RS, PS oder ES ein — die Signatur berechnet die WebCrypto deines eigenen Browsers. Ablauf, Ausstellzeit und „nicht vor“ lassen sich per Preset stempeln, sodass du nie wieder einen Epoch-Wert von Hand umrechnest.',
+    faqs: [
+      {
+        q: 'Ist es sicher, einen Signaturschlüssel hier einzufügen?',
+        a: 'Der Schlüssel wird in deinem eigenen Tab benutzt und verworfen — nie gespeichert, nie in einem Analytics-Ereignis, und es gibt kein Backend, das ihn empfangen könnte. Dennoch: Ein Signaturschlüssel ist das gefährlichste Geheimnis in jedem System mit JWTs, denn wer ihn hat, kann Tokens erzeugen, die deine Dienste akzeptieren. Für einen Produktionsschlüssel bleibt es die bessere Gewohnheit, Tokens in der eigenen Umgebung zu erzeugen; dieses Werkzeug ist für Entwicklung, Tests und Lernen gedacht.',
+      },
+      {
+        q: 'Mit welchen Algorithmen kann es signieren?',
+        a: 'HS256, HS384 und HS512 mit einem gemeinsamen Secret sowie RS256/384/512, PS256/384/512 und ES256/384/512 mit einem privaten Schlüssel als PKCS#8-PEM-Block oder privatem JWK. Es erzeugt auch das ungesicherte `alg: none`-Token, deutlich als beweislos gekennzeichnet — denn so prüfst du, dass dein Verifizierer es ablehnt.',
+      },
+      {
+        q: 'Warum wird mein kurzes Secret abgelehnt?',
+        a: 'RFC 7518 verlangt einen HMAC-Schlüssel, der mindestens so lang ist wie der Hash: 32 Byte für HS256, 48 für HS384, 64 für HS512. Browser signieren bereitwillig mit einem Secret aus vier Zeichen, und das entstehende Token lässt sich offline in Sekunden knacken. Der Encoder blockiert das standardmäßig und lässt dich es übergehen, denn ein schwaches Token nachzubauen ist manchmal genau die Aufgabe.',
+      },
+      {
+        q: 'Kann es den Algorithmus in meinem Header überschreiben?',
+        a: 'Es schreibt `alg` immer aus dem gewählten Algorithmus, und das mit Absicht. Ein Header, der einen Algorithmus behauptet, während die Signatur mit einem anderen erzeugt wurde, ist kein Token, sondern der Ausgangspunkt der bekanntesten JWT-Schwachstelle. Jedes andere Header-Feld — `kid`, `cty`, beliebige eigene — bleibt genau so, wie du es geschrieben hast.',
+      },
+    ],
+    keywords: [
+      'jwt encoder',
+      'jwt generator',
+      'jwt erstellen',
+      'jwt signieren online',
+      'json web token generator',
+    ],
+  },
+
+  'text-counter': {
+    name: 'Textzähler',
+    tagline: 'Wörter, Zeichen, Sätze und Absätze auf einmal',
+    does: ['Wörter und Zeichen', 'Sätze und Absätze', 'Lesedauer', 'Worthäufigkeit'],
+    title: 'Wortzähler — Wörter, Zeichen, Sätze',
+    description:
+      'Kostenloser Wort- und Zeichenzähler. Zählt Wörter, Zeichen, Sätze und Absätze beim Tippen, mit Lesedauer. Läuft in deinem Browser.',
+    overview:
+      'Ein Wortzähler, der alles gleichzeitig zählt — Wörter, Zeichen mit und ohne Leerzeichen, Sätze, Absätze, Zeilen und UTF-8-Bytes — und sich beim Tippen aktualisiert. Er schätzt außerdem Lese- und Sprechdauer, verfolgt die Grenzen, gegen die tatsächlich geschrieben wird, und listet die am häufigsten genutzten Wörter. Gezählt wird mit der Unicode-Textsegmentierung des Browsers, sodass Japanisch und Chinesisch nach Wörtern gezählt werden statt als ein einziges riesiges Wort zu erscheinen.',
+    faqs: [
+      {
+        q: 'Wie zählt es Wörter auf Japanisch oder Chinesisch?',
+        a: 'Richtig — was die meisten Wortzähler nicht tun. Japanisch und Chinesisch setzen keine Leerzeichen zwischen Wörter, also meldet eine Zählung per Leerzeichen-Trennung einen ganzen Absatz als ein Wort. Dieses Werkzeug nutzt die im Browser eingebaute Unicode-Textsegmentierung, die weiß, wo Wörter in jeder Schrift wirklich enden, und misst die Lesedauer für CJK in Zeichen statt in Wörtern pro Minute.',
+      },
+      {
+        q: 'Was zählt als Satz oder als Absatz?',
+        a: 'Ein Satz wird nach den Unicode-Regeln zur Satztrennung bestimmt, sodass „Dr. Smith fuhr gestern nach Washington D.C.“ ein Satz ist und nicht drei, und der ideografische Punkt erkannt wird. Ein Absatz ist ein durch eine Leerzeile getrennter Block; enthält der Text gar keine Leerzeilen, zählt jede nicht leere Zeile als einer.',
+      },
+      {
+        q: 'Wie wird die Lesedauer berechnet?',
+        a: 'Mit 238 Wörtern pro Minute für alphabetischen Text — dem Median für stilles Lesen allgemeiner Prosa durch Erwachsene — und 400 Zeichen pro Minute für CJK. Die Sprechdauer nutzt die langsameren Werte, die ein Vortragender tatsächlich schafft, rund 140 Wörter pro Minute. Das sind Schätzungen, keine Messungen: dichte Fachtexte laufen langsamer als ein Roman.',
+      },
+      {
+        q: 'Wird mein Text irgendwohin hochgeladen?',
+        a: 'Nein. Gezählt wird von JavaScript in deinem eigenen Tab, in einem Web Worker, damit ein langes Dokument die Seite nicht einfriert. Trenne die Netzwerkverbindung, und es läuft weiter. Bei einem Textzähler zählt das mehr, als es klingt, denn was Leute zählen, sind meist Entwürfe, Bewerbungen und unveröffentlichte Texte.',
+      },
+    ],
+    keywords: [
+      'wörter zählen',
+      'zeichen zählen',
+      'wortzähler online',
+      'zeichenzähler',
+      'sätze zählen',
+    ],
+  },
+
+  'text-formatter': {
+    name: 'Textformatierer',
+    tagline: 'Das Chaos aus fremdem Text herausholen',
+    does: [
+      'Zusatzleerzeichen entfernen',
+      'Doppelte Zeilen löschen',
+      'Schreibung ändern',
+      'Zeichensetzung ordnen',
+    ],
+    title: 'Textformatierer — unordentlichen Text säubern',
+    description:
+      'Kostenloser Textformatierer und -reiniger. Entferne Zusatzleerzeichen und doppelte Zeilen, ändere die Schreibung und ordne die Zeichensetzung. Im Browser.',
+    overview:
+      'Ein Textformatierer, den du steuerst, statt eines, der für dich entscheidet. Jede Operation ist ein Schalter — mehrfache Leerzeichen zusammenfassen, Leerzeichen am Zeilenende entfernen, doppelte oder leere Zeilen löschen, Zeilen sortieren, in Groß-, Klein-, Titel- oder Satzschreibung umwandeln und die Zeichensetzung englischer Prosa aufräumen. Nichts läuft, bevor du es einschaltest, und das Werkzeug meldet genau, was jeder Schalter verändert hat — das Ergebnis ist damit etwas zum Annehmen statt zum Nachlesen.',
+    faqs: [
+      {
+        q: 'Kann es Grammatik korrigieren?',
+        a: 'Nein, und es sagt das, statt so zu tun. Echte Grammatikkorrektur — Kongruenz, Zeitform, Artikelwahl — braucht entweder einen Server oder ein WebAssembly-Sprachmodell, und diese Seite hat kein Backend und eine Content-Security-Policy, die WebAssembly nicht erlaubt. Stattdessen erledigt es die mechanische Ebene, die meist gemeint ist: wiederholte Wörter, fehlende Leerzeichen nach Satzzeichen, Leerzeichen davor, gerade Anführungszeichen und Großschreibung. Das ist Typografie, wo die richtige Antwort eine Regel ist und kein Urteil.',
+      },
+      {
+        q: 'Was behält „doppelte Zeilen entfernen“?',
+        a: 'Das erste Vorkommen jeder Zeile an ihrer ursprünglichen Position, wobei die ganze Zeile exakt verglichen wird. Leerzeilen werden nie dedupliziert, denn sie trennen die Absätze, und sie zusammenzufassen würde das Dokument unbemerkt zu einem einzigen Block umfließen lassen.',
+      },
+      {
+        q: 'Wie geht die Titelschreibung mit Abkürzungen um?',
+        a: 'Sie lässt sie in Ruhe. Jedes Wort mit einem Großbuchstaben nach dem ersten — JSON, iPhone, McCarthy — bleibt unangetastet, denn es kleinzuschreiben, um den Anfangsbuchstaben neu großzuschreiben, würde aus JSON ein Json machen. Kleine Wörter wie „of“ und „the“ bleiben klein, außer sie eröffnen oder beschließen die Zeile.',
+      },
+      {
+        q: 'Zerstört es meinen Code, URLs oder Dezimalzahlen?',
+        a: 'Die Regeln zur Zeichensetzung sind genau dafür geschrieben, das zu vermeiden. Nach einem Komma oder Doppelpunkt, dem eine Ziffer folgt, wird nie ein Leerzeichen eingefügt, sodass 1,000 und 12:30 überleben. Ein Punkt erhält nur zwischen einer Kleinbuchstabenfolge und einem Großbuchstaben ein Leerzeichen, was e.g., Node.js, 3.14 und utildock.dev unberührt lässt. Die Regel für typografische Anführungszeichen überspringt alles in Backticks.',
+      },
+    ],
+    keywords: [
+      'text formatieren',
+      'leerzeichen entfernen',
+      'doppelte zeilen entfernen',
+      'text bereinigen online',
+      'groß und kleinschreibung ändern',
     ],
   },
 };

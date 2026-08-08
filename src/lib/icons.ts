@@ -21,6 +21,20 @@ export const ICONS = {
   convert:
     '<path d="m16 3 4 4-4 4"/><path d="M20 7H8.5"/><path d="m8 21-4-4 4-4"/><path d="M4 17h11.5"/>',
 
+  /* The decoder's key, turned the other way and stamping rather than opening —
+     the encoder mints a token where the decoder reads one. */
+  'key-stamp':
+    '<circle cx="16.5" cy="8.5" r="4"/><path d="m13.6 11.4-8.1 8.1M8 15l3 3M10.5 12.5l3 3"/>',
+
+  /* A rule with its graduations: the counter measures a piece of stock. */
+  ruler:
+    '<rect x="2.5" y="7" width="19" height="10" rx="1.5"/><path d="M7 7v3.5M11 7v5M15 7v3.5M19 7v5"/>',
+
+  /* A plane taking a shaving off the surface — the formatter dresses text down
+     to true rather than adding anything to it. */
+  plane:
+    '<path d="M3 15.5h18l-1.6 4a1.5 1.5 0 0 1-1.4 1H6a1.5 1.5 0 0 1-1.4-1L3 15.5Z"/><path d="M6.5 15.5V6a1.5 1.5 0 0 1 1.5-1.5h8A1.5 1.5 0 0 1 17.5 6v9.5"/><path d="M10 8.5h4"/>',
+
   /* --- UI icons --- */
 
   copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',

@@ -74,9 +74,19 @@ export function useCopy(resetAfter = 1600) {
   return { copy, copied };
 }
 
-/** Save text to a file, entirely locally via a blob URL. */
+/**
+ * Save text to a file, entirely locally via a blob URL.
+ *
+ * The MIME type follows the extension rather than being fixed at JSON, so the
+ * text tools do not hand the operating system a `.txt` file labelled as JSON.
+ */
 export function downloadText(text: string, filename: string) {
-  const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+  const type = /\.(txt|md|csv)$/i.test(filename)
+    ? 'text/plain;charset=utf-8'
+    : /\.jwt$/i.test(filename)
+      ? 'application/jwt'
+      : 'application/json;charset=utf-8';
+  const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

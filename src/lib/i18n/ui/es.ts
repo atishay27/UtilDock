@@ -232,6 +232,22 @@ export const es: UIStrings = {
       '**Decodificar un JWT no es verificarlo.** Las dos primeras partes son base64url, no cifrado: cualquiera que tenga el token puede leerlas, y por eso un token nunca es sitio para guardar un secreto. Activa **Comprobar la firma** y pega el secreto compartido para un algoritmo HS, o una clave pública para uno RS, PS o ES, y la firma se comprueba de verdad — HS256/384/512, RS256/384/512, PS256/384/512 y ES256/384/512, usando la propia WebCrypto del navegador.',
       'La clave que pegas se trata de forma distinta a cualquier otra entrada de este sitio: nunca se escribe en `localStorage` ni se restaura al recargar. Nada de esto —ni el token ni la clave— se sube a ningún sitio, y no existe servidor que pudiera recibirlos.',
     ],
+    'jwt-encoder': [
+      'Escribe la cabecera y el payload como JSON, elige un algoritmo y el token se ensambla y se firma mientras escribes. Los **presets de caducidad** estampan `iat`, `exp` y opcionalmente `nbf` en el payload desde un mismo instante, de modo que los tres nunca puedan discrepar por un segundo — el tipo de cosa que solo falla dentro de la tolerancia de desfase de reloj de otra persona.',
+      '`alg` siempre se escribe a partir del algoritmo que elegiste, diga lo que diga tu cabecera. No es una comodidad: una cabecera que declara un algoritmo sobre una firma hecha con otro es el punto de partida de la vulnerabilidad más conocida de JWT, y no hay ningún token legítimo que esta herramienta se niegue a crear por ello. Cualquier otro campo de cabecera que escribas se conserva exactamente como lo escribiste.',
+      'Los secretos HS más cortos que el hash se **rechazan por defecto** — la RFC 7518 exige 32 bytes para HS256, 48 para HS384 y 64 para HS512, y un navegador firmará con cuatro caracteres tan tranquilo aunque el resultado se pueda romper sin conexión en segundos. La comprobación se puede desactivar, porque reproducir un token débil es a veces justo lo que se busca.',
+      'La clave de firma se trata como el decodificador trata su clave de verificación, y aún con más cuidado: nunca se escribe en `localStorage`, nunca se restaura al recargar, nunca aparece en un evento de analítica, y no hay backend que pudiera recibirla. Una clave de firma es el secreto más peligroso de un sistema que usa JWT, así que para una clave de producción sigue siendo mejor costumbre acuñar los tokens en tu propio entorno.',
+    ],
+    'text-counter': [
+      'Pega o escribe en el panel y todos los recuentos se actualizan a la vez: palabras, caracteres con y sin espacios, frases, párrafos, líneas y bytes UTF-8. No hay que pulsar nada.',
+      'El recuento usa la **segmentación de texto Unicode** del propio navegador en lugar de dividir por espacios, y la diferencia no es académica. El japonés y el chino no separan las palabras con espacios, así que dividir por espacios convierte un párrafo entero en una sola palabra; esa misma división parte «l’objet» en dos. La segmentación sabe dónde empiezan y acaban las palabras de verdad en todos los alfabetos en los que se publica el sitio, y el tiempo de lectura para CJK se mide en caracteres por minuto en vez de en palabras.',
+      'El panel de **límites** sigue los topes contra los que la gente escribe de verdad — una publicación de 280 caracteres, un SMS de 160, un título de página de 60, una meta descripción de 155 — y la tabla de frecuencia muestra en qué palabras te apoyaste, que es la forma más rápida de pillarte repitiendo una.',
+    ],
+    'text-formatter': [
+      'Cada operación es un interruptor, y nada se ejecuta hasta que lo activas. Contrae espacios repetidos, elimina espacios al final de línea, quita líneas en blanco o duplicadas, ordena líneas, cambia mayúsculas y minúsculas, o arregla la puntuación de la prosa en inglés — en cualquier combinación. El resultado aparece junto a la entrada mientras escribes, y **Reemplazar entrada** lo devuelve al principio para que puedas hacer otra pasada.',
+      'La herramienta informa de lo que cambió cada interruptor — «12 líneas duplicadas eliminadas», «3 palabras repetidas» — en lugar de devolverte un documento reescrito y dejarte a ti detectar la diferencia. Así, una regla que se activó cuando no debía queda a la vista en vez de enterrada.',
+      '**No corrige la gramática, y no pretende hacerlo.** La concordancia, el tiempo verbal y la elección de artículo necesitan o un servidor o un modelo de lenguaje en WebAssembly; este sitio no tiene backend, y su Content-Security-Policy no permite WebAssembly. Lo que hay en su lugar es la capa mecánica — palabras repetidas, espaciado alrededor de la puntuación, comillas rectas, mayúsculas — donde la respuesta correcta es una regla y no un juicio. Esas cuatro siguen la convención tipográfica inglesa y vienen desactivadas, ya que el francés espacia la puntuación de otra manera y el CJK no la espacia en absoluto.',
+    ],
   },
 
   islands: {
@@ -491,6 +507,208 @@ export const es: UIStrings = {
           'Ninguna clave de ese conjunto coincide con el `kid` de este token, así que no hay con qué comprobarlo.',
         error: 'No se pudo comprobar la firma en este navegador.',
       },
+    },
+    jwtEncoder: {
+      headerTitle: 'Cabecera',
+      payloadTitle: 'Payload',
+      tokenTitle: 'Token firmado',
+      headerLabel: 'Cabecera del JWT como JSON',
+      payloadLabel: 'Payload del JWT como JSON',
+      tokenLabel: 'El token firmado',
+      headerPlaceholder: '{\n  "kid": "tu-id-de-clave"\n}',
+      payloadPlaceholder: '{\n  "sub": "user_123",\n  "name": "Ada Lovelace"\n}',
+
+      algorithm: 'Algoritmo',
+      algorithmTitle: 'Cómo se firmará este token — también se escribe en la cabecera',
+      unsecured: 'none — sin firmar',
+      unsecuredWarning:
+        'Este es un **token no asegurado**: su `alg` es `none`, no lleva firma y no demuestra nada. La mayoría de las bibliotecas los rechazan de plano. Solo sirve para comprobar que la tuya también lo hace.',
+
+      signingTitle: 'Clave de firma',
+      secretLabel: 'Secreto compartido',
+      secretPlaceholder: 'El secreto con el que firmar este token',
+      keyLabel: 'Clave privada',
+      keyPlaceholder: 'Una clave privada PKCS#8, o un JWK privado',
+      keyAria: 'Clave de firma',
+      base64Secret: 'El secreto es base64url',
+      base64SecretTitle: 'Decodificar el secreto desde base64url antes de usarlo como material de clave',
+      keyNeverStored:
+        'La clave se usa y se descarta: nunca se guarda en este navegador ni se envía a ninguna parte.',
+      keyIsDangerous:
+        'Una clave de firma acuña tokens que tus sistemas aceptarán. Para una clave de producción, mejor tu propio entorno.',
+      allowWeak: 'Permitir un secreto corto',
+      allowWeakTitle:
+        'Firmar aunque el secreto sea más corto de lo que exige la RFC 7518 — para reproducir un token débil',
+      sampleSecretHint: 'El ejemplo se firma con `{secret}`.',
+
+      claimsTitle: 'Claims de tiempo',
+      stamp: 'Estampar',
+      stampTitle: 'Escribir iat, exp y nbf en el payload a partir de este momento',
+      expiresIn: 'Caduca en',
+      includeNotBefore: 'Añadir también nbf',
+      includeNotBeforeTitle: 'Añadir una claim «no antes de», fijada a ahora',
+      expiryPresets: {
+        '15m': '15 minutos',
+        '1h': '1 hora',
+        '24h': '24 horas',
+        '7d': '7 días',
+        '30d': '30 días',
+      },
+      stamped: 'iat y exp estampados en el payload',
+
+      segHeader: 'Cabecera',
+      segPayload: 'Payload',
+      segSignature: 'Firma',
+      segChars: p({ one: '{count} carácter', other: '{count} caracteres' }),
+
+      idle: 'Escribe un payload y elige una clave para acuñar un token',
+      signing: 'Firmando…',
+      signed: 'Token firmado',
+      signedUnsecured: 'Token no asegurado creado — no lleva firma',
+      tokenFile: 'token.jwt',
+      emptyToken:
+        'Aquí aparece el token firmado. No se sube nada para producirlo: la firma la calcula este navegador.',
+
+      faults: {
+        'bad-header-json': 'La cabecera no es JSON válido, así que todavía no hay nada que codificar.',
+        'bad-payload-json': 'El payload no es JSON válido, así que todavía no hay nada que codificar.',
+        'header-not-object':
+          'La cabecera de un token debe ser un objeto JSON, no un array ni un valor suelto.',
+        'payload-not-object':
+          'El payload de un token debe ser un objeto JSON, no un array ni un valor suelto.',
+        unsupported: 'Ese no es un algoritmo con el que esta herramienta pueda firmar.',
+        'no-key': 'Introduce una clave y el token se firma mientras escribes.',
+        'bad-key':
+          'No se pudo leer esa clave. Usa un bloque PEM que empiece por `BEGIN PRIVATE KEY`, o un JWK privado — el que lleva un valor `d`.',
+        'weak-secret':
+          '{algorithm} exige un secreto de al menos {required} bytes; este tiene {actual}. Un secreto más corto puede romperse sin conexión. Activa **Permitir un secreto corto** para firmar igualmente.',
+        error: 'No se pudo firmar el token en este navegador.',
+      },
+    },
+
+    counter: {
+      inputTitle: 'Texto',
+      inputLabel: 'Texto para contar',
+      placeholder: 'Pega o escribe el texto que quieras medir…',
+      idle: 'Pega o escribe texto para contarlo',
+      counting: 'Contando…',
+
+      countsTitle: 'Recuentos',
+      words: 'Palabras',
+      characters: 'Caracteres',
+      charactersNoSpaces: 'Sin espacios',
+      sentences: 'Frases',
+      paragraphs: 'Párrafos',
+      lines: 'Líneas',
+      bytes: 'Bytes UTF-8',
+
+      timeTitle: 'Tiempo de lectura',
+      readingTime: 'Leyendo',
+      speakingTime: 'Leyendo en voz alta',
+      underAMinute: 'menos de un minuto',
+      minutesAndSeconds: '{minutes} min {seconds} s',
+      justSeconds: '{seconds} s',
+
+      averagesTitle: 'Promedios',
+      averageWordLength: 'Longitud de palabra',
+      averageSentenceLength: 'Palabras por frase',
+      longestWord: 'Palabra más larga',
+      charsUnit: p({ one: '{count} carácter', other: '{count} caracteres' }),
+      wordsUnit: p({ one: '{count} palabra', other: '{count} palabras' }),
+
+      limitsTitle: 'Límites',
+      limitNames: {
+        tweet: 'Publicación (X)',
+        sms: 'SMS',
+        'page-title': 'Título de página',
+        'meta-description': 'Meta descripción',
+      },
+      remaining: 'quedan {count}',
+      over: '{count} de más',
+      limitsNote:
+        'Los dos límites de SEO son aproximaciones: los buscadores recortan por anchura, no por caracteres.',
+
+      frequencyTitle: 'Palabras más usadas',
+      frequencyEmpty: 'Las palabras que más uses aparecen aquí en cuanto haya texto que contar.',
+      frequencyCount: p({ one: '{count} vez', other: '{count} veces' }),
+
+      emptyBody:
+        'Pega texto en el panel de la izquierda. Todos los recuentos se actualizan mientras escribes, enteramente en esta pestaña.',
+      impreciseNotice:
+        'Este navegador no tiene segmentación de texto Unicode, así que las palabras se cuentan dividiendo por espacios. La cifra será incorrecta para chino, japonés y coreano.',
+      cjkNotice:
+        'Contado como CJK: las palabras se segmentan en lugar de dividirse por espacios, y el tiempo de lectura se mide en caracteres por minuto.',
+    },
+
+    textFormatter: {
+      inputTitle: 'Entrada',
+      outputTitle: 'Formateado',
+      optionsTitle: 'Qué arreglar',
+      inputLabel: 'Texto para formatear',
+      outputLabel: 'Texto formateado',
+      placeholder: 'Pega el texto que quieras ordenar…',
+      idle: 'Pega texto y elige qué arreglar',
+      formatting: 'Formateando…',
+
+      whitespaceHeading: 'Espacios',
+      trimLineEnds: 'Espacios finales',
+      trimLineEndsTitle: 'Eliminar espacios y tabulaciones al final de cada línea',
+      collapseSpaces: 'Espacios repetidos',
+      collapseSpacesTitle:
+        'Contraer series de espacios o tabulaciones en uno solo, manteniendo la sangría',
+      collapseBlankLines: 'Líneas en blanco de más',
+      collapseBlankLinesTitle: 'Contraer dos o más líneas en blanco en una',
+      removeBlankLines: 'Todas las líneas en blanco',
+      removeBlankLinesTitle: 'Eliminar todas las líneas en blanco',
+      trimDocument: 'Principio y final',
+      trimDocumentTitle: 'Recortar los espacios del principio y del final del documento',
+      tabsToSpaces: 'Tabulaciones a espacios',
+      tabsToSpacesTitle: 'Sustituir cada tabulación por dos espacios',
+
+      linesHeading: 'Líneas',
+      removeDuplicateLines: 'Líneas duplicadas',
+      removeDuplicateLinesTitle:
+        'Conservar la primera aparición de cada línea; las líneas en blanco se mantienen',
+      sortLines: 'Ordenar',
+      sortModes: {
+        none: 'No ordenar',
+        asc: 'De la A a la Z',
+        desc: 'De la Z a la A',
+      },
+
+      caseHeading: 'Mayúsculas',
+      caseModes: {
+        none: 'Dejar como está',
+        lower: 'minúsculas',
+        upper: 'MAYÚSCULAS',
+        title: 'Tipo Título',
+        sentence: 'Tipo frase',
+      },
+
+      writingHeading: 'Puntuación',
+      fixRepeatedWords: 'Palabras repetidas',
+      fixRepeatedWordsTitle: 'Contraer una palabra duplicada por accidente, como «de de»',
+      spaceAfterPunctuation: 'Espacio tras la puntuación',
+      spaceAfterPunctuationTitle:
+        'Añadir el espacio que falta tras una coma o un punto — nunca dentro de números, URL o e.g.',
+      removeSpaceBeforePunctuation: 'Espacio antes de la puntuación',
+      removeSpaceBeforePunctuationTitle:
+        'Eliminar el espacio dejado antes de una coma, un punto o dos puntos',
+      smartQuotes: 'Comillas tipográficas',
+      smartQuotesTitle:
+        'Convertir las comillas rectas en tipográficas; lo que va entre acentos graves se omite',
+
+
+      changesTitle: 'Qué cambió',
+      noChanges: 'No hacía falta cambiar nada.',
+      nothingEnabled: 'Activa al menos una opción y el resultado aparecerá aquí.',
+      replaceInput: 'Reemplazar entrada',
+      replaceInputTitle: 'Poner el resultado en la entrada para hacer otra pasada',
+      reset: 'Restablecer',
+      resetTitle: 'Devolver todos los interruptores a su valor por defecto',
+      outputFile: 'texto-formateado.txt',
+      emptyBody:
+        'Aquí aparece el texto ordenado. No se sube nada: cada transformación se ejecuta en esta pestaña.',
     },
   },
 };

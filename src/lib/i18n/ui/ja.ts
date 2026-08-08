@@ -224,6 +224,22 @@ export const ja: UIStrings = {
       '**JWT のデコードは検証ではありません。** 最初の 2 つの部分は暗号化ではなく base64url です。トークンを持っている人なら誰でも読めます。だからこそ、トークンは秘密情報を入れる場所ではありません。**署名を検証する**を有効にして、HS 系なら共有シークレットを、RS・PS・ES 系なら公開鍵を貼り付けると、署名が実際に検証されます — HS256/384/512、RS256/384/512、PS256/384/512、ES256/384/512 に対応し、ブラウザー自身の WebCrypto を使います。',
       '貼り付けた鍵は、このサイトのほかのどの入力とも違う扱いを受けます。`localStorage` に書き込まれることはなく、再読み込み時に復元されることもありません。トークンも鍵も、どこにもアップロードされません。そもそも、それらを受け取れるサーバーが存在しません。',
     ],
+    'jwt-encoder': [
+      'ヘッダーとペイロードを JSON で書き、アルゴリズムを選ぶと、入力しながらトークンが組み立てられ、署名されます。**有効期限のプリセット**は `iat`、`exp`、必要なら `nbf` を同じ一瞬から打刻するので、三つが 1 秒ずれることはありません。これは他システムのクロックずれ許容範囲の中でしか表面化しない、厄介な種類の不具合です。',
+      '`alg` はヘッダーに何が書かれていても、常に選んだアルゴリズムから書き込まれます。これは利便性のためではありません。あるアルゴリズムを名乗るヘッダーに別のアルゴリズムで作った署名を組み合わせたものは、JWT で最もよく知られた脆弱性の出発点であり、そのために作れなくなる正当なトークンは存在しません。ヘッダーのそれ以外のフィールドは、書いたとおりそのまま保たれます。',
+      'ハッシュより短い HS シークレットは**既定で拒否されます**。RFC 7518 は HS256 に 32 バイト、HS384 に 48 バイト、HS512 に 64 バイトを要求しており、ブラウザーは 4 文字でも平然と署名しますが、その結果はオフラインで数秒のうちに破られます。この検査は切ることもできます。弱いトークンを再現すること自体が目的の場合があるからです。',
+      '署名鍵は、デコーダーが検証鍵を扱うのと同じように、いやそれ以上に慎重に扱われます。`localStorage` に書かれず、再読み込みでも復元されず、アナリティクスのイベントにも入らず、受け取りうるバックエンドも存在しません。署名鍵は JWT を使うシステムで最も危険な秘密です。本番の鍵については、自分の環境でトークンを発行するほうが良い習慣であり続けます。',
+    ],
+    'text-counter': [
+      'パネルに貼り付けるか入力すると、単語数、空白ありとなしの文字数、文、段落、行、UTF-8 バイト数がすべて同時に更新されます。何も押す必要はありません。',
+      'カウントには空白での分割ではなく、ブラウザー自身の **Unicode テキスト分割**を使っています。この違いは机上のものではありません。日本語と中国語は単語の間に空白を置かないため、空白で分割すると段落まるごとが 1 単語として数えられてしまいます。同じ分割はフランス語の «l’objet» を 2 語に切ってしまいます。テキスト分割はこのサイトが公開するすべての文字体系で、単語が本当にどこで切れるかを知っており、CJK の読了時間は単語数ではなく 1 分あたりの文字数で測られます。',
+      '**上限**パネルは、実際に人が意識して書いている上限を追いかけます。280 文字の投稿、160 文字の SMS、60 文字のページタイトル、155 文字のメタディスクリプション。頻度表はどの語に頼ったかを示し、同じ語の繰り返しに気づく最短の方法になります。',
+    ],
+    'text-formatter': [
+      'すべての処理はスイッチで、入れるまで何も動きません。連続した空白をまとめる、行末の空白を取る、空行や重複行を消す、行を並べ替える、大文字小文字を変える、英文の句読点を整える——どの組み合わせでも構いません。結果は入力の隣に、打っている最中から現れます。**入力を置き換え**を押すと結果が入力側に戻り、続けてもう一度かけられます。',
+      'このツールは各スイッチが何を変えたかを報告します。「重複行を 12 行削除」「繰り返しの語 3 件」といった具合です。書き換えた文書だけを返して違いを探させることはしません。意図せず働いてしまった規則も、埋もれるのではなく見える形になります。',
+      '**文法は直しませんし、直すとも言いません。**一致・時制・冠詞の選択には、サーバーか WebAssembly の言語モデルが要ります。このサイトにバックエンドはなく、Content-Security-Policy は WebAssembly を許可していません。代わりにあるのは機械的な層です。繰り返しの語、句読点まわりの空白、直線的な引用符、大文字化——正解が判断ではなく規則である領域です。この 4 つは英語の組版慣習に従うため既定では切ってあります。フランス語は句読点の空け方が違い、CJK はそもそも空けないからです。',
+    ],
   },
 
   islands: {
@@ -474,6 +490,205 @@ export const ja: UIStrings = {
           'そのセットの中に、このトークンの `kid` と一致する鍵がありません。検証の対象がありません。',
         error: 'このブラウザーでは署名を検証できませんでした。',
       },
+    },
+    jwtEncoder: {
+      headerTitle: 'ヘッダー',
+      payloadTitle: 'ペイロード',
+      tokenTitle: '署名済みトークン',
+      headerLabel: 'JWT ヘッダー（JSON）',
+      payloadLabel: 'JWT ペイロード（JSON）',
+      tokenLabel: '署名済みのトークン',
+      headerPlaceholder: '{\n  "kid": "your-key-id"\n}',
+      payloadPlaceholder: '{\n  "sub": "user_123",\n  "name": "Ada Lovelace"\n}',
+
+      algorithm: 'アルゴリズム',
+      algorithmTitle: 'このトークンの署名方式 — ヘッダーにも書き込まれます',
+      unsecured: 'none — 署名なし',
+      unsecuredWarning:
+        'これは**非セキュアなトークン**です。`alg` が `none` で署名を持たず、何も証明しません。たいていのライブラリは即座に拒否します。自分のライブラリがきちんと拒否するか試すためだけのものです。',
+
+      signingTitle: '署名鍵',
+      secretLabel: '共有シークレット',
+      secretPlaceholder: 'このトークンの署名に使うシークレット',
+      keyLabel: '秘密鍵',
+      keyPlaceholder: 'PKCS#8 の秘密鍵、または秘密 JWK',
+      keyAria: '署名鍵',
+      base64Secret: 'シークレットは base64url',
+      base64SecretTitle: '鍵素材として使う前にシークレットを base64url からデコードする',
+      keyNeverStored:
+        '鍵は使われたあと破棄されます。このブラウザーに保存されず、どこにも送信されません。',
+      keyIsDangerous:
+        '署名鍵はあなたのシステムが受け入れるトークンを作れます。本番の鍵なら自分の環境で。',
+      allowWeak: '短いシークレットを許可',
+      allowWeakTitle:
+        'RFC 7518 の要求より短いシークレットでも署名する — 弱いトークンを再現したいとき用',
+      sampleSecretHint: 'サンプルは `{secret}` で署名されています。',
+
+      claimsTitle: '時刻クレーム',
+      stamp: '打刻',
+      stampTitle: 'この瞬間を基準に iat、exp、nbf をペイロードへ書き込む',
+      expiresIn: '有効期限',
+      includeNotBefore: 'nbf も設定',
+      includeNotBeforeTitle: '現在時刻を指す nbf クレームを追加する',
+      expiryPresets: {
+        '15m': '15 分',
+        '1h': '1 時間',
+        '24h': '24 時間',
+        '7d': '7 日',
+        '30d': '30 日',
+      },
+      stamped: 'iat と exp をペイロードに打刻しました',
+
+      segHeader: 'ヘッダー',
+      segPayload: 'ペイロード',
+      segSignature: '署名',
+      segChars: p({ other: '{count} 文字' }),
+
+      idle: 'ペイロードを書き、鍵を選ぶとトークンが作られます',
+      signing: '署名中…',
+      signed: 'トークンに署名しました',
+      signedUnsecured: '非セキュアなトークンを作成しました — 署名はありません',
+      tokenFile: 'token.jwt',
+      emptyToken:
+        '署名済みトークンがここに表示されます。作成のために何もアップロードされません。署名はこのブラウザーが計算します。',
+
+      faults: {
+        'bad-header-json': 'ヘッダーが有効な JSON ではないため、まだエンコードするものがありません。',
+        'bad-payload-json':
+          'ペイロードが有効な JSON ではないため、まだエンコードするものがありません。',
+        'header-not-object':
+          'トークンのヘッダーは JSON オブジェクトである必要があります。配列や単独の値は使えません。',
+        'payload-not-object':
+          'トークンのペイロードは JSON オブジェクトである必要があります。配列や単独の値は使えません。',
+        unsupported: 'これはこのツールが署名できるアルゴリズムではありません。',
+        'no-key': '鍵を入力すると、入力しながらトークンに署名します。',
+        'bad-key':
+          'その鍵は読み取れませんでした。`BEGIN PRIVATE KEY` で始まる PEM ブロック、または `d` を持つ秘密 JWK を使ってください。',
+        'weak-secret':
+          '{algorithm} は少なくとも {required} バイトのシークレットを要求しますが、これは {actual} バイトです。これより短いとオフラインで破られます。それでも署名するには**短いシークレットを許可**を有効にしてください。',
+        error: 'このブラウザーではトークンに署名できませんでした。',
+      },
+    },
+
+    counter: {
+      inputTitle: 'テキスト',
+      inputLabel: 'カウントするテキスト',
+      placeholder: '測りたいテキストを貼り付けるか入力してください…',
+      idle: 'テキストを貼り付けるか入力するとカウントします',
+      counting: 'カウント中…',
+
+      countsTitle: 'カウント',
+      words: '単語',
+      characters: '文字',
+      charactersNoSpaces: '空白を除く',
+      sentences: '文',
+      paragraphs: '段落',
+      lines: '行',
+      bytes: 'UTF-8 バイト',
+
+      timeTitle: '読了時間',
+      readingTime: '黙読',
+      speakingTime: '音読',
+      underAMinute: '1 分未満',
+      minutesAndSeconds: '{minutes} 分 {seconds} 秒',
+      justSeconds: '{seconds} 秒',
+
+      averagesTitle: '平均',
+      averageWordLength: '単語の長さ',
+      averageSentenceLength: '1 文あたりの単語',
+      longestWord: '最も長い単語',
+      charsUnit: p({ other: '{count} 文字' }),
+      wordsUnit: p({ other: '{count} 単語' }),
+
+      limitsTitle: '上限',
+      limitNames: {
+        tweet: '投稿（X）',
+        sms: 'SMS',
+        'page-title': 'ページタイトル',
+        'meta-description': 'メタディスクリプション',
+      },
+      remaining: '残り {count}',
+      over: '{count} 超過',
+      limitsNote: 'SEO の 2 つは目安です。検索エンジンは文字数ではなく表示幅で切ります。',
+
+      frequencyTitle: 'よく使う語',
+      frequencyEmpty: 'カウントするテキストが入ると、よく使う語がここに並びます。',
+      frequencyCount: p({ other: '{count} 回' }),
+
+      emptyBody:
+        '左のパネルにテキストを貼り付けてください。すべてのカウントが入力中に更新され、処理はこのタブ内で完結します。',
+      impreciseNotice:
+        'このブラウザーには Unicode テキスト分割がないため、単語は空白で区切って数えています。中国語・日本語・韓国語では数値が正しくありません。',
+      cjkNotice:
+        'CJK として集計しています。単語は空白ではなくテキスト分割で区切られ、読了時間は 1 分あたりの文字数で測られます。',
+    },
+
+    textFormatter: {
+      inputTitle: '入力',
+      outputTitle: '整形結果',
+      optionsTitle: '直す項目',
+      inputLabel: '整形するテキスト',
+      outputLabel: '整形されたテキスト',
+      placeholder: '整えたいテキストを貼り付けてください…',
+      idle: 'テキストを貼り付けて、直す項目を選んでください',
+      formatting: '整形中…',
+
+      whitespaceHeading: '空白',
+      trimLineEnds: '行末の空白',
+      trimLineEndsTitle: '各行の末尾にある空白とタブを削除する',
+      collapseSpaces: '連続した空白',
+      collapseSpacesTitle: '連続する空白やタブを 1 つにまとめる（インデントは残す）',
+      collapseBlankLines: '余分な空行',
+      collapseBlankLinesTitle: '2 行以上続く空行を 1 行にまとめる',
+      removeBlankLines: 'すべての空行',
+      removeBlankLinesTitle: '空行をすべて削除する',
+      trimDocument: '先頭と末尾',
+      trimDocumentTitle: '文書全体の先頭と末尾にある空白を削除する',
+      tabsToSpaces: 'タブを空白に',
+      tabsToSpacesTitle: 'タブをすべて半角空白 2 つに置き換える',
+
+      linesHeading: '行',
+      removeDuplicateLines: '重複行',
+      removeDuplicateLinesTitle: '各行の最初の 1 件だけ残す（空行はそのまま）',
+      sortLines: '並べ替え',
+      sortModes: {
+        none: '並べ替えない',
+        asc: '昇順',
+        desc: '降順',
+      },
+
+      caseHeading: '大文字・小文字',
+      caseModes: {
+        none: 'そのまま',
+        lower: 'すべて小文字',
+        upper: 'すべて大文字',
+        title: 'Title Case',
+        sentence: 'Sentence case',
+      },
+
+      writingHeading: '句読点',
+      fixRepeatedWords: '繰り返しの語',
+      fixRepeatedWordsTitle: '「the the」のように誤って重なった語をまとめる',
+      spaceAfterPunctuation: '句読点の後の空白',
+      spaceAfterPunctuationTitle:
+        'カンマやピリオドの後に足りない空白を補う（数値・URL・e.g. には入れない）',
+      removeSpaceBeforePunctuation: '句読点の前の空白',
+      removeSpaceBeforePunctuationTitle: 'カンマ・ピリオド・コロンの前に残った空白を削除する',
+      smartQuotes: '曲がった引用符',
+      smartQuotesTitle:
+        '直線的な引用符を組版用に変換する（バッククォート内のコードは対象外）',
+
+
+      changesTitle: '変更点',
+      noChanges: '変更の必要はありませんでした。',
+      nothingEnabled: '少なくとも 1 つ有効にすると、ここに結果が出ます。',
+      replaceInput: '入力を置き換え',
+      replaceInputTitle: '結果を入力側に戻して、もう一度かける',
+      reset: '設定を戻す',
+      resetTitle: 'すべてのスイッチを既定値に戻す',
+      outputFile: 'formatted.txt',
+      emptyBody:
+        '整えたテキストがここに出ます。何もアップロードされず、変換はすべてこのタブで実行されます。',
     },
   },
 };

@@ -7,6 +7,10 @@ export const categoriesFr: CategoryCopyOverrides = {
   jwt: {
     blurb: 'Lisez ce qu’un jeton déclare, et vérifiez qu’il a bien été signé.',
   },
+  text: {
+    name: 'Texte',
+    blurb: 'Mesurer un écrit, et le remettre au propre.',
+  },
 };
 
 /**
@@ -208,6 +212,129 @@ export const toolsFr: ToolCopyOverrides = {
       'vérifier signature jwt',
       'jwt decoder français',
       'json web token décoder',
+    ],
+  },
+
+  'jwt-encoder': {
+    name: 'Encodeur JWT',
+    tagline: 'Construire un jeton à partir de claims, et le signer vraiment',
+    does: [
+      'En-tête et charge utile',
+      'HS / RS / PS / ES',
+      'Préréglages d’expiration',
+      'Signé par WebCrypto',
+    ],
+    title: 'Encodeur JWT — construire et signer un jeton',
+    description:
+      'Encodeur JWT gratuit. Construisez un JSON Web Token à partir de vos claims et signez-le en HS, RS, PS ou ES. La clé ne quitte jamais votre navigateur.',
+    overview:
+      'Un encodeur JWT qui produit un jeton réellement signé plutôt qu’un sosie en base64. Écrivez l’en-tête et la charge utile en JSON, choisissez un algorithme, puis collez le secret partagé pour un algorithme HS ou une clé privée PKCS#8 pour RS, PS ou ES : la signature est calculée par la WebCrypto de votre propre navigateur. L’expiration, la date d’émission et le « pas avant » s’inscrivent depuis des préréglages, si bien que vous ne convertirez plus jamais un horodatage à la main.',
+    faqs: [
+      {
+        q: 'Est-il sûr de coller une clé de signature dans cet encodeur ?',
+        a: 'La clé est utilisée dans votre propre onglet puis abandonnée : jamais enregistrée, jamais incluse dans un événement d’analytique, et aucun serveur ne pourrait la recevoir. Cela dit, une clé de signature est le secret le plus dangereux de tout système utilisant des JWT, car quiconque la détient peut produire des jetons que vos services accepteront. Pour une clé de production, générer les jetons dans votre propre environnement reste la meilleure habitude ; cet outil est conçu pour le développement, les tests et l’apprentissage.',
+      },
+      {
+        q: 'Avec quels algorithmes peut-il signer ?',
+        a: 'HS256, HS384 et HS512 avec un secret partagé, et RS256/384/512, PS256/384/512 et ES256/384/512 avec une clé privée fournie en bloc PEM PKCS#8 ou en JWK privé. Il produit aussi le jeton non sécurisé `alg: none`, clairement signalé comme ne prouvant rien, car en reproduire un est la façon de vérifier que votre vérificateur le rejette.',
+      },
+      {
+        q: 'Pourquoi mon secret court est-il refusé ?',
+        a: 'La RFC 7518 exige une clé HMAC au moins aussi longue que le condensat : 32 octets pour HS256, 48 pour HS384, 64 pour HS512. Les navigateurs signent volontiers avec un secret de quatre caractères, et le jeton obtenu se casse hors ligne en quelques secondes. L’encodeur bloque cela par défaut et vous laisse passer outre, puisque reproduire un jeton faible est parfois exactement la tâche.',
+      },
+      {
+        q: 'Peut-il écraser l’algorithme de mon en-tête ?',
+        a: 'Il écrit toujours `alg` à partir de l’algorithme choisi, et c’est délibéré. Un en-tête annonçant un algorithme alors que la signature a été produite avec un autre n’est pas un jeton : c’est le point de départ de la vulnérabilité JWT la plus connue. Tout autre champ d’en-tête que vous écrivez — `kid`, `cty`, personnalisé — est conservé exactement tel quel.',
+      },
+    ],
+    keywords: [
+      'encodeur jwt',
+      'générateur jwt',
+      'créer un jwt',
+      'signer jwt en ligne',
+      'générateur json web token',
+    ],
+  },
+
+  'text-counter': {
+    name: 'Compteur de texte',
+    tagline: 'Mots, caractères, phrases et paragraphes d’un coup',
+    does: [
+      'Mots et caractères',
+      'Phrases et paragraphes',
+      'Temps de lecture',
+      'Fréquence des mots',
+    ],
+    title: 'Compteur de mots — mots, caractères, phrases',
+    description:
+      'Compteur de mots et de caractères gratuit. Compte mots, caractères, phrases et paragraphes au fil de la frappe, avec le temps de lecture. Dans votre navigateur.',
+    overview:
+      'Un compteur de mots qui compte tout à la fois — mots, caractères avec et sans espaces, phrases, paragraphes, lignes et octets UTF-8 — et se met à jour au fil de la frappe. Il estime aussi le temps de lecture et de lecture à voix haute, suit les limites contre lesquelles on écrit vraiment, et liste les mots les plus employés. Le comptage s’appuie sur la segmentation de texte Unicode du navigateur : le japonais et le chinois sont donc comptés par mots au lieu d’apparaître comme un seul mot immense.',
+    faqs: [
+      {
+        q: 'Comment compte-t-il les mots en japonais ou en chinois ?',
+        a: 'Correctement, ce que la plupart des compteurs ne font pas. Le japonais et le chinois ne séparent pas les mots par des espaces : compter en découpant sur les espaces transforme donc un paragraphe entier en un seul mot. Cet outil utilise la segmentation de texte Unicode intégrée au navigateur, qui sait où les mots se coupent réellement dans chaque écriture, et mesure le temps de lecture du CJK en caractères par minute plutôt qu’en mots.',
+      },
+      {
+        q: 'Qu’est-ce qui compte comme phrase ou comme paragraphe ?',
+        a: 'Une phrase est déterminée par les règles Unicode de coupure de phrase, si bien que « Dr. Smith est allé à Washington D.C. hier » compte pour une phrase et non trois, et que le point idéographique est reconnu. Un paragraphe est un bloc séparé par une ligne vide ; si le texte n’en contient aucune, chaque ligne non vide compte pour un.',
+      },
+      {
+        q: 'Comment le temps de lecture est-il calculé ?',
+        a: 'À 238 mots par minute pour un texte alphabétique, la médiane de la lecture silencieuse adulte de prose générale, et à 400 caractères par minute pour le CJK. Le temps de parole utilise les débits plus lents qu’un intervenant tient réellement, environ 140 mots par minute. Ce sont des estimations, pas des mesures : un texte technique dense se lit plus lentement qu’un roman.',
+      },
+      {
+        q: 'Mon texte est-il envoyé quelque part ?',
+        a: 'Non. Le comptage est du JavaScript exécuté dans votre propre onglet, dans un Web Worker pour qu’un long document ne fige pas la page. Coupez le réseau et il continue de fonctionner. Cela compte plus qu’il n’y paraît pour un compteur de texte, car ce que les gens comptent, ce sont souvent des brouillons, des lettres de motivation et des écrits non publiés.',
+      },
+    ],
+    keywords: [
+      'compteur de mots',
+      'compteur de caractères',
+      'compter les mots en ligne',
+      'compteur de phrases',
+      'compter les paragraphes',
+    ],
+  },
+
+  'text-formatter': {
+    name: 'Formateur de texte',
+    tagline: 'Retirer le désordre d’un texte écrit par quelqu’un d’autre',
+    does: [
+      'Supprimer les espaces en trop',
+      'Effacer les lignes en double',
+      'Changer la casse',
+      'Ranger la ponctuation',
+    ],
+    title: 'Formateur de texte — nettoyer un texte en désordre',
+    description:
+      'Formateur et nettoyeur de texte gratuit. Supprimez espaces en trop et lignes en double, changez la casse et rangez la ponctuation. Dans votre navigateur.',
+    overview:
+      'Un formateur de texte que vous pilotez plutôt qu’un outil qui décide à votre place. Chaque opération est un interrupteur — réduire les espaces répétés, supprimer les espaces en fin de ligne, retirer les lignes vides ou en double, trier les lignes, convertir en majuscules, minuscules, casse de titre ou de phrase, et ranger la ponctuation de la prose anglaise. Rien ne s’exécute tant que vous ne l’activez pas, et l’outil indique exactement ce que chaque interrupteur a changé : le résultat est donc à accepter plutôt qu’à relire.',
+    faqs: [
+      {
+        q: 'Peut-il corriger la grammaire ?',
+        a: 'Non, et il le dit au lieu de faire semblant. Une vraie correction grammaticale — accord, temps, choix de l’article — exige soit un serveur, soit un modèle de langue en WebAssembly, et ce site n’a pas de serveur et sa Content-Security-Policy n’autorise pas WebAssembly. Ce qu’il fait à la place, c’est la couche mécanique que l’on vise généralement : mots répétés, espaces manquants après la ponctuation, espaces avant la ponctuation, guillemets droits et majuscules. C’est de la typographie, où la bonne réponse est une règle et non un jugement.',
+      },
+      {
+        q: 'Que conserve « supprimer les lignes en double » ?',
+        a: 'La première occurrence de chaque ligne, à sa position d’origine, la ligne entière étant comparée à l’identique. Les lignes vides ne sont jamais dédupliquées, puisque ce sont elles qui séparent les paragraphes et que les réduire ferait silencieusement couler le document en un seul bloc.',
+      },
+      {
+        q: 'Comment la casse de titre traite-t-elle les sigles ?',
+        a: 'Elle les laisse tranquilles. Tout mot comportant une majuscule après sa première lettre — JSON, iPhone, McCarthy — passe intact, car le mettre en minuscules pour remajusculer l’initiale transformerait JSON en Json. Les mots courts comme « of » et « the » restent en minuscules sauf s’ils ouvrent ou ferment la ligne.',
+      },
+      {
+        q: 'Va-t-il casser mon code, mes URL ou mes nombres décimaux ?',
+        a: 'Les règles de ponctuation sont écrites précisément pour éviter cela. Aucun espace n’est jamais inséré après une virgule ou un deux-points suivi d’un chiffre, si bien que 1,000 et 12:30 survivent. Un point ne gagne un espace qu’entre une suite de minuscules et une majuscule, ce qui laisse e.g., Node.js, 3.14 et utildock.dev intacts. La règle des guillemets courbes ignore tout ce qui se trouve entre accents graves.',
+      },
+    ],
+    keywords: [
+      'formateur de texte',
+      'supprimer les espaces en trop',
+      'supprimer les lignes en double',
+      'nettoyer du texte en ligne',
+      'changer la casse en ligne',
     ],
   },
 };

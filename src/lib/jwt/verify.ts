@@ -15,6 +15,26 @@
  */
 
 import { decodeSegmentText } from './decode';
+import {
+  base64UrlToBytes,
+  importParams,
+  isSupportedAlgorithm,
+  operationParams,
+  pemToBytes,
+  specFor,
+  type AlgorithmSpec,
+  type SecretEncoding,
+} from './algorithms';
+
+/* The algorithm table moved to `algorithms.ts` when the encoder arrived, so
+   that signing and verifying cannot drift apart. Re-exported here because
+   callers have always reached for these through this module. */
+export {
+  isSupportedAlgorithm,
+  isSymmetric,
+  SUPPORTED_ALGORITHMS,
+  type SecretEncoding,
+} from './algorithms';
 
 export type VerifyStatus =
   | 'valid'
@@ -33,75 +53,6 @@ export interface VerifyResult {
   algorithm?: string;
   /** For a JWKS, which key was selected. */
   keyId?: string;
-}
-
-/** How a typed HMAC secret should be read before it becomes key material. */
-export type SecretEncoding = 'utf-8' | 'base64url';
-
-type Family = 'HMAC' | 'RSASSA-PKCS1-v1_5' | 'RSA-PSS' | 'ECDSA';
-
-interface AlgorithmSpec {
-  family: Family;
-  hash: 'SHA-256' | 'SHA-384' | 'SHA-512';
-  /** The curve an EC algorithm pins. JWT fixes one curve per algorithm. */
-  curve?: 'P-256' | 'P-384' | 'P-521';
-}
-
-/**
- * The JWA algorithms this tool can check, and only those.
- *
- * Everything here maps onto a WebCrypto primitive every current browser
- * implements. An algorithm absent from this table is reported as unsupported
- * rather than approximated — a signature check that is nearly right is worse
- * than one that declines to answer.
- */
-const ALGORITHMS: Record<string, AlgorithmSpec> = {
-  HS256: { family: 'HMAC', hash: 'SHA-256' },
-  HS384: { family: 'HMAC', hash: 'SHA-384' },
-  HS512: { family: 'HMAC', hash: 'SHA-512' },
-  RS256: { family: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-  RS384: { family: 'RSASSA-PKCS1-v1_5', hash: 'SHA-384' },
-  RS512: { family: 'RSASSA-PKCS1-v1_5', hash: 'SHA-512' },
-  PS256: { family: 'RSA-PSS', hash: 'SHA-256' },
-  PS384: { family: 'RSA-PSS', hash: 'SHA-384' },
-  PS512: { family: 'RSA-PSS', hash: 'SHA-512' },
-  ES256: { family: 'ECDSA', hash: 'SHA-256', curve: 'P-256' },
-  ES384: { family: 'ECDSA', hash: 'SHA-384', curve: 'P-384' },
-  ES512: { family: 'ECDSA', hash: 'SHA-512', curve: 'P-521' },
-};
-
-export function isSupportedAlgorithm(alg: string | null): boolean {
-  return alg !== null && alg.toUpperCase() in ALGORITHMS;
-}
-
-/** True when the algorithm takes a shared secret rather than a public key. */
-export function isSymmetric(alg: string | null): boolean {
-  if (!alg) return false;
-  return ALGORITHMS[alg.toUpperCase()]?.family === 'HMAC';
-}
-
-export const SUPPORTED_ALGORITHMS = Object.keys(ALGORITHMS);
-
-/* ------------------------------------------------------------- encoding --- */
-
-function base64UrlToBytes(segment: string): Uint8Array {
-  const base64 = segment.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
-  const binary = atob(padded);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
-}
-
-function pemToBytes(pem: string): Uint8Array {
-  const body = pem
-    .replace(/-----BEGIN [^-]+-----/, '')
-    .replace(/-----END [^-]+-----/, '')
-    .replace(/\s+/g, '');
-  const binary = atob(body);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
 }
 
 /* ------------------------------------------------------------------ key --- */
@@ -178,12 +129,13 @@ async function importVerificationKey(
       // let a genuine mismatch surface as a failed verification.
       const { alg: _alg, use: _use, key_ops: _ops, ext: _ext, ...material } = chosen;
 
-      const params: RsaHashedImportParams | EcKeyImportParams =
-        spec.family === 'ECDSA'
-          ? { name: 'ECDSA', namedCurve: spec.curve! }
-          : { name: spec.family, hash: spec.hash };
-
-      const key = await crypto.subtle.importKey('jwk', material as JsonWebKey, params, false, usage);
+      const key = await crypto.subtle.importKey(
+        'jwk',
+        material as JsonWebKey,
+        importParams(spec),
+        false,
+        usage,
+      );
       return { key, keyId: chosen.kid };
     }
 
@@ -193,15 +145,10 @@ async function importVerificationKey(
       // guessing wrong would produce a misleading verdict.
       if (!/-----BEGIN PUBLIC KEY-----/.test(trimmed)) return { failure: 'bad-key' };
 
-      const params: RsaHashedImportParams | EcKeyImportParams =
-        spec.family === 'ECDSA'
-          ? { name: 'ECDSA', namedCurve: spec.curve! }
-          : { name: spec.family, hash: spec.hash };
-
       const key = await crypto.subtle.importKey(
         'spki',
         pemToBytes(trimmed) as BufferSource,
-        params,
+        importParams(spec),
         false,
         usage,
       );
@@ -247,21 +194,13 @@ export async function verifySignature({
   if (signature === '') return { status: 'no-signature', algorithm };
   if (key.trim() === '') return { status: 'no-key', algorithm };
 
-  const spec = ALGORITHMS[algorithm.toUpperCase()];
+  const spec = specFor(algorithm)!;
   const imported = await importVerificationKey(key, spec, algorithm, keyId, secretEncoding);
   if ('failure' in imported) return { status: imported.failure, algorithm };
 
   try {
-    const params: AlgorithmIdentifier | RsaPssParams | EcdsaParams =
-      spec.family === 'ECDSA'
-        ? { name: 'ECDSA', hash: spec.hash }
-        : spec.family === 'RSA-PSS'
-          ? // The salt equals the hash length for PS256/384/512 — RFC 7518 §3.5.
-            { name: 'RSA-PSS', saltLength: Number(spec.hash.slice(4)) / 8 }
-          : { name: spec.family };
-
     const ok = await crypto.subtle.verify(
-      params,
+      operationParams(spec),
       imported.key,
       base64UrlToBytes(signature) as BufferSource,
       new TextEncoder().encode(signingInput) as BufferSource,

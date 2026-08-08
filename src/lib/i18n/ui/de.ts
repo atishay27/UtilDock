@@ -224,6 +224,22 @@ export const de: UIStrings = {
       '**Ein JWT zu decodieren heißt nicht, es zu verifizieren.** Die ersten beiden Teile sind base64url, keine Verschlüsselung: wer das Token hat, kann sie lesen — deshalb gehört in ein Token nie ein Geheimnis. Schalte **Signatur prüfen** ein und füge das gemeinsame Secret für ein HS-Verfahren oder einen öffentlichen Schlüssel für RS, PS oder ES ein, dann wird die Signatur wirklich geprüft — HS256/384/512, RS256/384/512, PS256/384/512 und ES256/384/512, über die WebCrypto des Browsers selbst.',
       'Der Schlüssel, den du einfügst, wird anders behandelt als jede andere Eingabe auf dieser Seite: Er wird nie in den `localStorage` geschrieben und beim Neuladen nicht wiederhergestellt. Nichts davon — weder Token noch Schlüssel — wird hochgeladen, und es gibt keinen Server, der beides empfangen könnte.',
     ],
+    'jwt-encoder': [
+      'Schreibe Header und Payload als JSON, wähle einen Algorithmus, und das Token wird beim Tippen zusammengesetzt und signiert. Die **Ablauf-Presets** stempeln `iat`, `exp` und auf Wunsch `nbf` aus einem einzigen Moment in den Payload, sodass die drei nie um eine Sekunde auseinanderliegen können — genau die Art Fehler, die erst in der Uhrzeit-Toleranz eines anderen Systems auffällt.',
+      '`alg` wird immer aus dem gewählten Algorithmus geschrieben, egal was im Header steht. Das ist keine Bequemlichkeit: Ein Header, der einen Algorithmus behauptet, während die Signatur mit einem anderen erzeugt wurde, ist der Ausgangspunkt der bekanntesten JWT-Schwachstelle, und es gibt kein legitimes Token, das dieses Werkzeug deshalb verweigern würde. Jedes andere Header-Feld bleibt genau so, wie du es geschrieben hast.',
+      'HS-Secrets, die kürzer sind als der Hash, werden **standardmäßig abgelehnt** — RFC 7518 verlangt 32 Byte für HS256, 48 für HS384 und 64 für HS512, und ein Browser signiert bereitwillig mit vier Zeichen, obwohl sich das Ergebnis offline in Sekunden knacken lässt. Die Prüfung lässt sich abschalten, denn ein schwaches Token nachzubauen ist manchmal genau die Aufgabe.',
+      'Der Signaturschlüssel wird behandelt wie der Prüfschlüssel im Decoder, und noch sorgfältiger: nie in `localStorage` geschrieben, nie beim Neuladen wiederhergestellt, nie in einem Analytics-Ereignis, und es gibt kein Backend, das ihn empfangen könnte. Ein Signaturschlüssel ist das gefährlichste Geheimnis in einem System mit JWTs — für einen Produktionsschlüssel bleibt es die bessere Gewohnheit, Tokens in der eigenen Umgebung zu erzeugen.',
+    ],
+    'text-counter': [
+      'Füge Text ein oder tippe ihn, und alle Zählungen aktualisieren sich gleichzeitig: Wörter, Zeichen mit und ohne Leerzeichen, Sätze, Absätze, Zeilen und UTF-8-Bytes. Es muss nichts gedrückt werden.',
+      'Gezählt wird mit der **Unicode-Textsegmentierung** des Browsers statt durch Trennen an Leerzeichen, und der Unterschied ist nicht akademisch. Japanisch und Chinesisch setzen keine Leerzeichen zwischen Wörter, sodass eine Trennung an Leerzeichen einen ganzen Absatz als ein einziges Wort meldet; dieselbe Trennung zerschneidet „l’objet“ in zwei. Die Segmentierung weiß, wo Wörter in jeder Schrift wirklich enden, und die Lesezeit für CJK wird in Zeichen pro Minute statt in Wörtern gemessen.',
+      'Das **Limit**-Panel verfolgt die Grenzen, gegen die tatsächlich geschrieben wird — ein Beitrag mit 280 Zeichen, eine SMS mit 160, ein Seitentitel mit 60, eine Meta-Beschreibung mit 155 — und die Häufigkeitstabelle zeigt, auf welche Wörter du dich gestützt hast. Schneller merkt man nicht, dass man sich wiederholt.',
+    ],
+    'text-formatter': [
+      'Jede Operation ist ein Schalter, und nichts läuft, bevor du ihn umlegst. Mehrfache Leerzeichen zusammenfassen, Leerzeichen am Zeilenende entfernen, leere oder doppelte Zeilen löschen, Zeilen sortieren, Groß- und Kleinschreibung ändern oder die Zeichensetzung englischer Prosa aufräumen — in beliebiger Kombination. Das Ergebnis erscheint beim Tippen neben der Eingabe, und **Eingabe ersetzen** legt es zurück, damit du einen weiteren Durchgang fahren kannst.',
+      'Das Werkzeug meldet, was jeder Schalter verändert hat — „12 doppelte Zeilen entfernt“, „3 wiederholte Wörter“ — statt dir ein umgeschriebenes Dokument zu geben und dich den Unterschied suchen zu lassen. Eine Regel, die zu Unrecht gegriffen hat, ist damit sichtbar statt vergraben.',
+      '**Es korrigiert keine Grammatik und behauptet es auch nicht.** Kongruenz, Zeitform und Artikelwahl brauchen entweder einen Server oder ein Sprachmodell in WebAssembly; diese Seite hat kein Backend, und ihre Content-Security-Policy erlaubt kein WebAssembly. Stattdessen gibt es die mechanische Ebene — wiederholte Wörter, Abstände um Satzzeichen, gerade Anführungszeichen, Großschreibung — wo die richtige Antwort eine Regel ist und kein Urteil. Diese vier folgen englischer Typografie und sind standardmäßig aus, denn Französisch setzt seine Satzzeichen anders und CJK gar nicht ab.',
+    ],
   },
 
   islands: {
@@ -481,6 +497,208 @@ export const de: UIStrings = {
           'Kein Schlüssel in diesem Set passt zur `kid` dieses Tokens, es gibt also nichts, wogegen geprüft werden könnte.',
         error: 'Die Signatur konnte in diesem Browser nicht geprüft werden.',
       },
+    },
+    jwtEncoder: {
+      headerTitle: 'Header',
+      payloadTitle: 'Payload',
+      tokenTitle: 'Signiertes Token',
+      headerLabel: 'JWT-Header als JSON',
+      payloadLabel: 'JWT-Payload als JSON',
+      tokenLabel: 'Das signierte Token',
+      headerPlaceholder: '{\n  "kid": "deine-key-id"\n}',
+      payloadPlaceholder: '{\n  "sub": "user_123",\n  "name": "Ada Lovelace"\n}',
+
+      algorithm: 'Algorithmus',
+      algorithmTitle: 'Wie dieses Token signiert wird — steht auch im Header',
+      unsecured: 'none — unsigniert',
+      unsecuredWarning:
+        'Dies ist ein **ungesichertes Token**: `alg` ist `none`, es trägt keine Signatur und beweist nichts. Die meisten Bibliotheken lehnen es rundweg ab. Nur nützlich, um zu prüfen, dass deine das auch tut.',
+
+      signingTitle: 'Signaturschlüssel',
+      secretLabel: 'Gemeinsames Secret',
+      secretPlaceholder: 'Das Secret, mit dem dieses Token signiert wird',
+      keyLabel: 'Privater Schlüssel',
+      keyPlaceholder: 'Ein privater PKCS#8-Schlüssel oder ein privates JWK',
+      keyAria: 'Signaturschlüssel',
+      base64Secret: 'Secret ist base64url',
+      base64SecretTitle: 'Das Secret vor der Verwendung als Schlüsselmaterial aus base64url dekodieren',
+      keyNeverStored:
+        'Der Schlüssel wird benutzt und verworfen — nie in diesem Browser gespeichert, nie irgendwohin gesendet.',
+      keyIsDangerous:
+        'Ein Signaturschlüssel erzeugt Tokens, die deine Systeme akzeptieren. Für Produktionsschlüssel besser die eigene Umgebung.',
+      allowWeak: 'Kurzes Secret erlauben',
+      allowWeakTitle:
+        'Auch signieren, wenn das Secret kürzer ist als RFC 7518 verlangt — zum Nachbauen eines schwachen Tokens',
+      sampleSecretHint: 'Das Beispiel signiert mit `{secret}`.',
+
+      claimsTitle: 'Zeit-Claims',
+      stamp: 'Stempeln',
+      stampTitle: 'iat, exp und nbf aus diesem Moment in den Payload schreiben',
+      expiresIn: 'Läuft ab in',
+      includeNotBefore: 'Auch nbf setzen',
+      includeNotBeforeTitle: 'Einen „nicht vor“-Claim hinzufügen, auf jetzt gesetzt',
+      expiryPresets: {
+        '15m': '15 Minuten',
+        '1h': '1 Stunde',
+        '24h': '24 Stunden',
+        '7d': '7 Tage',
+        '30d': '30 Tage',
+      },
+      stamped: 'iat und exp in den Payload gestempelt',
+
+      segHeader: 'Header',
+      segPayload: 'Payload',
+      segSignature: 'Signatur',
+      segChars: p({ one: '{count} Zeichen', other: '{count} Zeichen' }),
+
+      idle: 'Schreibe einen Payload und wähle einen Schlüssel, um ein Token zu erzeugen',
+      signing: 'Signiere…',
+      signed: 'Token signiert',
+      signedUnsecured: 'Ungesichertes Token erstellt — es trägt keine Signatur',
+      tokenFile: 'token.jwt',
+      emptyToken:
+        'Hier erscheint das signierte Token. Dafür wird nichts hochgeladen — die Signatur berechnet dieser Browser.',
+
+      faults: {
+        'bad-header-json': 'Der Header ist kein gültiges JSON, also gibt es noch nichts zu kodieren.',
+        'bad-payload-json': 'Der Payload ist kein gültiges JSON, also gibt es noch nichts zu kodieren.',
+        'header-not-object':
+          'Ein Token-Header muss ein JSON-Objekt sein, kein Array und kein einzelner Wert.',
+        'payload-not-object':
+          'Ein Token-Payload muss ein JSON-Objekt sein, kein Array und kein einzelner Wert.',
+        unsupported: 'Mit diesem Algorithmus kann dieses Werkzeug nicht signieren.',
+        'no-key': 'Gib einen Schlüssel ein, und das Token wird beim Tippen signiert.',
+        'bad-key':
+          'Dieser Schlüssel ließ sich nicht lesen. Nutze einen PEM-Block, der mit `BEGIN PRIVATE KEY` beginnt, oder ein privates JWK — das mit einem `d`-Wert.',
+        'weak-secret':
+          '{algorithm} verlangt ein Secret von mindestens {required} Byte; dieses hat {actual}. Ein kürzeres Secret lässt sich offline knacken. Schalte **Kurzes Secret erlauben** ein, um trotzdem zu signieren.',
+        error: 'Das Token konnte in diesem Browser nicht signiert werden.',
+      },
+    },
+
+    counter: {
+      inputTitle: 'Text',
+      inputLabel: 'Zu zählender Text',
+      placeholder: 'Füge den Text ein, den du messen willst, oder tippe ihn…',
+      idle: 'Text einfügen oder tippen, um ihn zu zählen',
+      counting: 'Zähle…',
+
+      countsTitle: 'Zählungen',
+      words: 'Wörter',
+      characters: 'Zeichen',
+      charactersNoSpaces: 'Ohne Leerzeichen',
+      sentences: 'Sätze',
+      paragraphs: 'Absätze',
+      lines: 'Zeilen',
+      bytes: 'UTF-8-Bytes',
+
+      timeTitle: 'Lesedauer',
+      readingTime: 'Lesen',
+      speakingTime: 'Laut vorlesen',
+      underAMinute: 'unter einer Minute',
+      minutesAndSeconds: '{minutes} Min. {seconds} Sek.',
+      justSeconds: '{seconds} Sek.',
+
+      averagesTitle: 'Durchschnitt',
+      averageWordLength: 'Wortlänge',
+      averageSentenceLength: 'Wörter pro Satz',
+      longestWord: 'Längstes Wort',
+      charsUnit: p({ one: '{count} Zeichen', other: '{count} Zeichen' }),
+      wordsUnit: p({ one: '{count} Wort', other: '{count} Wörter' }),
+
+      limitsTitle: 'Grenzen',
+      limitNames: {
+        tweet: 'Beitrag (X)',
+        sms: 'SMS',
+        'page-title': 'Seitentitel',
+        'meta-description': 'Meta-Beschreibung',
+      },
+      remaining: '{count} übrig',
+      over: '{count} zu viel',
+      limitsNote:
+        'Die beiden SEO-Grenzen sind Näherungen — Suchmaschinen kürzen nach Breite, nicht nach Zeichen.',
+
+      frequencyTitle: 'Häufigste Wörter',
+      frequencyEmpty: 'Die Wörter, die du am häufigsten nutzt, erscheinen hier, sobald es Text gibt.',
+      frequencyCount: p({ one: '{count}-mal', other: '{count}-mal' }),
+
+      emptyBody:
+        'Füge links Text ein. Jede Zählung aktualisiert sich beim Tippen, vollständig in diesem Tab.',
+      impreciseNotice:
+        'Dieser Browser hat keine Unicode-Textsegmentierung, daher werden Wörter an Leerzeichen getrennt gezählt. Für Chinesisch, Japanisch und Koreanisch ist die Zahl falsch.',
+      cjkNotice:
+        'Als CJK gezählt: Wörter werden segmentiert statt an Leerzeichen getrennt, und die Lesezeit wird in Zeichen pro Minute gemessen.',
+    },
+
+    textFormatter: {
+      inputTitle: 'Eingabe',
+      outputTitle: 'Formatiert',
+      optionsTitle: 'Was gefixt wird',
+      inputLabel: 'Zu formatierender Text',
+      outputLabel: 'Formatierter Text',
+      placeholder: 'Füge den Text ein, den du aufräumen willst…',
+      idle: 'Text einfügen und auswählen, was gefixt wird',
+      formatting: 'Formatiere…',
+
+      whitespaceHeading: 'Leerraum',
+      trimLineEnds: 'Leerzeichen am Zeilenende',
+      trimLineEndsTitle: 'Leerzeichen und Tabs am Ende jeder Zeile entfernen',
+      collapseSpaces: 'Mehrfache Leerzeichen',
+      collapseSpacesTitle:
+        'Folgen von Leerzeichen oder Tabs auf eines reduzieren, Einrückung bleibt erhalten',
+      collapseBlankLines: 'Überzählige Leerzeilen',
+      collapseBlankLinesTitle: 'Zwei oder mehr Leerzeilen auf eine reduzieren',
+      removeBlankLines: 'Alle Leerzeilen',
+      removeBlankLinesTitle: 'Jede Leerzeile entfernen',
+      trimDocument: 'Anfang und Ende',
+      trimDocumentTitle: 'Leerraum am Anfang und Ende des gesamten Dokuments entfernen',
+      tabsToSpaces: 'Tabs zu Leerzeichen',
+      tabsToSpacesTitle: 'Jeden Tab durch zwei Leerzeichen ersetzen',
+
+      linesHeading: 'Zeilen',
+      removeDuplicateLines: 'Doppelte Zeilen',
+      removeDuplicateLinesTitle:
+        'Das erste Vorkommen jeder Zeile behalten; Leerzeilen bleiben erhalten',
+      sortLines: 'Sortieren',
+      sortModes: {
+        none: 'Nicht sortieren',
+        asc: 'A bis Z',
+        desc: 'Z bis A',
+      },
+
+      caseHeading: 'Schreibung',
+      caseModes: {
+        none: 'So lassen',
+        lower: 'kleinbuchstaben',
+        upper: 'GROSSBUCHSTABEN',
+        title: 'Titel-Schreibung',
+        sentence: 'Satz-Schreibung',
+      },
+
+      writingHeading: 'Zeichensetzung',
+      fixRepeatedWords: 'Wiederholte Wörter',
+      fixRepeatedWordsTitle: 'Ein versehentlich verdoppeltes Wort zusammenfassen, etwa „die die“',
+      spaceAfterPunctuation: 'Leerzeichen nach Satzzeichen',
+      spaceAfterPunctuationTitle:
+        'Das fehlende Leerzeichen nach Komma oder Punkt ergänzen — nie in Zahlen, URLs oder z. B.',
+      removeSpaceBeforePunctuation: 'Leerzeichen vor Satzzeichen',
+      removeSpaceBeforePunctuationTitle:
+        'Ein Leerzeichen vor Komma, Punkt oder Doppelpunkt entfernen',
+      smartQuotes: 'Typografische Anführungszeichen',
+      smartQuotesTitle:
+        'Gerade Anführungszeichen in typografische umwandeln; Code in Backticks bleibt unberührt',
+
+
+      changesTitle: 'Was sich geändert hat',
+      noChanges: 'Es musste nichts geändert werden.',
+      nothingEnabled: 'Schalte mindestens eine Option ein, dann erscheint hier das Ergebnis.',
+      replaceInput: 'Eingabe ersetzen',
+      replaceInputTitle: 'Das Ergebnis zurück in die Eingabe legen, für einen weiteren Durchgang',
+      reset: 'Zurücksetzen',
+      resetTitle: 'Alle Schalter auf ihren Standard zurückstellen',
+      outputFile: 'formatierter-text.txt',
+      emptyBody:
+        'Hier erscheint der aufgeräumte Text. Nichts wird hochgeladen — jede Umformung läuft in diesem Tab.',
     },
   },
 };

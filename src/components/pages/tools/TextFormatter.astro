@@ -1,0 +1,27 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import TextFormatter from '../../tools/TextFormatter';
+import { langTag, t } from '../../../lib/i18n';
+import { DEFAULT_LOCALE, type Locale } from '../../../lib/i18n/locales';
+import { FORMATTER_SAMPLES } from '../../../lib/text/samples';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+---
+
+<ToolLayout toolId="text-formatter" locale={locale}>
+  {/* The island's JavaScript is identical in every language; only these
+      strings differ, and they are serialised into the page as props.
+
+      Each locale's messy sample carries only faults that language's switches
+      can actually fix — see the note in lib/text/samples.ts. */}
+  <TextFormatter
+    client:load
+    lang={langTag(locale)}
+    strings={t(locale).islands}
+    sample={FORMATTER_SAMPLES[locale]}
+  />
+</ToolLayout>

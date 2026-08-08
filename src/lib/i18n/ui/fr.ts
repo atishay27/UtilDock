@@ -227,6 +227,22 @@ export const fr: UIStrings = {
       '**Décoder un JWT n’est pas le vérifier.** Les deux premières parties sont en base64url, pas chiffrées : quiconque détient le jeton peut les lire, et c’est pourquoi un jeton n’est jamais un endroit où mettre un secret. Activez **Vérifier la signature** et collez le secret partagé pour un algorithme HS, ou une clé publique pour un RS, PS ou ES : la signature est réellement testée — HS256/384/512, RS256/384/512, PS256/384/512 et ES256/384/512, via la WebCrypto du navigateur lui-même.',
       'La clé que vous collez est traitée différemment de toute autre saisie sur ce site : elle n’est jamais écrite dans le `localStorage` ni restaurée au rechargement. Rien de tout cela — ni le jeton, ni la clé — n’est envoyé, et aucun serveur ne pourrait les recevoir.',
     ],
+    'jwt-encoder': [
+      'Écrivez l’en-tête et la charge utile en JSON, choisissez un algorithme, et le jeton est assemblé et signé au fil de la frappe. Les **préréglages d’expiration** inscrivent `iat`, `exp` et éventuellement `nbf` dans la charge utile à partir d’un même instant, de sorte que les trois ne puissent jamais diverger d’une seconde — le genre de défaut qui ne se manifeste que dans la tolérance de dérive d’horloge d’un autre système.',
+      '`alg` est toujours écrit à partir de l’algorithme choisi, quoi que dise votre en-tête. Ce n’est pas un confort : un en-tête annonçant un algorithme alors que la signature a été produite avec un autre est le point de départ de la vulnérabilité JWT la plus connue, et aucun jeton légitime n’est refusé de ce fait. Tout autre champ d’en-tête que vous écrivez est conservé exactement tel quel.',
+      'Les secrets HS plus courts que le condensat sont **refusés par défaut** — la RFC 7518 exige 32 octets pour HS256, 48 pour HS384 et 64 pour HS512, et un navigateur signera volontiers avec quatre caractères alors que le résultat se casse hors ligne en quelques secondes. La vérification peut être désactivée, car reproduire un jeton faible est parfois exactement la tâche.',
+      'La clé de signature est traitée comme le décodeur traite sa clé de vérification, et avec plus de soin encore : jamais écrite dans `localStorage`, jamais restaurée au rechargement, jamais dans un événement d’analytique, et aucun serveur ne pourrait la recevoir. Une clé de signature est le secret le plus dangereux d’un système qui utilise des JWT ; pour une clé de production, mieux vaut toujours produire les jetons dans votre propre environnement.',
+    ],
+    'text-counter': [
+      'Collez ou saisissez du texte dans le panneau et tous les décomptes se mettent à jour en même temps : mots, caractères avec et sans espaces, phrases, paragraphes, lignes et octets UTF-8. Il n’y a rien à presser.',
+      'Le comptage utilise la **segmentation de texte Unicode** du navigateur plutôt qu’une découpe sur les espaces, et la différence n’est pas théorique. Le japonais et le chinois ne séparent pas les mots par des espaces : une découpe sur les espaces annonce donc un paragraphe entier comme un seul mot ; la même découpe coupe « l’objet » en deux. La segmentation sait où les mots s’arrêtent vraiment dans chaque écriture publiée par le site, et le temps de lecture pour le CJK se mesure en caractères par minute plutôt qu’en mots.',
+      'Le panneau **limites** suit les plafonds contre lesquels on écrit réellement — une publication de 280 caractères, un SMS de 160, un titre de page de 60, une méta-description de 155 — et le tableau des fréquences montre les mots sur lesquels vous vous êtes appuyé, ce qui reste le moyen le plus rapide de se surprendre à en répéter un.',
+    ],
+    'text-formatter': [
+      'Chaque opération est un interrupteur, et rien ne s’exécute tant que vous ne l’activez pas. Réduire les espaces répétés, supprimer les espaces en fin de ligne, retirer les lignes vides ou en double, trier les lignes, changer la casse, ou remettre en ordre la ponctuation de la prose anglaise — dans n’importe quelle combinaison. Le résultat apparaît à côté de la saisie au fil de la frappe, et **Remplacer la saisie** le renvoie en entrée pour une nouvelle passe.',
+      'L’outil indique ce que chaque interrupteur a changé — « 12 lignes en double supprimées », « 3 mots répétés » — au lieu de vous rendre un document réécrit en vous laissant repérer la différence. Une règle qui s’est déclenchée à tort est ainsi visible plutôt qu’enfouie.',
+      '**Il ne corrige pas la grammaire, et ne prétend pas le faire.** L’accord, le temps et le choix de l’article demandent soit un serveur, soit un modèle de langue en WebAssembly ; ce site n’a pas de serveur, et sa Content-Security-Policy n’autorise pas WebAssembly. Ce qu’il propose à la place, c’est la couche mécanique — mots répétés, espacement autour de la ponctuation, guillemets droits, majuscules — là où la bonne réponse est une règle et non un jugement. Ces quatre-là suivent la typographie anglaise et sont désactivées par défaut, puisque le français espace sa ponctuation autrement et que le CJK ne l’espace pas du tout.',
+    ],
   },
 
   islands: {
@@ -487,6 +503,211 @@ export const fr: UIStrings = {
           'Aucune clé de cet ensemble ne correspond au `kid` de ce jeton : il n’y a rien pour le vérifier.',
         error: 'La signature n’a pas pu être vérifiée dans ce navigateur.',
       },
+    },
+    jwtEncoder: {
+      headerTitle: 'En-tête',
+      payloadTitle: 'Charge utile',
+      tokenTitle: 'Jeton signé',
+      headerLabel: 'En-tête du JWT en JSON',
+      payloadLabel: 'Charge utile du JWT en JSON',
+      tokenLabel: 'Le jeton signé',
+      headerPlaceholder: '{\n  "kid": "votre-id-de-cle"\n}',
+      payloadPlaceholder: '{\n  "sub": "user_123",\n  "name": "Ada Lovelace"\n}',
+
+      algorithm: 'Algorithme',
+      algorithmTitle: 'Comment ce jeton sera signé — également écrit dans l’en-tête',
+      unsecured: 'none — non signé',
+      unsecuredWarning:
+        'Ceci est un **jeton non sécurisé** : son `alg` vaut `none`, il ne porte aucune signature et ne prouve rien. La plupart des bibliothèques le rejettent d’emblée. Utile uniquement pour vérifier que la vôtre le fait aussi.',
+
+      signingTitle: 'Clé de signature',
+      secretLabel: 'Secret partagé',
+      secretPlaceholder: 'Le secret avec lequel signer ce jeton',
+      keyLabel: 'Clé privée',
+      keyPlaceholder: 'Une clé privée PKCS#8, ou un JWK privé',
+      keyAria: 'Clé de signature',
+      base64Secret: 'Le secret est en base64url',
+      base64SecretTitle:
+        'Décoder le secret depuis base64url avant de l’utiliser comme matériau de clé',
+      keyNeverStored:
+        'La clé est utilisée puis abandonnée — jamais enregistrée dans ce navigateur, jamais envoyée nulle part.',
+      keyIsDangerous:
+        'Une clé de signature produit des jetons que vos systèmes accepteront. Pour une clé de production, préférez votre propre environnement.',
+      allowWeak: 'Autoriser un secret court',
+      allowWeakTitle:
+        'Signer même si le secret est plus court que ce qu’exige la RFC 7518 — pour reproduire un jeton faible',
+      sampleSecretHint: 'L’exemple est signé avec `{secret}`.',
+
+      claimsTitle: 'Claims temporelles',
+      stamp: 'Horodater',
+      stampTitle: 'Écrire iat, exp et nbf dans la charge utile à partir de cet instant',
+      expiresIn: 'Expire dans',
+      includeNotBefore: 'Définir aussi nbf',
+      includeNotBeforeTitle: 'Ajouter une claim « pas avant », réglée sur maintenant',
+      expiryPresets: {
+        '15m': '15 minutes',
+        '1h': '1 heure',
+        '24h': '24 heures',
+        '7d': '7 jours',
+        '30d': '30 jours',
+      },
+      stamped: 'iat et exp inscrits dans la charge utile',
+
+      segHeader: 'En-tête',
+      segPayload: 'Charge utile',
+      segSignature: 'Signature',
+      segChars: p({ one: '{count} caractère', other: '{count} caractères' }),
+
+      idle: 'Écrivez une charge utile et choisissez une clé pour produire un jeton',
+      signing: 'Signature…',
+      signed: 'Jeton signé',
+      signedUnsecured: 'Jeton non sécurisé créé — il ne porte aucune signature',
+      tokenFile: 'token.jwt',
+      emptyToken:
+        'Le jeton signé apparaît ici. Rien n’est envoyé pour le produire : la signature est calculée par ce navigateur.',
+
+      faults: {
+        'bad-header-json': 'L’en-tête n’est pas du JSON valide, il n’y a donc rien à encoder.',
+        'bad-payload-json': 'La charge utile n’est pas du JSON valide, il n’y a donc rien à encoder.',
+        'header-not-object':
+          'L’en-tête d’un jeton doit être un objet JSON, pas un tableau ni une valeur seule.',
+        'payload-not-object':
+          'La charge utile d’un jeton doit être un objet JSON, pas un tableau ni une valeur seule.',
+        unsupported: 'Cet outil ne sait pas signer avec cet algorithme.',
+        'no-key': 'Saisissez une clé et le jeton est signé au fil de la frappe.',
+        'bad-key':
+          'Cette clé n’a pas pu être lue. Utilisez un bloc PEM commençant par `BEGIN PRIVATE KEY`, ou un JWK privé — celui qui porte une valeur `d`.',
+        'weak-secret':
+          '{algorithm} exige un secret d’au moins {required} octets ; celui-ci en fait {actual}. Un secret plus court peut être cassé hors ligne. Activez **Autoriser un secret court** pour signer quand même.',
+        error: 'Le jeton n’a pas pu être signé dans ce navigateur.',
+      },
+    },
+
+    counter: {
+      inputTitle: 'Texte',
+      inputLabel: 'Texte à compter',
+      placeholder: 'Collez ou saisissez le texte que vous voulez mesurer…',
+      idle: 'Collez ou saisissez du texte pour le compter',
+      counting: 'Comptage…',
+
+      countsTitle: 'Décomptes',
+      words: 'Mots',
+      characters: 'Caractères',
+      charactersNoSpaces: 'Sans espaces',
+      sentences: 'Phrases',
+      paragraphs: 'Paragraphes',
+      lines: 'Lignes',
+      bytes: 'Octets UTF-8',
+
+      timeTitle: 'Temps de lecture',
+      readingTime: 'Lecture',
+      speakingTime: 'À voix haute',
+      underAMinute: 'moins d’une minute',
+      minutesAndSeconds: '{minutes} min {seconds} s',
+      justSeconds: '{seconds} s',
+
+      averagesTitle: 'Moyennes',
+      averageWordLength: 'Longueur des mots',
+      averageSentenceLength: 'Mots par phrase',
+      longestWord: 'Mot le plus long',
+      charsUnit: p({ one: '{count} caractère', other: '{count} caractères' }),
+      wordsUnit: p({ one: '{count} mot', other: '{count} mots' }),
+
+      limitsTitle: 'Limites',
+      limitNames: {
+        tweet: 'Publication (X)',
+        sms: 'SMS',
+        'page-title': 'Titre de page',
+        'meta-description': 'Méta-description',
+      },
+      remaining: '{count} restant',
+      over: '{count} en trop',
+      limitsNote:
+        'Les deux limites SEO sont des approximations — les moteurs tronquent selon la largeur, pas le nombre de caractères.',
+
+      frequencyTitle: 'Mots les plus utilisés',
+      frequencyEmpty: 'Les mots que vous utilisez le plus apparaissent ici dès qu’il y a du texte.',
+      frequencyCount: p({ one: '{count} fois', other: '{count} fois' }),
+
+      emptyBody:
+        'Collez du texte dans le panneau de gauche. Tous les décomptes se mettent à jour au fil de la frappe, entièrement dans cet onglet.',
+      impreciseNotice:
+        'Ce navigateur n’a pas de segmentation de texte Unicode : les mots sont donc comptés en découpant sur les espaces. Le chiffre sera faux pour le chinois, le japonais et le coréen.',
+      cjkNotice:
+        'Compté comme du CJK : les mots sont segmentés plutôt que découpés sur les espaces, et le temps de lecture se mesure en caractères par minute.',
+    },
+
+    textFormatter: {
+      inputTitle: 'Saisie',
+      outputTitle: 'Formaté',
+      optionsTitle: 'Quoi corriger',
+      inputLabel: 'Texte à formater',
+      outputLabel: 'Texte formaté',
+      placeholder: 'Collez le texte que vous voulez nettoyer…',
+      idle: 'Collez du texte et choisissez quoi corriger',
+      formatting: 'Formatage…',
+
+      whitespaceHeading: 'Espaces',
+      trimLineEnds: 'Espaces en fin de ligne',
+      trimLineEndsTitle: 'Supprimer espaces et tabulations à la fin de chaque ligne',
+      collapseSpaces: 'Espaces répétés',
+      collapseSpacesTitle:
+        'Réduire les suites d’espaces ou de tabulations à un seul, en gardant l’indentation',
+      collapseBlankLines: 'Lignes vides en trop',
+      collapseBlankLinesTitle: 'Réduire deux lignes vides ou plus à une seule',
+      removeBlankLines: 'Toutes les lignes vides',
+      removeBlankLinesTitle: 'Supprimer toutes les lignes vides',
+      trimDocument: 'Début et fin',
+      trimDocumentTitle: 'Retirer les espaces au début et à la fin du document entier',
+      tabsToSpaces: 'Tabulations en espaces',
+      tabsToSpacesTitle: 'Remplacer chaque tabulation par deux espaces',
+
+      linesHeading: 'Lignes',
+      removeDuplicateLines: 'Lignes en double',
+      removeDuplicateLinesTitle:
+        'Garder la première occurrence de chaque ligne ; les lignes vides sont conservées',
+      sortLines: 'Trier',
+      sortModes: {
+        none: 'Ne pas trier',
+        asc: 'De A à Z',
+        desc: 'De Z à A',
+      },
+
+      caseHeading: 'Casse',
+      caseModes: {
+        none: 'Laisser tel quel',
+        lower: 'minuscules',
+        upper: 'MAJUSCULES',
+        title: 'Casse De Titre',
+        sentence: 'Casse de phrase',
+      },
+
+      writingHeading: 'Ponctuation',
+      fixRepeatedWords: 'Mots répétés',
+      fixRepeatedWordsTitle: 'Fusionner un mot doublé par accident, comme « le le »',
+      spaceAfterPunctuation: 'Espace après la ponctuation',
+      spaceAfterPunctuationTitle:
+        'Ajouter l’espace manquant après une virgule ou un point — jamais dans les nombres, les URL ou e.g.',
+      removeSpaceBeforePunctuation: 'Espace avant la ponctuation',
+      /* En français cette règle *pose* l’espace insécable au lieu de la retirer
+         — c’est la même case, avec le comportement de la langue. */
+      removeSpaceBeforePunctuationTitle:
+        'Poser l’espace insécable avant ; : ! ? et la retirer avant la virgule et le point',
+      smartQuotes: 'Guillemets typographiques',
+      smartQuotesTitle:
+        'Transformer les guillemets droits en guillemets courbes ; le code entre accents graves est ignoré',
+
+
+      changesTitle: 'Ce qui a changé',
+      noChanges: 'Rien n’avait besoin d’être changé.',
+      nothingEnabled: 'Activez au moins une option et le résultat apparaîtra ici.',
+      replaceInput: 'Remplacer la saisie',
+      replaceInputTitle: 'Remettre le résultat en saisie pour lancer une nouvelle passe',
+      reset: 'Réinitialiser',
+      resetTitle: 'Remettre chaque interrupteur à sa valeur par défaut',
+      outputFile: 'texte-formate.txt',
+      emptyBody:
+        'Le texte nettoyé apparaît ici. Rien n’est envoyé — chaque transformation s’exécute dans cet onglet.',
     },
   },
 };

@@ -31,3 +31,34 @@ export const SAMPLE_EXPIRED_TOKEN =
 
 /** Signs both samples. Public by design — see the note above. */
 export const SAMPLE_SECRET = 'utildock-demo-secret';
+
+/* ---------------------------------------------------------------- encoder --- */
+
+/**
+ * The encoder needs its own secret, and the reason is worth stating.
+ *
+ * `SAMPLE_SECRET` is twenty bytes. RFC 7518 §3.2 requires an HMAC key at least
+ * as long as the hash — thirty-two bytes for HS256 — and the encoder enforces
+ * that by default. Reusing the decoder's secret would mean the sample tripped
+ * the tool's own warning the moment it loaded, which teaches exactly the wrong
+ * lesson. This one is a real 32-byte secret. Also public, also protecting
+ * nothing.
+ */
+export const SAMPLE_SIGNING_SECRET = 'utildock-demo-signing-secret-2026';
+
+/** What the encoder opens with: a header, minus the `alg` it writes itself. */
+export const SAMPLE_ENCODER_HEADER = `{
+  "typ": "JWT",
+  "kid": "checkout-2026-08"
+}`;
+
+/** A payload with the claims a real access token carries, and nothing secret. */
+export const SAMPLE_ENCODER_PAYLOAD = `{
+  "iss": "https://auth.utildock.dev",
+  "sub": "user_8f14e45fceea",
+  "aud": "checkout-api",
+  "name": "Ada Lovelace",
+  "email": "ada@example.com",
+  "roles": ["admin", "billing"],
+  "scope": "openid profile checkout:write"
+}`;

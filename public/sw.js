@@ -9,7 +9,7 @@
  * Bump VERSION when any of that changes.
  */
 
-const VERSION = 'v4';
+const VERSION = 'v5';
 const ASSET_CACHE = `utildock-assets-${VERSION}`;
 const PAGE_CACHE = `utildock-pages-${VERSION}`;
 
@@ -22,6 +22,9 @@ const PAGES = [
   '/json/diff',
   '/json/formatter',
   '/jwt/decoder',
+  '/jwt/encoder',
+  '/text/counter',
+  '/text/formatter',
 ];
 
 /**

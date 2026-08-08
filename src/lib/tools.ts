@@ -8,7 +8,7 @@
 
 export type ToolStatus = 'live' | 'planned';
 
-export type CategoryId = 'json' | 'jwt';
+export type CategoryId = 'json' | 'jwt' | 'text';
 
 export interface Category {
   id: CategoryId;
@@ -60,6 +60,9 @@ export type IconName =
   | 'diff'
   | 'braces'
   | 'key'
+  | 'key-stamp'
+  | 'ruler'
+  | 'plane'
   | 'convert';
 
 export const CATEGORIES: Category[] = [
@@ -73,6 +76,11 @@ export const CATEGORIES: Category[] = [
     id: 'jwt',
     name: 'JWT',
     blurb: 'Read what a token is claiming, and check that it was really signed.',
+  },
+  {
+    id: 'text',
+    name: 'Text',
+    blurb: 'Measure a piece of writing, and dress it down to something tidy.',
   },
 ];
 
@@ -271,6 +279,138 @@ export const TOOLS: Tool[] = [
       'jwt debugger',
     ],
     icon: 'key',
+    status: 'live',
+  },
+  {
+    id: 'jwt-encoder',
+    href: '/jwt/encoder',
+    category: 'jwt',
+    name: 'JWT Encoder',
+    tagline: 'Build a token from claims, and really sign it',
+    does: ['Header and payload', 'HS / RS / PS / ES', 'Expiry presets', 'Signs with WebCrypto'],
+    title: 'JWT Encoder — build and sign a token',
+    description:
+      'Free online JWT encoder. Build a JSON Web Token from your own claims and sign it with HS, RS, PS or ES. The key never leaves your browser.',
+    overview:
+      'A JWT encoder that produces a genuinely signed token rather than a base64 lookalike. Write the header and payload as JSON, pick an algorithm, and paste the shared secret for an HS algorithm or a PKCS#8 private key for RS, PS or ES — the signature is computed by your browser’s own WebCrypto. Expiry, issued-at and not-before can be stamped from presets so you never hand-convert an epoch again, and the finished token is checked against the decoder before it is shown.',
+    faqs: [
+      {
+        q: 'Is it safe to paste a signing key into this encoder?',
+        a: 'The key is used in your own tab and dropped — never written to storage, never included in an analytics event, and there is no backend that could receive it. That said, a signing key is the most dangerous secret in any system that uses JWTs, because whoever holds it can mint tokens your services will accept. For a production key, generating tokens in your own environment is still the better habit; this tool is built for development, testing and learning.',
+      },
+      {
+        q: 'Which algorithms can it sign with?',
+        a: 'HS256, HS384 and HS512 with a shared secret, and RS256/384/512, PS256/384/512 and ES256/384/512 with a private key given as a PKCS#8 PEM block or a private JWK. It will also produce the unsecured `alg: none` token, clearly marked as proving nothing, because reproducing one is how you test that your verifier rejects it.',
+      },
+      {
+        q: 'Why does it refuse my short secret?',
+        a: 'RFC 7518 requires an HMAC key at least as long as the hash — 32 bytes for HS256, 48 for HS384, 64 for HS512. Browsers will happily sign with a four-character secret, and the resulting token can be cracked offline in seconds. The encoder blocks that by default and lets you override it, since reproducing a weak token is sometimes exactly the task.',
+      },
+      {
+        q: 'Can it overwrite the algorithm in my header?',
+        a: 'It always writes `alg` from the algorithm you picked, and that is deliberate. A header claiming one algorithm over a signature made with another is not a token, it is the setup for the best-known JWT vulnerability. Every other header field you write — `kid`, `cty`, anything custom — is kept exactly as you typed it.',
+      },
+      {
+        q: 'How do I set the expiry?',
+        a: 'Press one of the expiry presets and `iat`, `exp` and optionally `nbf` are stamped into the payload as NumericDate seconds, all from the same instant so they cannot disagree by a second. You can also type the numbers yourself; the encoder does not require the presets.',
+      },
+    ],
+    keywords: [
+      'jwt encoder',
+      'jwt generator',
+      'create jwt',
+      'sign jwt online',
+      'json web token generator',
+    ],
+    icon: 'key-stamp',
+    status: 'live',
+  },
+  {
+    id: 'text-counter',
+    href: '/text/counter',
+    category: 'text',
+    name: 'Text Counter',
+    tagline: 'Words, characters, sentences and paragraphs at once',
+    does: ['Words and characters', 'Sentences and paragraphs', 'Reading time', 'Keyword frequency'],
+    title: 'Word Counter — words, characters, sentences',
+    description:
+      'Free online word and character counter. Counts words, characters, sentences and paragraphs as you type, with reading time. Runs in your browser.',
+    overview:
+      'A word counter that counts everything at once — words, characters with and without spaces, sentences, paragraphs, lines and UTF-8 bytes — and updates as you type. It also estimates reading and speaking time, tracks the limits people are actually writing against, and lists which words you used most. Counting uses the browser’s own Unicode text segmentation, so Japanese and Chinese are counted by word rather than reported as one enormous word, and contractions are not split in two.',
+    faqs: [
+      {
+        q: 'How does it count words in Japanese or Chinese?',
+        a: 'Correctly, which most word counters do not. Japanese and Chinese put no spaces between words, so counting by splitting on whitespace reports a whole paragraph as one word. This tool uses the browser’s built-in Unicode text segmentation, which knows where words actually break in every script, and it measures reading time for CJK in characters per minute rather than words per minute.',
+      },
+      {
+        q: 'What counts as a sentence or a paragraph?',
+        a: 'A sentence is decided by the Unicode sentence-breaking rules, so "Dr. Smith went to Washington D.C. yesterday" is one sentence and not three, and the ideographic full stop is recognised. A paragraph is a block separated by a blank line; if the text has no blank lines at all, each non-empty line is counted as one.',
+      },
+      {
+        q: 'How is reading time calculated?',
+        a: 'At 238 words per minute for alphabetic text, which is the median for adult silent reading of general prose, and 400 characters per minute for CJK. Speaking time uses the slower rates a presenter actually manages, around 140 words per minute. They are estimates, not measurements — dense technical writing runs slower than a novel.',
+      },
+      {
+        q: 'Is my text uploaded anywhere?',
+        a: 'No. Counting is JavaScript running in your own tab, in a Web Worker so a long document does not freeze the page. Disconnect from the network and it keeps working. This matters more than it sounds for a text counter, since the things people count tend to be drafts, cover letters and unpublished writing.',
+      },
+      {
+        q: 'Does it show character counts for Twitter or a meta description?',
+        a: 'Yes. The limits panel tracks the caps people are usually writing against — a 280-character post, a 160-character SMS, a 60-character page title and a 155-character meta description — and shows how much room is left in each. The two SEO figures are approximations, since Google truncates on rendered width rather than character count.',
+      },
+    ],
+    keywords: [
+      'word counter',
+      'character counter',
+      'count words online',
+      'sentence counter',
+      'paragraph counter',
+    ],
+    icon: 'ruler',
+    status: 'live',
+  },
+  {
+    id: 'text-formatter',
+    href: '/text/formatter',
+    category: 'text',
+    name: 'Text Formatter',
+    tagline: 'Strip the mess out of text somebody else wrote',
+    does: ['Remove extra spaces', 'Delete duplicate lines', 'Change case', 'Tidy punctuation'],
+    title: 'Text Formatter — clean up messy text',
+    description:
+      'Free online text formatter and cleaner. Remove extra spaces and duplicate lines, change case, and tidy punctuation. Runs entirely in your browser.',
+    overview:
+      'A text formatter you drive rather than one that decides for you. Every operation is a switch — collapse repeated spaces, strip trailing whitespace, remove duplicate or blank lines, sort lines, convert to upper, lower, title or sentence case, and tidy the punctuation of English prose. Nothing runs unless you turn it on, and the tool reports exactly what each switch changed, so the result is something to accept rather than something to re-read.',
+    faqs: [
+      {
+        q: 'Can it fix grammar?',
+        a: 'No, and it says so rather than pretending. Real grammar correction — agreement, tense, article choice — needs either a server or a WebAssembly language model, and this site has no backend and a Content-Security-Policy that does not permit WebAssembly. What it does instead is the mechanical layer people usually mean: repeated words, missing spaces after punctuation, spaces before punctuation, straight quotes, and capitalisation. Those are typography, where the right answer is a rule rather than a judgement.',
+      },
+      {
+        q: 'What does "remove duplicate lines" keep?',
+        a: 'The first occurrence of each line, in its original position, comparing the whole line exactly. Blank lines are never deduplicated, since they are what separates paragraphs and collapsing them would silently reflow the document into one block.',
+      },
+      {
+        q: 'How does title case handle acronyms?',
+        a: 'It leaves them alone. Any word with a capital letter after its first — JSON, iPhone, McCarthy — is passed through untouched, because lowercasing it to re-capitalise the first letter would turn JSON into Json. Minor words like "of" and "the" stay lowercase unless they open or close the line.',
+      },
+      {
+        q: 'Will it break my code, URLs or decimal numbers?',
+        a: 'The punctuation rules are written to avoid exactly that. A space is never inserted after a comma or colon that is followed by a digit, so 1,000 and 12:30 survive. A full stop only gains a space between a lowercase run and a capital, which leaves e.g., Node.js, 3.14 and utildock.dev untouched. The smart-quote rule skips anything inside backticks.',
+      },
+      {
+        q: 'Is my text sent anywhere?',
+        a: 'No. Every transform runs in a Web Worker inside your own tab, and there is no server of ours that could receive the text. It works with the network disconnected.',
+      },
+    ],
+    keywords: [
+      'text formatter',
+      'remove extra spaces',
+      'remove duplicate lines',
+      'text cleaner online',
+      'change case online',
+    ],
+    icon: 'plane',
     status: 'live',
   },
 ];
