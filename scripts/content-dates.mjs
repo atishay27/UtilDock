@@ -23,15 +23,29 @@ import { execFileSync } from 'node:child_process';
 
 const REGISTRY = 'src/lib/tools.ts';
 
-/** Root path (language stripped) → the files whose content that page renders. */
+const HUB = 'src/components/pages/CategoryHub.astro';
+
+/**
+ * Root path (language stripped) → the files whose content that page renders.
+ *
+ * **Extend this when a tool or a category ships.** A route missing from here
+ * gets no `lastmod`, which reads as "never changed" to `indexnow.mjs` and keeps
+ * the page out of every submission from then on. The JWT encoder and both text
+ * tools sat unlisted from the day they launched for exactly that reason.
+ */
 const PAGE_SOURCES = {
   '/': ['src/components/pages/Home.astro', REGISTRY],
-  '/json': ['src/components/pages/JsonHub.astro', REGISTRY],
+  '/json': [HUB, REGISTRY],
+  '/jwt': [HUB, REGISTRY],
+  '/text': [HUB, REGISTRY],
   '/json/formatter': ['src/components/pages/tools/Formatter.astro', REGISTRY],
   '/json/viewer': ['src/components/pages/tools/Viewer.astro', REGISTRY],
   '/json/validator': ['src/components/pages/tools/Validator.astro', REGISTRY],
   '/json/diff': ['src/components/pages/tools/Diff.astro', REGISTRY],
   '/jwt/decoder': ['src/components/pages/tools/JwtDecoder.astro', REGISTRY],
+  '/jwt/encoder': ['src/components/pages/tools/JwtEncoder.astro', REGISTRY],
+  '/text/counter': ['src/components/pages/tools/TextCounter.astro', REGISTRY],
+  '/text/formatter': ['src/components/pages/tools/TextFormatter.astro', REGISTRY],
   '/about': ['src/components/pages/About.astro'],
   '/privacy': ['src/components/pages/Privacy.astro'],
 };
