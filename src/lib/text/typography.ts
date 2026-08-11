@@ -1,32 +1,19 @@
 /**
- * Per-language typographic convention.
+/**
+ * Per-language typographic convention. The switches in `format.ts` are the same
+ * everywhere; their behaviour comes from here.
  *
- * The punctuation rules in `format.ts` were written to English convention and
- * applied to every language, which is wrong in ways that range from cosmetic to
- * actively damaging:
+ *  - French wants a space *before* `;` `:` `!` `?`; stripping it breaks French.
+ *  - CJK puts no space around punctuation, so both spacing rules are meaningless.
+ *  - Quotation marks differ: German `„`, French and Russian `«`, Japanese `「`.
+ *  - Title Case minor words are English and do not transfer.
  *
- *  - **French requires a space *before* `;` `:` `!` `?`.** A rule that strips it
- *    does not tidy French, it breaks it.
- *  - **Chinese and Japanese put no space around punctuation at all.** Both
- *    spacing rules are meaningless there, and the "add a space after a comma"
- *    rule would insert spaces that no CJK typesetter wants.
- *  - **Quotation marks differ per language.** German opens low (`„`), French
- *    and Russian use guillemets (`«`), Japanese uses corner brackets (`「`).
- *    Converting a German quote to `“` is not smart quotes, it is an error.
- *  - **Title Case minor words are English.** Demoting `de`, `la` or `von`
- *    because they resemble `of` and `the` produces a title no style guide in
- *    that language recognises.
+ * Where a rule has no meaning in a language it is reported unsupported and the
+ * UI disables it, rather than quietly doing the wrong thing.
  *
- * So the switches stay the same and their *behaviour* follows the page's
- * language, and where a rule has no meaning in that language it is reported as
- * unsupported and the UI disables it rather than quietly doing the wrong thing.
- *
- * The page's locale governs rather than the content's detected script. That is
- * a deliberate choice and the opposite of what `count.ts` does: counting is a
- * measurement of the text in front of it, so it must follow the text, whereas
- * this is an editorial convention, and someone working on the French site is
- * applying French house style. It is also predictable, which matters when the
- * tool is rewriting a document rather than describing one.
+ * The page's locale governs, not the content's detected script — the opposite
+ * of `count.ts`, which measures the text in front of it. This is editorial
+ * convention, and it has to be predictable when the tool rewrites a document.
  */
 
 /** How a language spaces its punctuation. */
@@ -50,8 +37,8 @@ export interface Typography {
   quotes: QuoteStyle | null;
   /**
    * `english-minor` demotes `of`, `the` and friends. `all-words` capitalises
-   * every word — never as polished, but never wrong in the way that demoting
-   * the wrong words is.
+   * every word — less polished, but never wrong the way demoting the wrong
+   * words is.
    */
   titleCase: 'english-minor' | 'all-words';
   /** The lone `i` → `I` repair is English grammar, not typography. */
@@ -73,8 +60,8 @@ const LATIN_DOUBLE: QuoteStyle = {
 const TYPOGRAPHY: Record<string, Typography> = {
   en: { spacing: 'latin', quotes: LATIN_DOUBLE, titleCase: 'english-minor', capitaliseLoneI: true },
 
-  // Spanish and Portuguese both accept angular quotes, but curly ones are what
-  // the overwhelming majority of contemporary text on the web actually uses.
+  // Spanish and Portuguese accept angular quotes, but contemporary web text
+  // overwhelmingly uses curly ones.
   es: { spacing: 'latin', quotes: LATIN_DOUBLE, titleCase: 'all-words', capitaliseLoneI: false },
   pt: { spacing: 'latin', quotes: LATIN_DOUBLE, titleCase: 'all-words', capitaliseLoneI: false },
 
@@ -122,9 +109,8 @@ const TYPOGRAPHY: Record<string, Typography> = {
   // Spacing does not: CJK punctuation is full-width and carries its own space.
   zh: { spacing: 'cjk', quotes: LATIN_DOUBLE, titleCase: 'all-words', capitaliseLoneI: false },
 
-  // Japanese quotes with corner brackets 「」, and a straight `"` in Japanese
-  // text is far more often inside code or a Latin fragment than a quotation.
-  // Guessing wrong rewrites source code, so this one declines to guess.
+  // Japanese quotes with corner brackets 「」. A straight `"` in Japanese text
+  // is more often code than a quotation, so this one declines to guess.
   ja: { spacing: 'cjk', quotes: null, titleCase: 'all-words', capitaliseLoneI: false },
 };
 
@@ -149,12 +135,9 @@ export type WritingRule =
   | 'smartQuotes';
 
 /**
- * Which punctuation rules mean anything in this language.
- *
- * The UI disables the rest and says why. A disabled switch with a reason is a
- * far better answer than an enabled one that silently corrupts the document —
- * and better than hiding it, which would leave someone hunting for a feature
- * the tool appears to have lost.
+ * Which punctuation rules mean anything in this language. The UI disables the
+ * rest and says why — better than an enabled switch that corrupts the document,
+ * and better than hiding one and looking like the feature is gone.
  */
 export function supportedRules(locale: string): Record<WritingRule, boolean> {
   const { spacing, quotes } = typographyFor(locale);

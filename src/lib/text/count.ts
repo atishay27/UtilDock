@@ -1,26 +1,17 @@
 /**
- * Counting words, characters, sentences and paragraphs — correctly, in any
- * script.
+ * Counting words, characters, sentences and paragraphs in any script.
  *
- * The naive implementation of a word counter is `text.split(/\s+/).length`, and
- * it is wrong in a way that matters enormously to a site published in eight
- * languages. Japanese and Chinese do not put spaces between words, so a whole
- * Japanese paragraph contains no space at all and a whitespace split reports
- * **one word**. The same split reports one word for "don't", which is right,
- * and two for "l'objet", which is right in French and would not be in English.
- * Getting those cases right by hand means writing a word-segmentation engine
- * per language.
+ * `text.split(/\s+/)` reports one word for a whole Japanese paragraph, which
+ * contains no spaces at all. `Intl.Segmenter` implements the Unicode
+ * text-segmentation annex, ships with the browser, and is why this file needs
+ * no dependency and no per-language special cases.
  *
- * `Intl.Segmenter` is that engine, already in the browser, implementing the
- * Unicode text-segmentation annex. It costs no bytes, handles every script the
- * site publishes in, and is the reason this file has no dependency and no
- * per-language special cases. It is used with the *content's* likely locale
- * rather than the page's: someone reading the German UI is usually counting
- * German, but a Japanese document pasted into the English page must still be
- * counted as Japanese, so the script is detected from the text itself.
+ * It is given the *content's* locale, not the page's: Japanese pasted into the
+ * English page still has to count as Japanese, so the script is detected from
+ * the text.
  *
- * Where `Intl.Segmenter` is missing the regex path takes over and the result is
- * flagged imprecise, so a wrong number is never reported as a right one.
+ * Without `Intl.Segmenter` the regex path takes over and the result is flagged
+ * imprecise, so a wrong number is never reported as a right one.
  */
 
 export interface TextCounts {
@@ -56,11 +47,9 @@ export interface CountResult {
 }
 
 /**
- * Reading speed is not one number. The conventional 200–250 words per minute is
- * a figure for alphabetic prose; CJK is normally measured in characters per
- * minute instead, because a "word" is a less useful unit there and readers take
- * in roughly 400–500 characters a minute. Reporting 238 wpm for Japanese would
- * overstate reading time by roughly a factor of two.
+ * Reading speed is not one number. The conventional 200–250 wpm is for
+ * alphabetic prose; CJK is measured in characters per minute, around 400–500.
+ * Reporting 238 wpm for Japanese overstates reading time about twofold.
  */
 export type Script = 'latin' | 'cjk';
 
@@ -70,9 +59,8 @@ const SPEAKING_WORDS_PER_MINUTE = 140;
 const SPEAKING_CJK_CHARS_PER_MINUTE = 250;
 
 /*
- * Written as escapes rather than literal characters. The ranges are the point
- * of this module and have to survive being read, reviewed and copied between
- * editors without a normalisation step quietly altering one of them.
+ * Escapes rather than literal characters, so the ranges survive being copied
+ * between editors without a normalisation step altering one.
  */
 const CJK_RANGES =
   '\\u3040-\\u30ff' + // hiragana and katakana
@@ -87,11 +75,9 @@ const CJK_PATTERN = new RegExp(`[${CJK_RANGES}]`, 'gu');
 const CJK_CHARACTER = new RegExp(`[${CJK_RANGES}]`, 'u');
 
 /**
- * Whether the text is mostly CJK.
- *
- * A threshold rather than "contains any", because an English paragraph quoting
- * one Japanese place name is still English. Twenty per cent is well above what
- * incidental quotation produces and well below what genuinely CJK text hits.
+ * Whether the text is mostly CJK. A threshold rather than "contains any": an
+ * English paragraph quoting one Japanese place name is still English. Twenty
+ * per cent sits well clear of both incidental quotation and real CJK text.
  */
 export function detectScript(text: string): Script {
   if (text === '') return 'latin';
@@ -104,12 +90,9 @@ export function detectScript(text: string): Script {
 /**
  * The locale to segment with, chosen from the content rather than the UI.
  *
- * The specific CJK language changes the dictionary `Intl.Segmenter` uses, and
- * segmenting Chinese with the Japanese dictionary is worse than not naming a
- * language at all. So when the page's own locale is already a CJK one it is
- * trusted, and otherwise `ja` is requested — a visitor on the English page who
- * pasted CJK text then gets word segmentation rather than the character-by-
- * character split a Latin locale would produce.
+ * The CJK language picks `Intl.Segmenter`'s dictionary, so a CJK page locale is
+ * trusted and anything else asks for `ja`. That gives CJK pasted into the
+ * English page word segmentation instead of a character-by-character split.
  */
 function segmentationLocale(script: Script, uiLocale: string): string {
   if (script !== 'cjk') return uiLocale;
@@ -129,11 +112,9 @@ function hasSegmenter(): boolean {
 /* ---------------------------------------------------------------- words --- */
 
 /**
- * The words in the text, in order.
- *
- * `Intl.Segmenter` marks which segments are "word-like" — that is what excludes
- * punctuation and whitespace without a blocklist, and what keeps "don't" and
- * "l'objet" segmented the way each language actually reads them.
+ * The words in the text, in order. `Intl.Segmenter` marks which segments are
+ * word-like, which excludes punctuation without a blocklist and keeps "don't"
+ * and "l'objet" segmented the way each language reads them.
  */
 function segmentWords(text: string, locale: string): string[] {
   const segmenter = new Intl.Segmenter(locale, { granularity: 'word' });
@@ -159,11 +140,8 @@ function regexWords(text: string): string[] {
 /* ------------------------------------------------------------ sentences --- */
 
 /**
- * Sentence count.
- *
- * `Intl.Segmenter` again, and again it earns its place: the regex answer is to
- * split on `[.!?]`, which reads "Dr. Smith went to Washington D.C. yesterday"
- * as three sentences and misses the CJK full stop entirely. The Unicode
+ * Sentence count. Splitting on `[.!?]` reads "Dr. Smith went to Washington D.C.
+ * yesterday" as three sentences and misses the CJK full stop; the Unicode
  * sentence-break algorithm knows about abbreviations, decimals and ideographic
  * punctuation.
  */
@@ -206,16 +184,11 @@ function countParagraphs(text: string): number {
 const FREQUENCY_LIMIT = 12;
 
 /**
- * Words worth reporting in the frequency table.
+ * Words worth reporting in the frequency table. Single characters and bare
+ * numbers are dropped as noise, except in CJK where one ideograph is a word.
  *
- * Single characters and bare numbers are dropped: they crowd the top of the
- * list without telling anyone anything. One ideograph is a word, though, so the
- * length rule does not apply to CJK.
- *
- * Stop words ("the", "and", "der") are deliberately *not* dropped. A stop-word
- * list would have to exist in eight languages, would be wrong at the edges of
- * each, and the visitor checking keyword density usually does want to see that
- * "the" is six per cent of their text.
+ * Stop words are deliberately kept: the list would need eight languages, and
+ * someone checking keyword density does want to see that "the" is six per cent.
  */
 function buildFrequency(words: string[], locale: string): WordFrequency[] {
   const tally = new Map<string, number>();
@@ -288,12 +261,9 @@ export function estimateDurations(
 }
 
 /**
- * Limits people are actually counting against.
- *
- * Each is a real published cap, measured in the unit its platform measures in.
- * The two SEO figures are the conventional character approximations rather than
- * promises: Google truncates on rendered pixel width, not character count, so
- * a title of sixty narrow characters may survive where fifty wide ones do not.
+ * Limits people count against — each a real published cap in the unit its
+ * platform measures. The two SEO figures are conventional approximations:
+ * Google truncates on rendered pixel width, not character count.
  */
 export interface Limit {
   id: string;

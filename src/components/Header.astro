@@ -2,14 +2,12 @@
 /**
  * Category-grouped navigation.
  *
- * The bar names categories, not tools: "JSON tools" opens a panel of the four,
- * each under its full name. A flat list of "Viewer / Validator / Comparator"
- * gave no clue which format it worked on, and had nowhere to put JWT — the bar
- * would simply have grown until it collided with the logo.
+ * The bar names categories, not tools: "JSON tools" opens a panel of the four
+ * under their full names. A flat list would not say which format each works on,
+ * and would grow into the logo as the dock does.
  *
- * Categories come from the registry, so adding JWT adds a menu with no edit
- * here. A category with nothing live yet renders as a marker rather than a
- * trigger: a menu that opens onto "coming soon" wastes the click.
+ * Categories come from the registry, so a new one adds a menu with no edit here.
+ * A category with nothing live renders as a marker rather than a trigger.
  */
 import { toolsInCategory } from '../lib/tools';
 import { href, localizedCategories, localizedTools, t } from '../lib/i18n';
@@ -62,9 +60,8 @@ const menus = localizedCategories(locale).map((category) => {
     <nav aria-label={ui.chrome.navTools} class="ml-4 hidden items-center gap-1 md:flex">
       {
         menus.map(({ category, live, planned }) => {
-          /* A category need not have a hub page — JWT has one tool and no
-             index — so the active marker is derived from the tools too, or a
-             hubless category would never light up on its own tool's page. */
+          /* Derived from the tools as well as the hub, so a category without a
+             hub page still lights up on its own tool's page. */
           const within = [category.href, ...live.map((tool) => tool.href)].some(
             (candidate) => candidate !== undefined && path.startsWith(candidate),
           );
@@ -170,12 +167,9 @@ const menus = localizedCategories(locale).map((category) => {
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
-      {/* A link, not a badge. Styled as a pill beside two real buttons, it read
-          as a control that did nothing when clicked.
-
-          The outer element is the 44px target; the inner one is the visible
-          box, sized to match ThemeToggle's exactly. Bordering the target itself
-          drew an 11-high box next to the toggle's 8-high one. */}
+      {/* A link, not a badge. The outer element is the 44px target; the inner
+          one is the visible box, sized to match ThemeToggle. Bordering the
+          target itself would draw an 11-high box beside the toggle's 8. */}
       <a href={href('/privacy', locale)} class="hidden h-11 items-center lg:inline-flex">
         <span
           class="ud-legend flex h-8 items-center gap-2 border border-scribe px-2.5 text-temper transition-colors hover:border-cherry hover:text-chalk"
@@ -184,9 +178,8 @@ const menus = localizedCategories(locale).map((category) => {
           {ui.chrome.privacyPill}
         </span>
       </a>
-      {/* Hidden below md, where the mobile panel carries it instead: a third
-          control in a 390px bar is one too many, and the panel is where mobile
-          navigation already lives. */}
+      {/* Hidden below md, where the mobile panel carries it instead — a third
+          control does not fit a 390px bar. */}
       <div class="hidden md:block"><LanguageMenu locale={locale} /></div>
       <ThemeToggle locale={locale} />
       <button
@@ -291,16 +284,13 @@ const menus = localizedCategories(locale).map((category) => {
 <script>
   /* Desktop menus open on hover and on click.
    *
-   * Hover is gated on a device that actually has one: on a touchscreen a tap
-   * synthesises mouseenter before click, so an ungated hover handler opens the
-   * panel and the click that follows immediately closes it again.
+   * Hover is gated on a device that has one: a touchscreen synthesises
+   * mouseenter before click, so an ungated handler opens the panel and the
+   * click closes it again.
    *
-   * Both delays exist to make the pointer's path forgiving. Opening waits long
-   * enough that a pointer merely crossing the header on its way down the page
-   * does not trigger a panel; closing waits long enough to cross the seam
-   * between trigger and panel, and to sweep diagonally toward an item near the
-   * edge. Once one panel is open, switching to a sibling is instant — that is
-   * the behaviour a menu bar teaches.
+   * The delays make the pointer's path forgiving — opening ignores a pointer
+   * merely crossing the header, closing allows time to cross the seam and sweep
+   * diagonally. Switching between open panels is instant.
    */
   const menus = [...document.querySelectorAll<HTMLElement>('[data-menu]')];
   const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -393,8 +383,8 @@ const menus = localizedCategories(locale).map((category) => {
 
   button?.addEventListener('click', () => setDrawer(nav?.classList.contains('hidden') === true));
 
-  /* Escape closed the desktop menus but left the drawer open, so a keyboard
-     user on a narrow window had no way out but to find the toggle again. */
+  /* Escape closes the drawer too, not just the desktop menus — otherwise a
+     keyboard user on a narrow window has to hunt for the toggle. */
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape' || nav?.classList.contains('hidden') !== false) return;
     setDrawer(false);

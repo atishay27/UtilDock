@@ -8,18 +8,13 @@
  * tool. Declining and ignoring it produce the same result — no request to
  * Google, ever.
  *
- * **It reports state, it does not re-ask.** The first version rendered one
- * fixed block of copy, so reopening it after a decision showed the identical
- * question with the identical two buttons — no indication of what had been
- * chosen, and no way to tell "I already said no" from "I have not answered".
- * A control that cannot show its own value is not a control. The three states
- * below are mutually exclusive blocks toggled by [data-when]; only `undecided`
- * asks a question.
+ * **It reports state, it does not re-ask.** Three mutually exclusive blocks
+ * toggled by [data-when]; only `undecided` asks a question, so reopening after
+ * a decision shows what was chosen rather than the question again.
  *
- * The two flows also end differently, on purpose. Answering for the first time
- * closes the banner — the visitor came here to use a tool. Toggling from the
- * footer leaves it open and re-renders, because the visitor came here for this
- * and seeing the new state is the point.
+ * The flows end differently on purpose: a first answer closes the banner, since
+ * the visitor came to use a tool. Toggling from the footer leaves it open and
+ * re-renders, since seeing the new state is the point.
  */
 import { ANALYTICS_ENABLED } from '../lib/analytics';
 import { href, t } from '../lib/i18n';

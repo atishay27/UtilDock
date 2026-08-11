@@ -47,6 +47,8 @@ export const toolsPtbr: ToolCopyOverrides = {
       'json formatter português',
       'minificar json',
       'json bonito',
+      'formatador json grátis',
+      'formatar json sem enviar arquivo',
     ],
   },
 
@@ -87,6 +89,8 @@ export const toolsPtbr: ToolCopyOverrides = {
       'ver json online',
       'json viewer português',
       'explorador json',
+      'visualizador json online grátis',
+      'abrir json grande online',
     ],
   },
 
@@ -122,6 +126,8 @@ export const toolsPtbr: ToolCopyOverrides = {
       'validar json online',
       'json schema validator',
       'verificar sintaxe json',
+      'validador json online grátis',
+      'validador json schema online',
     ],
   },
 
@@ -138,7 +144,7 @@ export const toolsPtbr: ToolCopyOverrides = {
     description:
       'Comparador JSON gratuito. Compare dois documentos lado a lado com adições, remoções e valores alterados em cores. Roda no seu navegador.',
     overview:
-      'Um comparador JSON que mostra a diferença em vez de listá-la. Os dois documentos são desenhados como uma única visão alinhada: vermelho marca o que só o original tem, verde o que só o modificado tem, e uma seta marca cada valor substituído. Como a comparação é estrutural e não textual, chaves reordenadas e indentação diferente nunca contam como mudanças.',
+      'Um comparador JSON em que você pode editar. Os dois documentos ficam lado a lado como editores vivos com a diferença desenhada entre eles: vermelho marca o que só o JSON 1 tem, verde o que só o JSON 2 tem, e as setas do meio copiam um bloco nos dois sentidos, então você reconcilia o par enquanto lê. Nenhum dos lados é a referência. E como o veredicto é estrutural e não textual, chaves reordenadas e indentação diferente nunca contam como mudanças.',
     faqs: [
       {
         q: 'Qual a diferença entre um diff de JSON e um diff de texto?',
@@ -162,6 +168,8 @@ export const toolsPtbr: ToolCopyOverrides = {
       'comparador json',
       'json diff online',
       'diferença entre dois json',
+      'comparar dois arquivos json',
+      'json diff online grátis',
     ],
   },
 
@@ -207,6 +215,8 @@ export const toolsPtbr: ToolCopyOverrides = {
       'verificar assinatura jwt',
       'jwt decoder português',
       'json web token decodificar',
+      'jwt decoder online grátis',
+      'decodificar jwt sem enviar o token',
     ],
   },
 
@@ -248,6 +258,8 @@ export const toolsPtbr: ToolCopyOverrides = {
       'criar jwt',
       'assinar jwt online',
       'gerador json web token',
+      'gerar token jwt online',
+      'assinar jwt hs256 online',
     ],
   },
 
@@ -289,6 +301,8 @@ export const toolsPtbr: ToolCopyOverrides = {
       'contar palavras online',
       'contador de frases',
       'contar parágrafos',
+      'contar palavras e caracteres grátis',
+      'calcular tempo de leitura',
     ],
   },
 
@@ -330,6 +344,8 @@ export const toolsPtbr: ToolCopyOverrides = {
       'remover linhas duplicadas',
       'limpar texto online',
       'mudar maiúsculas online',
+      'remover linhas em branco online',
+      'ordenar linhas alfabeticamente',
     ],
   },
 };

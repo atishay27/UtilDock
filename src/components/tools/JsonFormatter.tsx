@@ -7,7 +7,7 @@ import { useJsonWorker } from '../../lib/useJsonWorker';
 import { formatBytes, positionToOffset, type JsonError, type JsonStats } from '../../lib/json/types';
 import type { IndentStyle } from '../../lib/json/format';
 import { SAMPLE_DOCUMENT } from '../../lib/json/samples';
-import { fill } from '../../lib/i18n/format';
+import { fill, plural } from '../../lib/i18n/format';
 import type { IslandStrings } from '../../lib/i18n/ui/en';
 
 type Mode = 'pretty' | 'minified';
@@ -22,10 +22,9 @@ type Mode = 'pretty' | 'minified';
  * into the page.
  */
 export default function JsonFormatter({
+  lang,
   strings,
 }: {
-  /* Accepted so every tool island has the same signature, even though this one
-     has no counted phrases and so never needs `plural()`. */
   lang: string;
   strings: IslandStrings;
 }) {
@@ -34,11 +33,16 @@ export default function JsonFormatter({
   const [input, setInput] = usePersistentState('utildock:json-formatter:input', '');
   const [indent, setIndent] = usePersistentState<IndentStyle>('utildock:json-formatter:indent', '2');
   const [sortKeys, setSortKeys] = usePersistentState('utildock:json-formatter:sort', false);
+  const [removeNulls, setRemoveNulls] = usePersistentState(
+    'utildock:json-formatter:nulls',
+    false,
+  );
   const [mode, setMode] = useState<Mode>('pretty');
 
   const [output, setOutput] = useState('');
   const [error, setError] = useState<JsonError | null>(null);
   const [stats, setStats] = useState<JsonStats | null>(null);
+  const [nullsRemoved, setNullsRemoved] = useState(0);
 
   const run = useJsonWorker('json-formatter');
   const debouncedInput = useDebounced(input, 180);
@@ -48,26 +52,29 @@ export default function JsonFormatter({
       setOutput('');
       setError(null);
       setStats(null);
+      setNullsRemoved(0);
       return;
     }
 
     const request =
       mode === 'pretty'
-        ? ({ op: 'format', text: debouncedInput, indent, sortKeys } as const)
-        : ({ op: 'minify', text: debouncedInput, sortKeys } as const);
+        ? ({ op: 'format', text: debouncedInput, indent, sortKeys, removeNulls } as const)
+        : ({ op: 'minify', text: debouncedInput, sortKeys, removeNulls } as const);
 
     void run(request).then((response) => {
       if (response.ok) {
         setOutput(response.output);
         setStats(response.stats);
+        setNullsRemoved(response.nullsRemoved);
         setError(null);
       } else {
         setOutput('');
         setStats(null);
+        setNullsRemoved(0);
         setError(response.error);
       }
     });
-  }, [debouncedInput, indent, sortKeys, mode, run]);
+  }, [debouncedInput, indent, sortKeys, removeNulls, mode, run]);
 
   const markers: Marker[] = useMemo(() => {
     if (!error) return [];
@@ -148,6 +155,9 @@ export default function JsonFormatter({
             <Toggle checked={sortKeys} onChange={setSortKeys} title={s.sortKeysTitle}>
               {s.sortKeys}
             </Toggle>
+            <Toggle checked={removeNulls} onChange={setRemoveNulls} title={c.removeNullsTitle}>
+              {c.removeNulls}
+            </Toggle>
             <div className="flex border border-scribe-strong">
               {(['pretty', 'minified'] as const).map((option, index) => (
                 <button
@@ -182,6 +192,9 @@ export default function JsonFormatter({
                   depth: stats.depth,
                 })}
               </span>
+            )}
+            {nullsRemoved > 0 && (
+              <span className="text-sound">{plural(lang, c.nullsRemoved, nullsRemoved)}</span>
             )}
             {output && input && (
               <span className="text-faint">

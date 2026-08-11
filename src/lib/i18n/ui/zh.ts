@@ -70,6 +70,8 @@ export const zh: UIStrings = {
 
   home: {
     title: '永不离开浏览器的免费 JSON 与 JWT 工具',
+    description:
+      '完全在浏览器中运行的免费开发者工具：JSON 格式化、查看、校验与比较，JWT 解码与编码，字数统计。无广告、无需注册、不上传任何内容。',
     headlineLead: '从不碰服务器的',
     headlineAccent: '开发者工具。',
     lede: '小而锋利的实用工具，完全在这个标签页里运行——免费、无广告、无需注册。JSON 的格式化工具、查看器、校验器和比较工具，再加上一个从不接触你的密钥就能验证签名的 JWT 解码器。',
@@ -79,14 +81,7 @@ export const zh: UIStrings = {
     keywords: ['开发者工具', 'json 工具', 'json 格式化 在线', '免费开发工具'],
   },
 
-  jsonHub: {
-    title: 'JSON 工具 — 免费、无广告、在浏览器中运行',
-    description:
-      '免费的在线 JSON 工具：查看器、校验器、比较和格式化。无广告、无需注册，你粘贴的内容不会离开浏览器。',
-    keywords: ['json 工具', 'json 在线工具', '免费 json 工具', 'json 实用工具'],
-    headlineLead: '所有 JSON 工具，',
-    headlineAccent: '都在一个标签页里。',
-    lede: '四个用于处理 JSON 的锋利工具——树状[查看器](/json/viewer)、语法与模式[校验器](/json/validator)、可视化[比较工具](/json/diff)，以及[格式化与压缩工具](/json/formatter)。全部免费、全部无广告，并且每一个都在这个标签页里解析你的文档，而不是在服务器上。',
+  hub: {
     chooseHeading: '选择一个工具',
     toolCount: p({ other: '{count} 个工具 · 还会更多' }),
     notes: [
@@ -98,13 +93,63 @@ export const zh: UIStrings = {
         head: '无广告、无账号、无限制',
         body: '没有插屏广告，不需要注册，也不限制你能粘贴多少内容。你打开的那个页面，就是工具本身。',
       },
-      {
-        head: '为大文档而生',
-        body: '解析、校验和比较都在工作线程中执行，因此几兆字节的文档也能处理，而不会在你输入时卡住页面。',
-      },
     ],
     closeLine: '在浏览器的「网络」面板里验证这个说法。',
     closeCta: '为什么是真的',
+
+    categories: {
+      json: {
+        title: 'JSON 工具 — 免费、无广告、在浏览器中运行',
+        description:
+          '免费的在线 JSON 工具：查看器、校验器、比较和格式化。无广告、无需注册，你粘贴的内容不会离开浏览器。',
+        keywords: ['json 工具', 'json 在线工具', '免费 json 工具', 'json 实用工具'],
+        headlineLead: '所有 JSON 工具，',
+        headlineAccent: '都在一个标签页里。',
+        lede: '四个用于处理 JSON 的锋利工具——树状[查看器](/json/viewer)、语法与模式[校验器](/json/validator)、可视化[比较工具](/json/diff)，以及[格式化与压缩工具](/json/formatter)。全部免费、全部无广告，并且每一个都在这个标签页里解析你的文档，而不是在服务器上。',
+        note: {
+          head: '为大文档而生',
+          body: '解析、校验和比较都在工作线程中执行，因此几兆字节的文档也能处理，而不会在你输入时卡住页面。',
+        },
+      },
+      jwt: {
+        title: 'JWT 工具 — 解码、验证与签名',
+        description:
+          '免费的在线 JWT 工具：解码令牌、验证签名，或生成并签名一个新令牌。你的令牌和密钥都不会离开浏览器。',
+        keywords: [
+          'jwt 工具',
+          'jwt 解码 在线',
+          'jwt 解码器 免费',
+          '验证 jwt 签名',
+          '生成 jwt 令牌 在线',
+        ],
+        headlineLead: '读懂令牌，',
+        headlineAccent: '验证签名。',
+        lede: '两个用于 JSON Web Token 的工具——[解码器](/jwt/decoder)会展示每一个 claim，并用你提供的密钥验证签名；[编码器](/jwt/encoder)则生成并签名一个全新的令牌。签名通过这个标签页里的 WebCrypto 完成，所以你粘贴的密钥永远不会被发送出去。',
+        note: {
+          head: '你的密钥不会离开这个标签页',
+          body: '签名和验证都通过浏览器自带的 WebCrypto 原语完成。密钥只保存在内存中，用过即弃——它是本站唯一刻意不保存的输入。',
+        },
+      },
+      text: {
+        title: '文本工具 — 统计字数并整理文字',
+        description:
+          '免费的在线文本工具：统计词数、字符数和句子数，或清理空格、大小写与标点。全部在你的浏览器中运行。',
+        keywords: [
+          '字数统计',
+          '在线字符统计',
+          '文本工具',
+          '在线文本格式化',
+          '删除多余空格',
+        ],
+        headlineLead: '先量一量文字，',
+        headlineAccent: '再把它整理好。',
+        lede: '两个处理文字的工具——[计数器](/text/counter)在你输入时给出词数、字符数、句子数和阅读时间；[格式化工具](/text/formatter)则按照你所用语言的排版惯例修正空格、大小写和标点。你粘贴的内容不会离开这个页面。',
+        note: {
+          head: '在任何文字系统中都准确',
+          body: '统计和格式化都遵循 Unicode 分词规则，因此日文会按词来计数而不是算作一个词，法文也会保留标点前的空格而不是把它删掉。',
+        },
+      },
+    },
   },
 
   notFound: {
@@ -256,6 +301,10 @@ export const zh: UIStrings = {
       validJson: '有效的 JSON',
       errorAt: '第 {line} 行，第 {column} 列 — {message}',
       stats: '对象 {objects} · 数组 {arrays} · 键 {keys} · 深度 {depth}',
+      removeNulls: '去掉 null',
+      removeNullsTitle:
+        '删除所有取值为 null 的对象属性。数组里的 null 保持原样——删掉一个会让后面的所有下标整体前移。',
+      nullsRemoved: p({ other: '去掉了 {count} 个 null' }),
     },
 
     formatter: {
@@ -327,54 +376,49 @@ export const zh: UIStrings = {
     },
 
     diff: {
-      originalTitle: '原始',
-      changedTitle: '变更后',
-      comparisonTitle: '比较',
-      originalLabel: '原始 JSON',
-      changedLabel: '变更后的 JSON',
-      originalPlaceholder: '{\n  "这是": "原始文档"\n}',
-      changedPlaceholder: '{\n  "这是": "用来比较的文档"\n}',
+      firstTitle: 'JSON 1',
+      secondTitle: 'JSON 2',
+      firstLabel: '第一份 JSON 文档',
+      secondLabel: '第二份 JSON 文档',
+      firstPlaceholder: '{\n  "粘贴": "第一份文档"\n}',
+      secondPlaceholder: '{\n  "粘贴": "第二份文档"\n}',
       swap: '交换',
-      swapTitle: '交换两侧',
-      hideInput: '隐藏输入',
-      editInput: '编辑输入',
-      hideTitle: '隐藏编辑器，把整页留给比较结果',
-      showTitle: '重新显示编辑器',
-      foldSame: '折叠相同行',
-      showAll: '显示全部',
-      showAllTitle: '显示每一行未变更的内容，而不是把它们折叠起来',
-      split: '并排',
-      stack: '堆叠',
-      splitTitle: '并排显示两份文档',
-      stackTitle: '把两份文档堆叠在一列中',
+      swapTitle: '交换左右两侧',
+      tidy: '整理',
+      tidyTitle: '用旁边的设置重新缩进两份文档',
+      tidyOne: '整理这份文档',
+      autoTidy: '粘贴时整理',
+      autoTidyTitle:
+        '文档被粘贴、拖入或载入时立即重新缩进。正在输入的内容永远不会被悄悄改写。',
+      foldSame: '折叠相同',
+      foldSameTitle: '把连续相同的多行折叠成一行',
+      showAll: '全部展开',
+      showAllTitle: '显示每一行相同的内容，而不是折叠起来',
       prev: '上一处差异',
       next: '下一处差异',
-      prevTitle: '上一处差异（Alt + ↑）',
-      nextTitle: '下一处差异（Alt + ↓）',
-      keyboardHint: 'Alt + ↑ / ↓ 可在差异之间跳转',
+      prevTitle: '上一处差异（Shift + F7）',
+      nextTitle: '下一处差异（F7）',
+      keyboardHint: 'F7 / Shift + F7 逐个查看差异',
+      applyRight: '复制到 JSON 2',
+      applyRightTitle: '把这一块复制到 JSON 2',
+      applyLeft: '复制到 JSON 1',
+      applyLeftTitle: '把这一块复制到 JSON 1',
       truncated: '比较已截断——文档非常大',
-      onlyOriginal: '仅在原始文档中',
-      onlyChanged: '仅在变更后文档中',
-      replaced: '已替换',
-      headerOriginal: '原始',
-      headerChanged: '变更后',
-      unifiedOriginal: '− 原始',
-      unifiedChanged: '+ 变更后',
-      idle: '在两侧各粘贴一份文档——或者按下**示例**，用一对在几个有意思的地方存在差异的文档试试看。',
-      sideError: '{side}文档的第 {line} 行有语法错误。修正它，比较就会运行。',
-      sideOriginal: '原始',
-      sideChanged: '变更后的',
-      comparing: '正在比较…',
-      identicalTitle: '两份文档是等价的',
+      onlyFirst: '仅在 JSON 1 中',
+      onlySecond: '仅在 JSON 2 中',
+      idle: '在两侧各粘贴一份文档——或者按下**示例**，用一对在几个有意思的地方存在差异的文档试试看。两侧都可以直接编辑，中间的箭头可以把一整块往任意一边复制。',
       identicalBody:
-        '每个值都匹配。键的顺序、缩进和空白上的差异都被忽略，因为它们都不会改变 JSON 的含义。',
-      identicalLines: p({ other: '{count} 行完全相同' }),
-      showIdentical: '显示这些完全相同的行',
-      jumpTo: '跳转到下一处「{kind}」差异',
+        '两份文档是等价的。每个值都一致，键的顺序、缩进和空白的差异会被忽略，因为它们都不改变这份 JSON 的含义。',
+      formattingOnly:
+        '同样的数据，写法不同——所有的值都一致，所以标出来的是格式或键的顺序。把两侧对齐即可消除。',
+      alignSides: '对齐',
+      alignSidesTitle:
+        '把两份文档的键排序并重新缩进，让标出来的只剩真正的差异',
+      tallyTitle: '无论格式如何，数据本身的{kind}',
       kinds: {
         added: '新增',
         removed: '删除',
-        changed: '变更',
+        changed: '修改',
         moved: '移动',
       },
     },

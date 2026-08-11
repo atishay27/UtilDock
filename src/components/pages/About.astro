@@ -3,8 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../Icon.astro';
 import Rich from '../Rich.astro';
 import { LIVE_TOOLS } from '../../lib/tools';
-import { href, localizedTools, t } from '../../lib/i18n';
-import { DEFAULT_LOCALE, type Locale } from '../../lib/i18n/locales';
+import { SITE, absoluteUrl } from '../../lib/site';
+import { breadcrumbNode, WEBSITE_ID } from '../../lib/seo';
+import { href, langTag, localizedTools, t } from '../../lib/i18n';
+import { DEFAULT_LOCALE, localizedPath, type Locale } from '../../lib/i18n/locales';
 
 interface Props {
   locale?: Locale;
@@ -13,11 +15,41 @@ interface Props {
 const { locale = DEFAULT_LOCALE } = Astro.props;
 const ui = t(locale);
 const tools = localizedTools(LIVE_TOOLS, locale);
+const url = absoluteUrl(localizedPath('/about', locale));
+
+const schema = [
+  {
+    '@type': 'AboutPage',
+    '@id': url,
+    name: `${ui.about.heading} — ${SITE.name}`,
+    url,
+    description: ui.about.description,
+    inLanguage: langTag(locale),
+    isPartOf: { '@id': WEBSITE_ID },
+  },
+  breadcrumbNode(
+    [
+      { name: ui.chrome.home, path: '/' },
+      { name: ui.about.heading, path: '/about' },
+    ],
+    locale,
+  ),
+];
 ---
 
-<BaseLayout title={ui.about.title} description={ui.about.description} locale={locale}>
+<BaseLayout
+  title={ui.about.title}
+  description={ui.about.description}
+  schema={schema}
+  locale={locale}
+>
   <article class="ud-prose mx-auto max-w-2xl px-4 py-14 sm:px-6">
-    <h1 class="text-[clamp(1.9rem,4.5vw,3rem)] text-chalk">{ui.about.heading}</h1>
+    <nav aria-label={ui.chrome.breadcrumb} class="ud-legend flex items-center gap-2">
+      <a href={href('/', locale)} class="transition-colors hover:text-chalk">{ui.chrome.home}</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{ui.about.heading}</span>
+    </nav>
+    <h1 class="mt-3 text-[clamp(1.9rem,4.5vw,3rem)] text-chalk">{ui.about.heading}</h1>
     <p class="mt-4 text-lg leading-relaxed text-temper">{ui.footer.tagline}</p>
 
     <div class="mt-10 space-y-8 text-sm leading-relaxed text-temper">

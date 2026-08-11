@@ -3,7 +3,7 @@ export const SITE = {
   tagline: 'Your dock for developer utilities.',
   url: 'https://utildock.dev',
   description:
-    'Free, ad-free developer utilities that run entirely in your browser: JSON viewer, validator, diff and formatter. No uploads, no accounts, no ads.',
+    'Free, ad-free developer utilities that run entirely in your browser: JSON formatter, viewer, validator and diff, JWT decoder and encoder, word counter and text formatter. No uploads, no accounts, no ads.',
 } as const;
 
 /**

@@ -69,6 +69,8 @@ export const ptbr: UIStrings = {
 
   home: {
     title: 'Ferramentas JSON e JWT grátis no seu navegador',
+    description:
+      'Ferramentas gratuitas para desenvolvedores que rodam inteiramente no navegador: formatador, visualizador, validador e comparador JSON, decodificador e codificador JWT, contador de palavras. Sem anúncios nem cadastro.',
     headlineLead: 'Ferramentas que nunca',
     headlineAccent: 'tocam um servidor.',
     lede: 'Utilitários pequenos e afiados que rodam inteiramente nesta aba — grátis, sem anúncios e sem cadastro. Um formatador, um visualizador, um validador e um comparador de JSON, e um decodificador de JWT que verifica assinaturas sem nunca ver sua chave.',
@@ -83,19 +85,7 @@ export const ptbr: UIStrings = {
     ],
   },
 
-  jsonHub: {
-    title: 'Ferramentas JSON grátis, sem anúncios',
-    description:
-      'Ferramentas JSON gratuitas: visualizador, validador, comparador e formatador. Sem anúncios nem cadastro, nada do que você cola sai do navegador.',
-    keywords: [
-      'ferramentas json',
-      'ferramentas json online',
-      'ferramentas json grátis',
-      'utilitários json',
-    ],
-    headlineLead: 'Todas as ferramentas JSON,',
-    headlineAccent: 'em uma aba.',
-    lede: 'Quatro ferramentas afiadas para trabalhar com JSON — um [visualizador](/json/viewer) em árvore, um [validador](/json/validator) de sintaxe e esquema, um [comparador](/json/diff) visual e um [formatador e minificador](/json/formatter). Todas grátis, todas sem anúncios, e cada uma analisa seu documento nesta aba em vez de num servidor.',
+  hub: {
     chooseHeading: 'Escolha uma ferramenta',
     toolCount: p({ one: '{count} ferramenta · vêm mais', other: '{count} ferramentas · vêm mais' }),
     notes: [
@@ -107,13 +97,68 @@ export const ptbr: UIStrings = {
         head: 'Sem anúncios, sem conta, sem limite',
         body: 'Sem interstitials, sem cadastro e sem teto para quanto você pode colar. A página em que você cai é a ferramenta.',
       },
-      {
-        head: 'Feitas para documentos grandes',
-        body: 'A análise, a validação e a comparação rodam em uma thread de trabalho, então um documento de vários megabytes é processado sem a página travar enquanto você digita.',
-      },
     ],
     closeLine: 'Confira a afirmação no seu painel de Rede.',
     closeCta: 'Por que isso é verdade',
+
+    categories: {
+      json: {
+        title: 'Ferramentas JSON grátis, sem anúncios',
+        description:
+          'Ferramentas JSON gratuitas: visualizador, validador, comparador e formatador. Sem anúncios nem cadastro, nada do que você cola sai do navegador.',
+        keywords: [
+          'ferramentas json',
+          'ferramentas json online',
+          'ferramentas json grátis',
+          'utilitários json',
+        ],
+        headlineLead: 'Todas as ferramentas JSON,',
+        headlineAccent: 'em uma aba.',
+        lede: 'Quatro ferramentas afiadas para trabalhar com JSON — um [visualizador](/json/viewer) em árvore, um [validador](/json/validator) de sintaxe e esquema, um [comparador](/json/diff) visual e um [formatador e minificador](/json/formatter). Todas grátis, todas sem anúncios, e cada uma analisa seu documento nesta aba em vez de num servidor.',
+        note: {
+          head: 'Feitas para documentos grandes',
+          body: 'A análise, a validação e a comparação rodam em uma thread de trabalho, então um documento de vários megabytes é processado sem a página travar enquanto você digita.',
+        },
+      },
+      jwt: {
+        title: 'Ferramentas JWT — decodificar e assinar',
+        description:
+          'Ferramentas JWT gratuitas online: decodifique um token, verifique a assinatura ou monte e assine um novo. Seu token e sua chave não saem do navegador.',
+        keywords: [
+          'ferramentas jwt',
+          'decodificar jwt online',
+          'jwt decoder online grátis',
+          'verificar assinatura jwt',
+          'gerar token jwt online',
+        ],
+        headlineLead: 'Leia o token.',
+        headlineAccent: 'Confie na assinatura.',
+        lede: 'Duas ferramentas para JSON Web Tokens — um [decodificador](/jwt/decoder) que mostra cada claim e confere a assinatura contra uma chave que você fornece, e um [codificador](/jwt/encoder) que monta e assina um token novo. A assinatura roda com WebCrypto nesta aba, então o segredo que você cola nunca é transmitido.',
+        note: {
+          head: 'Sua chave nunca sai da aba',
+          body: 'A assinatura e a verificação usam WebCrypto, a primitiva do próprio navegador. A chave fica na memória, é usada e descartada — é a única entrada deste site que deliberadamente não é salva.',
+        },
+      },
+      text: {
+        title: 'Ferramentas de texto — contar e limpar',
+        description:
+          'Ferramentas de texto gratuitas online: conte palavras, caracteres e frases, ou limpe espaços, maiúsculas e pontuação. Tudo roda no seu navegador.',
+        keywords: [
+          'contador de palavras online',
+          'contar caracteres online',
+          'ferramentas de texto',
+          'formatar texto online',
+          'remover espaços extras',
+        ],
+        headlineLead: 'Meça o texto,',
+        headlineAccent: 'depois arrume.',
+        lede: 'Duas ferramentas para prosa — um [contador](/text/counter) que informa palavras, caracteres, frases e tempo de leitura enquanto você digita, e um [formatador](/text/formatter) que ajusta espaços, caixa e pontuação às convenções da língua em que você trabalha. Nada do que você cola sai da página.',
+        note: {
+          head: 'Correto em qualquer escrita',
+          body: 'A contagem e a formatação seguem a segmentação Unicode, então o japonês é contado pelas suas palavras em vez de virar uma só, e o francês mantém o espaço antes da pontuação em vez de perdê-lo.',
+        },
+      },
+    },
   },
 
   notFound: {
@@ -265,6 +310,10 @@ export const ptbr: UIStrings = {
       validJson: 'JSON válido',
       errorAt: 'Linha {line}, coluna {column} — {message}',
       stats: '{objects} objetos · {arrays} arrays · {keys} chaves · profundidade {depth}',
+      removeNulls: 'Remover nulos',
+      removeNullsTitle:
+        'Remove toda propriedade de objeto cujo valor seja null. Os null dentro de arrays ficam onde estão — tirar um deslocaria todos os índices seguintes.',
+      nullsRemoved: p({ one: '{count} nulo removido', other: '{count} nulos removidos' }),
     },
 
     formatter: {
@@ -343,54 +392,45 @@ export const ptbr: UIStrings = {
     },
 
     diff: {
-      originalTitle: 'Original',
-      changedTitle: 'Modificado',
-      comparisonTitle: 'Comparação',
-      originalLabel: 'JSON original',
-      changedLabel: 'JSON modificado',
-      originalPlaceholder: '{\n  "o": "documento original"\n}',
-      changedPlaceholder: '{\n  "o": "documento para comparar"\n}',
+      firstTitle: 'JSON 1',
+      secondTitle: 'JSON 2',
+      firstLabel: 'Primeiro documento JSON',
+      secondLabel: 'Segundo documento JSON',
+      firstPlaceholder: '{\n  "cole": "o primeiro documento"\n}',
+      secondPlaceholder: '{\n  "cole": "o segundo documento"\n}',
       swap: 'Trocar',
       swapTitle: 'Trocar os dois lados',
-      hideInput: 'Ocultar entrada',
-      editInput: 'Editar entrada',
-      hideTitle: 'Ocultar os editores e dar a página à comparação',
-      showTitle: 'Mostrar os editores de novo',
-      foldSame: 'Recolher iguais',
+      tidy: 'Arrumar',
+      tidyTitle: 'Reindentar os dois documentos com os ajustes ao lado',
+      tidyOne: 'Arrumar este documento',
+      autoTidy: 'Arrumar ao colar',
+      autoTidyTitle:
+        'Reindenta um documento assim que ele é colado, solto ou carregado. O que você digita nunca é reformatado por baixo.',
+      foldSame: 'Dobrar iguais',
+      foldSameTitle: 'Dobrar sequências longas de linhas idênticas em uma única linha',
       showAll: 'Mostrar tudo',
-      showAllTitle: 'Mostrar todas as linhas sem mudança em vez de recolhê-las',
-      split: 'Lado a lado',
-      stack: 'Empilhar',
-      splitTitle: 'Mostrar os dois documentos lado a lado',
-      stackTitle: 'Empilhar os dois documentos em uma coluna',
+      showAllTitle: 'Mostrar cada linha idêntica em vez de dobrá-las',
       prev: 'Diferença anterior',
       next: 'Próxima diferença',
-      prevTitle: 'Diferença anterior (Alt + ↑)',
-      nextTitle: 'Próxima diferença (Alt + ↓)',
-      keyboardHint: 'Alt + ↑ / ↓ percorre as diferenças',
+      prevTitle: 'Diferença anterior (Shift + F7)',
+      nextTitle: 'Próxima diferença (F7)',
+      keyboardHint: 'F7 / Shift + F7 percorre as diferenças',
+      applyRight: 'Copiar para JSON 2',
+      applyRightTitle: 'Copiar este bloco para JSON 2',
+      applyLeft: 'Copiar para JSON 1',
+      applyLeftTitle: 'Copiar este bloco para JSON 1',
       truncated: 'Comparação truncada — os documentos são muito grandes',
-      onlyOriginal: 'só no original',
-      onlyChanged: 'só no modificado',
-      replaced: 'substituído',
-      headerOriginal: 'Original',
-      headerChanged: 'Modificado',
-      unifiedOriginal: '− original',
-      unifiedChanged: '+ modificado',
-      idle: 'Cole um documento de cada lado — ou aperte **Exemplo** para testar com um par que difere de algumas formas interessantes.',
-      sideError:
-        'O documento {side} tem um erro de sintaxe na linha {line}. Corrija e a comparação vai rodar.',
-      sideOriginal: 'original',
-      sideChanged: 'modificado',
-      comparing: 'Comparando…',
-      identicalTitle: 'Os dois documentos são equivalentes',
+      onlyFirst: 'só no JSON 1',
+      onlySecond: 'só no JSON 2',
+      idle: 'Cole um documento de cada lado — ou aperte **Exemplo** para testar com um par que difere de algumas formas interessantes. Os dois lados continuam editáveis, e as setas do meio copiam um bloco nos dois sentidos.',
       identicalBody:
-        'Todos os valores coincidem. Diferenças de ordem de chaves, indentação e espaços em branco são ignoradas, já que nenhuma delas muda o que o JSON significa.',
-      identicalLines: p({
-        one: '{count} linha idêntica',
-        other: '{count} linhas idênticas',
-      }),
-      showIdentical: 'Mostrar estas linhas idênticas',
-      jumpTo: 'Ir para a próxima diferença do tipo “{kind}”',
+        'Os dois documentos são equivalentes. Todos os valores batem, e diferenças de ordem das chaves, indentação e espaços são ignoradas porque nenhuma delas muda o que o JSON significa.',
+      formattingOnly:
+        'Os mesmos dados, escritos de outro jeito — todos os valores batem, então o que está marcado é formatação ou ordem das chaves. Alinhe os dois lados para limpar.',
+      alignSides: 'Alinhar',
+      alignSidesTitle:
+        'Ordenar as chaves dos dois documentos e reindentá-los, para que só sobrem marcadas as diferenças reais',
+      tallyTitle: '{kind} nos dados em si, diga o que disser a formatação',
       kinds: {
         added: 'adicionado',
         removed: 'removido',

@@ -1,18 +1,12 @@
 /**
- * The JWA algorithm table, and the byte plumbing that surrounds it.
+ * The JWA algorithm table, and the byte plumbing around it.
  *
- * This was private to `verify.ts` until there was a second tool that had to
- * agree with it. Signing and verifying must never disagree about what `PS384`
- * means — the salt length, the curve, the hash — so the table is stated once
- * and both sides import it. Two copies would be two chances to drift, and the
- * failure that produces is a token that this site mints and this site then
- * refuses, which is the worst possible bug for a pair of tools sitting one
- * click apart.
+ * Stated once and imported by both `encode.ts` and `verify.ts`: if the two ever
+ * disagreed about what `PS384` means — salt length, curve, hash — this site
+ * would mint tokens it then refuses.
  *
- * Everything here maps onto a WebCrypto primitive every current browser
- * implements. An algorithm absent from the table is reported as unsupported
- * rather than approximated: a signature that is nearly right is worse than one
- * that declines to answer.
+ * Everything here maps onto a WebCrypto primitive. An algorithm absent from the
+ * table is reported unsupported rather than approximated.
  */
 
 export type Family = 'HMAC' | 'RSASSA-PKCS1-v1_5' | 'RSA-PSS' | 'ECDSA';

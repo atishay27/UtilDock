@@ -3,7 +3,8 @@ import BaseLayout from './BaseLayout.astro';
 import Rich from '../components/Rich.astro';
 import { SITE, absoluteUrl } from '../lib/site';
 import { getCategory, getTool, relatedTools, splitName } from '../lib/tools';
-import { href, localizedCategory, localizedTool, localizedTools, t } from '../lib/i18n';
+import { breadcrumbNode, ORGANIZATION_ID, WEBSITE_ID } from '../lib/seo';
+import { href, langTag, localizedCategory, localizedTool, localizedTools, t } from '../lib/i18n';
 import { DEFAULT_LOCALE, localizedPath, type Locale } from '../lib/i18n/locales';
 import { fill } from '../lib/i18n/format';
 import Icon from '../components/Icon.astro';
@@ -19,82 +20,63 @@ const tool = localizedTool(getTool(toolId), locale);
 const category = localizedCategory(getCategory(tool.category), locale);
 const related = localizedTools(relatedTools(tool.id), locale);
 
-/* Structured data has to nominate the page it is actually on: a Spanish page
-   describing itself with the English URL merges the two in the index and the
-   translated one stops being a result of its own. */
+/* The localised URL, not the English one: a Spanish page that names the English
+   address merges the two in the index and stops being a result of its own. */
 const url = absoluteUrl(localizedPath(tool.href, locale));
-const categoryUrl = category.href ? absoluteUrl(localizedPath(category.href, locale)) : undefined;
 const name = splitName(tool);
 const faqs = tool.faqs ?? [];
 const about = ui.toolAbout[tool.id as keyof typeof ui.toolAbout];
 
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'SoftwareApplication',
-      name: `${tool.name} — ${SITE.name}`,
-      url,
-      applicationCategory: 'DeveloperApplication',
-      applicationSubCategory: 'Online tool',
-      operatingSystem: 'Any',
-      description: tool.description,
-      browserRequirements: 'Requires JavaScript',
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      isAccessibleForFree: true,
-      featureList: tool.keywords,
-      publisher: { '@id': `${SITE.url}/#organization` },
-    },
-    {
-      '@type': 'BreadcrumbList',
-      itemListElement: [
+const schema = [
+  {
+    '@type': 'SoftwareApplication',
+    name: `${tool.name} — ${SITE.name}`,
+    url,
+    applicationCategory: 'DeveloperApplication',
+    applicationSubCategory: 'Online tool',
+    operatingSystem: 'Any',
+    description: tool.description,
+    inLanguage: langTag(locale),
+    browserRequirements: 'Requires JavaScript',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    isAccessibleForFree: true,
+    featureList: tool.keywords,
+    publisher: { '@id': ORGANIZATION_ID },
+    isPartOf: { '@id': WEBSITE_ID },
+  },
+  breadcrumbNode(
+    [
+      { name: ui.chrome.home, path: '/' },
+      ...(category.href ? [{ name: category.name, path: category.href }] : []),
+      { name: tool.name, path: tool.href },
+    ],
+    locale,
+  ),
+  ...(faqs.length > 0
+    ? [
         {
-          '@type': 'ListItem',
-          position: 1,
-          name: ui.chrome.home,
-          item: absoluteUrl(localizedPath('/', locale)),
+          '@type': 'FAQPage',
+          inLanguage: langTag(locale),
+          mainEntity: faqs.map((faq) => ({
+            '@type': 'Question',
+            name: faq.q,
+            acceptedAnswer: { '@type': 'Answer', text: faq.a },
+          })),
         },
-        ...(categoryUrl
-          ? [{ '@type': 'ListItem', position: 2, name: category.name, item: categoryUrl }]
-          : []),
-        {
-          '@type': 'ListItem',
-          position: categoryUrl ? 3 : 2,
-          name: tool.name,
-          item: url,
-        },
-      ],
-    },
-    ...(faqs.length > 0
-      ? [
-          {
-            '@type': 'FAQPage',
-            mainEntity: faqs.map((faq) => ({
-              '@type': 'Question',
-              name: faq.q,
-              acceptedAnswer: { '@type': 'Answer', text: faq.a },
-            })),
-          },
-        ]
-      : []),
-  ],
-};
+      ]
+    : []),
+];
 ---
 
 <BaseLayout
   title={tool.title}
   description={tool.description}
   keywords={tool.keywords}
-  structuredData={structuredData}
+  schema={schema}
   locale={locale}
 >
   <div class="mx-auto max-w-[1600px] px-4 pt-5 pb-10 sm:px-6">
-    {/* The workpiece plate: name, and what this station does.
-
-        It opened with a large tabular numeral, which was the tool's position in
-        the registry array and nothing else — no rank, no sequence, no step. On
-        a page dedicated to one tool it answered a question nobody had, and it
-        set the plate's alignment against a figure that carried no meaning. */}
+    {/* The workpiece plate: name, and what this station does. */}
     <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-scribe-strong pb-4">
       <div>
         <nav aria-label={ui.chrome.breadcrumb} class="ud-legend flex items-center gap-2">
@@ -109,6 +91,9 @@ const structuredData = {
               <span>{category.name}</span>
             )
           }
+          {/* The leaf is shown so the trail matches the BreadcrumbList exactly. */}
+          <span aria-hidden="true">/</span>
+          <span aria-current="page" class="text-chalk">{tool.name}</span>
         </nav>
         {/* The category stays in the h1 — quieter, but there for anyone searching it. */}
         <h1 class="mt-1 text-[clamp(1.9rem,4.5vw,3rem)] text-chalk">
@@ -132,10 +117,8 @@ const structuredData = {
         </h2>
         <p class="mt-4 text-sm leading-relaxed text-temper">{tool.overview ?? tool.description}</p>
 
-        {/* The per-tool prose used to be a slot filled by each page. It is
-            indexable copy, so it has to translate like everything else, and a
-            slot cannot carry eight versions of itself — it lives in the
-            dictionary now and every tool page gets it from the same place. */}
+        {/* Indexable copy, so it translates like everything else and lives in
+            the dictionary rather than in a per-page slot. */}
         {
           about && (
             <div class="mt-4 space-y-4 text-sm leading-relaxed text-temper">
@@ -164,8 +147,7 @@ const structuredData = {
                       <span class="text-faint">{splitName(item).prefix}</span>{' '}
                       {splitName(item).rest}
                     </span>
-                    {/* The arrow says "link"; the numeral it replaced said only
-                        where this tool happened to sit in an array. */}
+                    {/* The arrow says "link". */}
                     <Icon
                       name="arrow-right"
                       size={13}

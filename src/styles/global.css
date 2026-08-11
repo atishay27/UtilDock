@@ -366,6 +366,107 @@
   }
 }
 
+/* The side-by-side merge editor.
+
+   Two things about this block are deliberate and neither is decoration.
+
+   `.cm-mergeView` and the revert column sit *outside* either editor's DOM, so
+   an `EditorView.theme` cannot reach them — everything inside the two editors
+   is themed from `editorTheme.ts` as usual, and only the frame around them
+   lives here.
+
+   And it is **unlayered on purpose**. `@codemirror/merge` injects its own
+   rules at runtime through a StyleModule, which lands outside every cascade
+   layer, and unlayered styles beat layered ones however specific the layered
+   one is. Move this into `@layer components` and the seam silently reverts to
+   the package's 1.6em of grey. */
+.ud-merge .cm-mergeView {
+  height: 100%;
+  overflow: auto;
+}
+
+.ud-merge .cm-mergeViewEditors {
+  min-height: 100%;
+}
+
+/* The seam between the two documents. It lands at exactly 50% of the frame —
+   which is what lets the header above it split on a plain `grid-cols-2` and
+   still line up with the divide. */
+.ud-merge .cm-merge-revert {
+  width: 3.1rem;
+  background: var(--fg-bench);
+  border-inline: 1px solid var(--fg-scribe);
+}
+
+/* A pair of controls per changed block, one per direction. The package
+   positions this wrapper with an inline `top` and nothing else, so the
+   absolute placement is ours; the buttons inside must undo the package's
+   own `position: absolute`, which was written for the single button it
+   expected to find here. */
+.ud-merge .cm-merge-revert .ud-apply {
+  position: absolute;
+  left: 0;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 1px;
+}
+
+.ud-merge .cm-merge-revert .ud-apply button {
+  position: static;
+  display: grid;
+  width: auto;
+  place-items: center;
+  height: 1.3rem;
+  padding-inline: 4px;
+  color: var(--fg-faint);
+  border: 1px solid transparent;
+  transition:
+    color 0.12s ease-out,
+    border-color 0.12s ease-out,
+    background-color 0.12s ease-out;
+}
+
+.ud-merge .cm-merge-revert .ud-apply button:hover {
+  color: var(--fg-cherry);
+  border-color: var(--fg-scribe-strong);
+  background: var(--fg-anvil-lit);
+}
+
+.ud-merge .cm-merge-revert .ud-apply button:focus-visible {
+  outline: 2px solid var(--fg-cherry);
+  outline-offset: -2px;
+}
+
+/* On a phone each pane is barely a hundred pixels of text, and the gutters
+   were taking a third of it. The fold arrows go — a wrapped, folded, half-width
+   column is not a thing anyone reads — and the line numbers give back
+   everything they can without losing their alignment. */
+@media (max-width: 640px) {
+  /* `!important` because CodeMirror's own base theme declares
+     `.cm-gutter { display: flex !important }`, and nothing but this answers
+     it. */
+  .ud-merge .cm-foldGutter {
+    display: none !important;
+  }
+
+  .ud-merge .cm-lineNumbers .cm-gutterElement {
+    padding: 0 5px;
+    min-width: 1.6em;
+  }
+
+  /* The seam still has to hold two tappable controls, so it narrows rather
+     than stacking them — a vertical pair would be ambiguous about which of
+     the two is "into JSON 1". */
+  .ud-merge .cm-merge-revert {
+    width: 2.5rem;
+  }
+
+  .ud-merge .cm-merge-revert .ud-apply button {
+    padding-inline: 1px;
+  }
+}
+
 @layer components {
   /* Reading pages: the display voice keeps the page title, but body headings
      return to the sans face. Comprehension outranks the world in Read mode. */

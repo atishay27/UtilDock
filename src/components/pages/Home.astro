@@ -4,7 +4,8 @@ import ToolRow from '../ToolRow.astro';
 import Icon from '../Icon.astro';
 import { LIVE_TOOLS, populatedCategories } from '../../lib/tools';
 import { SITE, absoluteUrl } from '../../lib/site';
-import { href, localizedCategory, localizedTools, t } from '../../lib/i18n';
+import { itemListNode, WEBSITE_ID } from '../../lib/seo';
+import { href, langTag, localizedCategory, localizedTools, t } from '../../lib/i18n';
 import { DEFAULT_LOCALE, localizedPath, type Locale } from '../../lib/i18n/locales';
 import { fill } from '../../lib/i18n/format';
 
@@ -16,40 +17,26 @@ const { locale = DEFAULT_LOCALE } = Astro.props;
 const ui = t(locale);
 const home = absoluteUrl(localizedPath('/', locale));
 
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'WebSite',
-      '@id': `${SITE.url}/#website`,
-      name: SITE.name,
-      alternateName: ui.footer.tagline,
-      url: home,
-      description: ui.jsonHub.description,
-      inLanguage: locale,
-      publisher: { '@id': `${SITE.url}/#organization` },
-    },
-    {
-      '@type': 'Organization',
-      '@id': `${SITE.url}/#organization`,
-      name: SITE.name,
-      url: absoluteUrl('/'),
-      logo: new URL('/icon-512.png', SITE.url).href,
-      description: ui.jsonHub.description,
-    },
-    {
-      '@type': 'ItemList',
-      name: `Tools on ${SITE.name}`,
-      itemListElement: localizedTools(LIVE_TOOLS, locale).map((tool, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        name: tool.name,
-        description: tool.tagline,
-        url: absoluteUrl(localizedPath(tool.href, locale)),
-      })),
-    },
-  ],
-};
+const schema = [
+  {
+    '@type': 'CollectionPage',
+    '@id': home,
+    name: `${SITE.name} — ${SITE.tagline}`,
+    url: home,
+    description: ui.home.description,
+    inLanguage: langTag(locale),
+    isPartOf: { '@id': WEBSITE_ID },
+  },
+  itemListNode(
+    `Tools on ${SITE.name}`,
+    localizedTools(LIVE_TOOLS, locale).map((tool) => ({
+      name: tool.name,
+      description: tool.tagline,
+      href: tool.href,
+    })),
+    locale,
+  ),
+];
 
 /**
  * The hero size follows the headline's length.
@@ -75,9 +62,9 @@ const groups = populatedCategories().map((group) => ({
 
 <BaseLayout
   title={ui.home.title}
-  description={ui.jsonHub.description}
+  description={ui.home.description}
   keywords={ui.home.keywords}
-  structuredData={structuredData}
+  schema={schema}
   locale={locale}
 >
   {/* FIRST VIEWPORT ---------------------------------------------------- */}

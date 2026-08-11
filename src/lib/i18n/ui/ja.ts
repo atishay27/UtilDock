@@ -74,6 +74,8 @@ export const ja: UIStrings = {
 
   home: {
     title: 'ブラウザから出ない無料の JSON・JWT ツール',
+    description:
+      'ブラウザ内だけで動く無料の開発者ツール：JSON フォーマッター・ビューア・バリデーター・差分、JWT デコーダーとエンコーダー、文字数カウント。広告なし、登録不要、アップロードなし。',
     headlineLead: 'サーバーに触れない',
     headlineAccent: '開発者ツール。',
     lede: 'このタブ内だけで完結する、小さく切れ味のよいユーティリティ。無料、広告なし、登録不要です。JSON のフォーマッター、ビューア、バリデーター、比較ツールに加えて、鍵を一切見ることなく署名を検証する JWT デコーダーも。',
@@ -83,14 +85,7 @@ export const ja: UIStrings = {
     keywords: ['開発者ツール', 'json ツール', 'json 整形 オンライン', '無料 開発ツール'],
   },
 
-  jsonHub: {
-    title: 'JSON ツール — 無料・広告なし・ブラウザ内で動作',
-    description:
-      '無料のオンライン JSON ツール：ビューア、バリデーター、比較、フォーマッター。広告なし、登録不要、貼り付けた内容がブラウザから出ることはありません。',
-    keywords: ['json ツール', 'json ツール オンライン', '無料 json ツール', 'json ユーティリティ'],
-    headlineLead: 'JSON ツールのすべてを、',
-    headlineAccent: 'ひとつのタブに。',
-    lede: 'JSON を扱うための切れ味のよい 4 つのツール — ツリー[ビューア](/json/viewer)、構文とスキーマの[バリデーター](/json/validator)、視覚的な[比較ツール](/json/diff)、そして[フォーマッターとミニファイア](/json/formatter)。すべて無料、すべて広告なし。どれもサーバーではなくこのタブ内であなたのドキュメントを解析します。',
+  hub: {
     chooseHeading: 'ツールを選ぶ',
     toolCount: p({ other: '{count} 個のツール · 順次追加' }),
     notes: [
@@ -102,13 +97,63 @@ export const ja: UIStrings = {
         head: '広告なし、アカウントなし、制限なし',
         body: 'インタースティシャルも登録もなく、貼り付けられる量に上限もありません。たどり着いたページが、そのままツールです。',
       },
-      {
-        head: '大きなドキュメント向けに作られています',
-        body: '解析・検証・比較はワーカースレッドで実行されるため、数メガバイトのドキュメントでも入力中にページが固まることなく処理されます。',
-      },
     ],
     closeLine: 'ネットワークパネルでこの主張を確かめてください。',
     closeCta: 'なぜそう言えるのか',
+
+    categories: {
+      json: {
+        title: 'JSON ツール — 無料・広告なし・ブラウザ内で動作',
+        description:
+          '無料のオンライン JSON ツール：ビューア、バリデーター、比較、フォーマッター。広告なし、登録不要、貼り付けた内容がブラウザから出ることはありません。',
+        keywords: ['json ツール', 'json ツール オンライン', '無料 json ツール', 'json ユーティリティ'],
+        headlineLead: 'JSON ツールのすべてを、',
+        headlineAccent: 'ひとつのタブに。',
+        lede: 'JSON を扱うための切れ味のよい 4 つのツール — ツリー[ビューア](/json/viewer)、構文とスキーマの[バリデーター](/json/validator)、視覚的な[比較ツール](/json/diff)、そして[フォーマッターとミニファイア](/json/formatter)。すべて無料、すべて広告なし。どれもサーバーではなくこのタブ内であなたのドキュメントを解析します。',
+        note: {
+          head: '大きなドキュメント向けに作られています',
+          body: '解析・検証・比較はワーカースレッドで実行されるため、数メガバイトのドキュメントでも入力中にページが固まることなく処理されます。',
+        },
+      },
+      jwt: {
+        title: 'JWT ツール — デコード・検証・署名',
+        description:
+          '無料のオンライン JWT ツール：トークンをデコードし、署名を検証し、新しいトークンを作成して署名します。トークンも鍵もブラウザから出ません。',
+        keywords: [
+          'jwt ツール',
+          'jwt デコード オンライン',
+          'jwt デコーダー 無料',
+          'jwt 署名 検証',
+          'jwt トークン 生成',
+        ],
+        headlineLead: 'トークンを読み、',
+        headlineAccent: '署名を確かめる。',
+        lede: 'JSON Web Token のための 2 つのツール — すべてのクレームを表示し、あなたが指定した鍵で署名を検証する[デコーダー](/jwt/decoder)と、新しいトークンを作成して署名する[エンコーダー](/jwt/encoder)。署名はこのタブ内の WebCrypto で行われるため、貼り付けた秘密鍵が送信されることはありません。',
+        note: {
+          head: '鍵はタブの外に出ません',
+          body: '署名も検証もブラウザ自身のプリミティブである WebCrypto で行われます。鍵はメモリ上に置かれ、使われ、破棄されます。このサイトで意図的に保存しない唯一の入力です。',
+        },
+      },
+      text: {
+        title: 'テキストツール — 文字数を数えて整える',
+        description:
+          '無料のオンラインテキストツール：単語・文字・文の数を数え、空白や大文字小文字、句読点を整えます。すべてブラウザ内で動作します。',
+        keywords: [
+          '文字数カウント',
+          '単語数 カウント オンライン',
+          'テキストツール',
+          'テキスト整形 オンライン',
+          '余分な空白 削除',
+        ],
+        headlineLead: '文章を測って、',
+        headlineAccent: 'それから整える。',
+        lede: '文章のための 2 つのツール — 入力しながら単語数・文字数・文の数・読了時間を表示する[カウンター](/text/counter)と、作業中の言語の慣習に合わせて空白・大文字小文字・句読点を直す[フォーマッター](/text/formatter)。貼り付けた内容がページの外に出ることはありません。',
+        note: {
+          head: 'どの文字体系でも正しく',
+          body: 'カウントも整形も Unicode のセグメンテーションに従うため、日本語は 1 語ではなく語ごとに数えられ、フランス語は句読点の前の空白を失わずに保ちます。',
+        },
+      },
+    },
   },
 
   notFound: {
@@ -261,6 +306,10 @@ export const ja: UIStrings = {
       errorAt: '{line} 行 {column} 列 — {message}',
       stats:
         'オブジェクト {objects} · 配列 {arrays} · キー {keys} · 深さ {depth}',
+      removeNulls: 'null を除去',
+      removeNullsTitle:
+        '値が null のオブジェクトのプロパティをすべて削除します。配列の中の null はそのままにします — 取り除くと以降の添字がすべてずれてしまうためです。',
+      nullsRemoved: p({ other: 'null を {count} 件除去' }),
     },
 
     formatter: {
@@ -333,51 +382,45 @@ export const ja: UIStrings = {
     },
 
     diff: {
-      originalTitle: '変更前',
-      changedTitle: '変更後',
-      comparisonTitle: '比較',
-      originalLabel: '変更前の JSON',
-      changedLabel: '変更後の JSON',
-      originalPlaceholder: '{\n  "これは": "変更前のドキュメント"\n}',
-      changedPlaceholder: '{\n  "これは": "比較対象のドキュメント"\n}',
+      firstTitle: 'JSON 1',
+      secondTitle: 'JSON 2',
+      firstLabel: '1 つ目の JSON ドキュメント',
+      secondLabel: '2 つ目の JSON ドキュメント',
+      firstPlaceholder: '{\n  "ここに": "1 つ目のドキュメント"\n}',
+      secondPlaceholder: '{\n  "ここに": "2 つ目のドキュメント"\n}',
       swap: '入れ替え',
       swapTitle: '左右を入れ替える',
-      hideInput: '入力を隠す',
-      editInput: '入力を編集',
-      hideTitle: 'エディターを隠して比較にページ全体を使う',
-      showTitle: 'エディターを再表示する',
-      foldSame: '同一行を畳む',
+      tidy: '整形',
+      tidyTitle: '隣の設定で両方のドキュメントを整形し直す',
+      tidyOne: 'このドキュメントを整形',
+      autoTidy: '貼り付け時に整形',
+      autoTidyTitle:
+        '貼り付け・ドロップ・読み込みで届いたドキュメントをその場で整形します。入力中の文字が勝手に整形されることはありません。',
+      foldSame: '同じ行を畳む',
+      foldSameTitle: '同一の行が長く続く箇所を 1 行に畳む',
       showAll: 'すべて表示',
-      showAllTitle: '変更のない行を畳まずにすべて表示する',
-      split: '左右',
-      stack: '縦積み',
-      splitTitle: '2 つのドキュメントを左右に並べて表示する',
-      stackTitle: '2 つのドキュメントを 1 列に積み重ねる',
+      showAllTitle: '同一の行も畳まずにすべて表示する',
       prev: '前の差分',
       next: '次の差分',
-      prevTitle: '前の差分（Alt + ↑）',
-      nextTitle: '次の差分（Alt + ↓）',
-      keyboardHint: 'Alt + ↑ / ↓ で差分をたどれます',
+      prevTitle: '前の差分（Shift + F7）',
+      nextTitle: '次の差分（F7）',
+      keyboardHint: 'F7 / Shift + F7 で差分をたどれます',
+      applyRight: 'JSON 2 へコピー',
+      applyRightTitle: 'このブロックを JSON 2 へコピー',
+      applyLeft: 'JSON 1 へコピー',
+      applyLeftTitle: 'このブロックを JSON 1 へコピー',
       truncated: '比較を打ち切りました — ドキュメントが非常に大きいためです',
-      onlyOriginal: '変更前のみ',
-      onlyChanged: '変更後のみ',
-      replaced: '置換',
-      headerOriginal: '変更前',
-      headerChanged: '変更後',
-      unifiedOriginal: '− 変更前',
-      unifiedChanged: '+ 変更後',
-      idle: '左右それぞれにドキュメントを貼り付けてください。**サンプル**を押すと、いくつか興味深い違いのあるペアで試せます。',
-      sideError:
-        '{side}のドキュメントの {line} 行目に構文エラーがあります。修正すると比較が実行されます。',
-      sideOriginal: '変更前',
-      sideChanged: '変更後',
-      comparing: '比較中…',
-      identicalTitle: '2 つのドキュメントは等価です',
+      onlyFirst: 'JSON 1 だけにある',
+      onlySecond: 'JSON 2 だけにある',
+      idle: '左右それぞれにドキュメントを貼り付けてください。**サンプル**を押すと、いくつか興味深い違いのあるペアで試せます。どちらの側もそのまま編集でき、中央の矢印でブロックをどちら向きにもコピーできます。',
       identicalBody:
-        'すべての値が一致しています。キーの順序、インデント、空白の違いは無視されます。いずれも JSON の意味を変えないためです。',
-      identicalLines: p({ other: '同一の行 {count} 行' }),
-      showIdentical: 'これらの同一行を表示する',
-      jumpTo: '次の「{kind}」の差分へ移動',
+        '2 つのドキュメントは等価です。すべての値が一致しており、キーの順序・インデント・空白の違いは JSON の意味を変えないため無視されます。',
+      formattingOnly:
+        '同じデータを別の書き方で表しています。値はすべて一致しているので、印が付いているのは整形やキーの順序の差です。両側をそろえると消えます。',
+      alignSides: 'そろえる',
+      alignSidesTitle:
+        '両方のドキュメントのキーを並べ替えて整形し直し、本当の差分だけが印として残るようにします',
+      tallyTitle: '整形の差にかかわらず、データそのものにおける{kind}',
       kinds: {
         added: '追加',
         removed: '削除',

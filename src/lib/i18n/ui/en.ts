@@ -90,6 +90,8 @@ export const en = {
 
   home: {
     title: 'Free JSON and JWT tools, in your browser',
+    description:
+      'Free online developer tools that run entirely in your browser: JSON formatter, viewer, validator and diff, JWT decoder and encoder, word counter. No ads, no sign-up, no uploads.',
     headlineLead: 'Developer tools that never',
     headlineAccent: 'touch a server.',
     lede: 'Small, sharp utilities that run entirely in this tab — free, ad-free and with no sign-up. A JSON formatter, viewer, validator and comparator, and a JWT decoder that checks signatures without ever seeing your key.',
@@ -104,14 +106,7 @@ export const en = {
     ],
   },
 
-  jsonHub: {
-    title: 'JSON Tools — free, ad-free, in your browser',
-    description:
-      'Free online JSON tools: viewer, validator, diff and formatter. No ads, no sign-up, and nothing you paste ever leaves your browser.',
-    keywords: ['json tools', 'online json tools', 'free json tools', 'json utilities'],
-    headlineLead: 'Every JSON tool,',
-    headlineAccent: 'in one tab.',
-    lede: 'Four sharp tools for working with JSON — a tree [viewer](/json/viewer), a syntax and schema [validator](/json/validator), a visual [comparator](/json/diff) and a [formatter and minifier](/json/formatter). All free, all ad-free, and every one of them parses your document in this tab rather than on a server.',
+  hub: {
     chooseHeading: 'Choose a tool',
     toolCount: p({ one: '{count} tool · more coming', other: '{count} tools · more coming' }),
     notes: [
@@ -123,13 +118,69 @@ export const en = {
         head: 'No ads, no account, no limit',
         body: 'No interstitials, no sign-up and no cap on how much you can paste. The page you land on is the tool.',
       },
-      {
-        head: 'Built for large documents',
-        body: 'Parsing, validation and diffing run on a worker thread, so a multi-megabyte document is worked without the page seizing while you type.',
-      },
     ],
     closeLine: 'Check the claim in your Network panel.',
     closeCta: 'How that is true',
+
+    categories: {
+      json: {
+        title: 'JSON Tools — free, ad-free, in your browser',
+        description:
+          'Free online JSON tools: format, validate, view and compare JSON in your browser. No ads, no sign-up, and nothing you paste is ever uploaded.',
+        keywords: [
+          'json tools',
+          'json tools online',
+          'free json tools',
+          'online json formatter and validator',
+          'compare json online',
+        ],
+        headlineLead: 'Every JSON tool,',
+        headlineAccent: 'in one tab.',
+        lede: 'Four sharp tools for working with JSON — a tree [viewer](/json/viewer), a syntax and schema [validator](/json/validator), a visual [comparator](/json/diff) and a [formatter and minifier](/json/formatter). All free, all ad-free, and every one of them parses your document in this tab rather than on a server.',
+        note: {
+          head: 'Built for large documents',
+          body: 'Parsing, validation and diffing run on a worker thread, so a multi-megabyte document is worked without the page seizing while you type.',
+        },
+      },
+      jwt: {
+        title: 'JWT Tools — decode, verify and sign online',
+        description:
+          'Free online JWT tools: decode a token, verify its signature, or build and sign a new one. Your token and your key stay in the browser.',
+        keywords: [
+          'jwt tools',
+          'decode jwt online',
+          'jwt decoder online free',
+          'verify jwt signature online',
+          'create jwt token online',
+        ],
+        headlineLead: 'Read the token.',
+        headlineAccent: 'Trust the signature.',
+        lede: 'Two tools for JSON Web Tokens — a [decoder](/jwt/decoder) that shows every claim and checks the signature against a key you supply, and an [encoder](/jwt/encoder) that builds and signs a fresh token. Signing runs on WebCrypto in this tab, so the secret you paste is never transmitted.',
+        note: {
+          head: 'Your key never leaves the tab',
+          body: 'Signing and verification run on WebCrypto, the browser’s own primitive. The key is held in memory, used, and dropped — it is the one input on this site that is deliberately not saved.',
+        },
+      },
+      text: {
+        title: 'Text Tools — count words and tidy up text',
+        description:
+          'Free online text tools: count words, characters and sentences, or clean up spacing, case and punctuation. Runs entirely in your browser.',
+        keywords: [
+          'text tools',
+          'word counter online',
+          'character count online',
+          'text formatter online',
+          'remove extra spaces from text',
+        ],
+        headlineLead: 'Measure the writing,',
+        headlineAccent: 'then tidy it.',
+        lede: 'Two tools for prose — a [counter](/text/counter) that reports words, characters, sentences and reading time as you type, and a [formatter](/text/formatter) that fixes spacing, case and punctuation to the conventions of the language you are working in. Nothing you paste leaves the page.',
+        note: {
+          head: 'Correct in every script',
+          body: 'Counting and formatting follow Unicode segmentation, so Japanese is counted by its words rather than reported as one, and French keeps the space before its punctuation instead of losing it.',
+        },
+      },
+    },
   },
 
   notFound: {
@@ -296,6 +347,10 @@ export const en = {
       validJson: 'Valid JSON',
       errorAt: 'Line {line}, column {column} — {message}',
       stats: '{objects} objects · {arrays} arrays · {keys} keys · depth {depth}',
+      removeNulls: 'Drop nulls',
+      removeNullsTitle:
+        'Remove every object property whose value is null. Nulls inside arrays are left alone — removing one would shift every index after it.',
+      nullsRemoved: p({ one: '{count} null dropped', other: '{count} nulls dropped' }),
     },
 
     formatter: {
@@ -370,51 +425,45 @@ export const en = {
     },
 
     diff: {
-      originalTitle: 'Original',
-      changedTitle: 'Changed',
-      comparisonTitle: 'Comparison',
-      originalLabel: 'Original JSON',
-      changedLabel: 'Changed JSON',
-      originalPlaceholder: '{\n  "the": "original document"\n}',
-      changedPlaceholder: '{\n  "the": "document to compare against"\n}',
+      firstTitle: 'JSON 1',
+      secondTitle: 'JSON 2',
+      firstLabel: 'First JSON document',
+      secondLabel: 'Second JSON document',
+      firstPlaceholder: '{\n  "paste": "the first document"\n}',
+      secondPlaceholder: '{\n  "paste": "the second document"\n}',
       swap: 'Swap',
       swapTitle: 'Swap the two sides',
-      hideInput: 'Hide input',
-      editInput: 'Edit input',
-      hideTitle: 'Hide the editors and give the comparison the page',
-      showTitle: 'Show the editors again',
+      tidy: 'Tidy',
+      tidyTitle: 'Re-indent both documents using the settings beside this button',
+      tidyOne: 'Tidy this document',
+      autoTidy: 'Tidy on paste',
+      autoTidyTitle:
+        'Re-indent a document the moment it is pasted, dropped or loaded. Typing is never reformatted under you.',
       foldSame: 'Fold same',
+      foldSameTitle: 'Fold long runs of identical lines down to a single row',
       showAll: 'Show all',
-      showAllTitle: 'Show every unchanged line instead of folding them away',
-      split: 'Split',
-      stack: 'Stack',
-      splitTitle: 'Show the two documents side by side',
-      stackTitle: 'Stack the two documents in one column',
+      showAllTitle: 'Show every identical line instead of folding them away',
       prev: 'Previous difference',
       next: 'Next difference',
-      prevTitle: 'Previous difference (Alt + ↑)',
-      nextTitle: 'Next difference (Alt + ↓)',
-      keyboardHint: 'Alt + ↑ / ↓ steps through differences',
+      prevTitle: 'Previous difference (Shift + F7)',
+      nextTitle: 'Next difference (F7)',
+      keyboardHint: 'F7 / Shift + F7 steps through the differences',
+      applyRight: 'Copy into JSON 2',
+      applyRightTitle: 'Copy this block into JSON 2',
+      applyLeft: 'Copy into JSON 1',
+      applyLeftTitle: 'Copy this block into JSON 1',
       truncated: 'Comparison truncated — the documents are very large',
-      onlyOriginal: 'only in original',
-      onlyChanged: 'only in changed',
-      replaced: 'replaced',
-      headerOriginal: 'Original',
-      headerChanged: 'Changed',
-      unifiedOriginal: '− original',
-      unifiedChanged: '+ changed',
-      idle: 'Paste a document into each side — or press **Sample** to try it with a pair that differs in a few interesting ways.',
-      sideError:
-        'The {side} document has a syntax error on line {line}. Fix it and the comparison will run.',
-      sideOriginal: 'original',
-      sideChanged: 'changed',
-      comparing: 'Comparing…',
-      identicalTitle: 'The two documents are equivalent',
+      onlyFirst: 'only in JSON 1',
+      onlySecond: 'only in JSON 2',
+      idle: 'Paste a document into each side — or press **Sample** to try it with a pair that differs in a few interesting ways. Both sides stay editable, and the arrows in the middle copy a block either way.',
       identicalBody:
-        'Every value matches. Differences in key order, indentation and whitespace are ignored, since none of them change what the JSON means.',
-      identicalLines: p({ one: '{count} identical line', other: '{count} identical lines' }),
-      showIdentical: 'Show these identical lines',
-      jumpTo: 'Jump to the next {kind} difference',
+        'The two documents are equivalent. Every value matches, and differences in key order, indentation and whitespace are ignored since none of them change what the JSON means.',
+      formattingOnly:
+        'Same data, written down differently — the values all match, so what you see marked is formatting or key order. Line the two sides up to clear it.',
+      alignSides: 'Line them up',
+      alignSidesTitle:
+        'Sort the keys of both documents and re-indent them, so the only marks left are real differences',
+      tallyTitle: '{kind} in the data itself, whatever the formatting says',
       kinds: {
         added: 'added',
         removed: 'removed',

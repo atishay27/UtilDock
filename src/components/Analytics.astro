@@ -9,16 +9,14 @@
  * script runs, and so a returning visitor who already granted starts measuring
  * without waiting for the body to parse.
  *
- * The official GTM snippet is deliberately not pasted verbatim. Google's copy
- * runs on parse; this one runs on consent. Everything else about it — the
- * gtm.start timing push, the async insert — is the same.
+ * The official GTM snippet is not pasted verbatim: Google's copy runs on parse,
+ * this one on consent. Everything else — the gtm.start timing push, the async
+ * insert — is the same.
  *
- * The snippet's companion <noscript> iframe is also omitted, and that is not an
- * oversight. It fires unconditionally, which is precisely what a JavaScript
- * consent gate cannot govern: a visitor with JS disabled would be measured
- * without having been asked, contradicting the banner and the /privacy text. It
- * would also need frame-src added to the CSP. What it buys is page views from
- * JS-disabled browsers, on a site whose tools do not run without JavaScript.
+ * Its companion <noscript> iframe is omitted deliberately. It fires
+ * unconditionally, which a JavaScript consent gate cannot govern, so it would
+ * measure a JS-disabled visitor who was never asked. It would also need
+ * frame-src in the CSP, and this site's tools do not run without JavaScript.
  */
 import { GTM_ID, GA_ID, LOADER, CONSENT_KEY, ANALYTICS_ENABLED } from '../lib/analytics';
 ---

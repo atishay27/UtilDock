@@ -81,6 +81,85 @@ export const editorTheme = EditorView.theme({
   },
 });
 
+/**
+ * The diff layer, for the comparator's two live editors.
+ *
+ * `@codemirror/merge` ships a base theme in fixed hex keyed on `&light` /
+ * `&dark` classes this site never sets, so most of its rules never match and
+ * the rest are the wrong colours. Restating them in tokens keeps the light
+ * theme a token swap rather than a second stylesheet.
+ *
+ * Left reads as loss, right as gain — the same pairing the rest of the tool
+ * uses, so a colour never means two things on one screen.
+ */
+export const mergeTheme = EditorView.theme({
+  '&.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
+    backgroundColor: 'color-mix(in srgb, var(--fg-fault) 13%, transparent)',
+  },
+  '&.cm-merge-b .cm-changedLine, .cm-inlineChangedLine': {
+    backgroundColor: 'color-mix(in srgb, var(--fg-sound) 13%, transparent)',
+  },
+  /* The exact characters that differ, underscored rather than filled: a second
+     block of colour inside an already-tinted line reads as a different kind of
+     change instead of a closer look at the same one. */
+  '&.cm-merge-a .cm-changedText, .cm-deletedChunk .cm-deletedText': {
+    background: 'linear-gradient(var(--fg-fault), var(--fg-fault)) bottom/100% 2px no-repeat',
+  },
+  '&.cm-merge-b .cm-changedText': {
+    background: 'linear-gradient(var(--fg-sound), var(--fg-sound)) bottom/100% 2px no-repeat',
+  },
+  '&.cm-merge-b .cm-deletedText': {
+    backgroundColor: 'color-mix(in srgb, var(--fg-fault) 22%, transparent)',
+  },
+
+  '.cm-changeGutter': { width: '3px', paddingLeft: '1px' },
+  '&.cm-merge-a .cm-changedLineGutter, .cm-deletedLineGutter': {
+    background: 'var(--fg-fault)',
+  },
+  '&.cm-merge-b .cm-changedLineGutter': { background: 'var(--fg-sound)' },
+  '.cm-inlineChangedLineGutter': { background: 'var(--fg-warn)' },
+
+  /* Folded identical lines. The package draws a pair of `⦚` glyphs around the
+     count; this replaces them with a rule that runs the width of the row, so
+     the fold reads as a seam in the document rather than as punctuation. */
+  '.cm-collapsedLines': {
+    padding: '3px 10px',
+    background: 'var(--fg-bench)',
+    borderBlock: '1px solid var(--fg-scribe)',
+    color: 'var(--fg-faint)',
+    fontFamily: 'var(--font-sans)',
+    fontSize: '10px',
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+  },
+  '.cm-collapsedLines:hover': { color: 'var(--fg-chalk)', background: 'var(--fg-anvil-lit)' },
+  '.cm-collapsedLines:before, .cm-collapsedLines:after': { content: '""', margin: '0' },
+
+  /* Accept / reject on an inline chunk. */
+  '.cm-deletedChunk .cm-chunkButtons': { insetInlineEnd: '6px' },
+  '.cm-deletedChunk button': {
+    fontFamily: 'var(--font-sans)',
+    fontSize: '10px',
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    padding: '1px 7px',
+    margin: '0 0 0 4px',
+    border: '1px solid var(--fg-scribe-strong)',
+    cursor: 'pointer',
+  },
+  '.cm-deletedChunk button[name=accept]': {
+    background: 'transparent',
+    color: 'var(--fg-fault)',
+  },
+  '.cm-deletedChunk button[name=reject]': {
+    background: 'transparent',
+    color: 'var(--fg-temper)',
+  },
+  '.cm-deletedChunk button:hover': { background: 'var(--fg-anvil-lit)' },
+});
+
 /* Value types read off the heat scale: keys at white heat, the rest cooler. */
 const highlightStyle = HighlightStyle.define([
   { tag: tags.propertyName, color: 'var(--fg-key)' },

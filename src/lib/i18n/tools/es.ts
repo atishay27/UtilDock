@@ -53,6 +53,8 @@ export const toolsEs: ToolCopyOverrides = {
       'json formatter español',
       'minificar json',
       'embellecer json',
+      'formateador json gratis',
+      'formatear json sin subir archivos',
     ],
   },
 
@@ -88,7 +90,14 @@ export const toolsEs: ToolCopyOverrides = {
         a: 'No. Todas las herramientas de UtilDock son gratuitas, sin anuncios, sin registro y sin límite de uso.',
       },
     ],
-    keywords: ['visor json', 'ver json online', 'json viewer español', 'explorador json'],
+    keywords: [
+      'visor json',
+      'ver json online',
+      'json viewer español',
+      'explorador json',
+      'visor json online gratis',
+      'ver json grande online',
+    ],
   },
 
   'json-validator': {
@@ -123,6 +132,8 @@ export const toolsEs: ToolCopyOverrides = {
       'validar json online',
       'json schema validator',
       'comprobar sintaxis json',
+      'validador json online gratis',
+      'validador de json schema online',
     ],
   },
 
@@ -139,7 +150,7 @@ export const toolsEs: ToolCopyOverrides = {
     description:
       'Comparador JSON gratuito. Compara dos documentos lado a lado con adiciones, eliminaciones y cambios en color. Se ejecuta en tu navegador.',
     overview:
-      'Un comparador JSON que muestra la diferencia en lugar de enumerarla. Los dos documentos se dibujan como una única vista alineada: el rojo marca lo que solo tiene el original, el verde lo que solo tiene el modificado, y una flecha señala cada valor reemplazado. Como la comparación es estructural y no textual, las claves reordenadas y la sangría distinta nunca cuentan como cambios.',
+      'Un comparador JSON en el que puedes editar. Los dos documentos se colocan uno al lado del otro como editores vivos con la diferencia dibujada entre ellos: el rojo marca lo que solo tiene JSON 1, el verde lo que solo tiene JSON 2, y las flechas del centro copian un bloque en cualquier dirección, así que puedes reconciliar el par mientras lo lees. Ningún lado es la referencia. Y como el veredicto es estructural y no textual, las claves reordenadas y la sangría distinta nunca cuentan como cambios.',
     faqs: [
       {
         q: '¿Qué diferencia hay entre comparar JSON y comparar texto?',
@@ -163,6 +174,8 @@ export const toolsEs: ToolCopyOverrides = {
       'comparador json',
       'json diff online',
       'diferencias entre dos json',
+      'comparar dos archivos json',
+      'json diff gratis',
     ],
   },
 
@@ -208,6 +221,8 @@ export const toolsEs: ToolCopyOverrides = {
       'verificar firma jwt',
       'jwt decoder español',
       'json web token decodificar',
+      'jwt decoder online gratis',
+      'decodificar jwt sin subir el token',
     ],
   },
 
@@ -244,6 +259,8 @@ export const toolsEs: ToolCopyOverrides = {
       'crear jwt',
       'firmar jwt online',
       'generar json web token',
+      'generar jwt online',
+      'firmar jwt hs256 online',
     ],
   },
 
@@ -285,6 +302,8 @@ export const toolsEs: ToolCopyOverrides = {
       'contar palabras online',
       'contador de frases',
       'contar párrafos',
+      'contar palabras y caracteres gratis',
+      'calcular tiempo de lectura',
     ],
   },
 
@@ -326,6 +345,8 @@ export const toolsEs: ToolCopyOverrides = {
       'eliminar líneas duplicadas',
       'limpiar texto online',
       'cambiar mayúsculas online',
+      'eliminar líneas en blanco online',
+      'ordenar líneas alfabéticamente',
     ],
   },
 };

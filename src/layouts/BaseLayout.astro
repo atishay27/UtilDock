@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { SITE } from '../lib/site';
+import { graph } from '../lib/seo';
 import { alternates, defaultAlternate, t } from '../lib/i18n';
 import { DEFAULT_LOCALE, LOCALES, rootPath, type Locale } from '../lib/i18n/locales';
 import Header from '../components/Header.astro';
@@ -13,7 +14,8 @@ interface Props {
   description: string;
   canonical?: string;
   keywords?: string[];
-  structuredData?: unknown;
+  /** Page-specific JSON-LD nodes. Organization and WebSite are added here. */
+  schema?: unknown[];
   noindex?: boolean;
   locale?: Locale;
 }
@@ -23,7 +25,7 @@ const {
   description,
   canonical,
   keywords = [],
-  structuredData,
+  schema = [],
   noindex = false,
   locale = DEFAULT_LOCALE,
 } = Astro.props;
@@ -46,6 +48,9 @@ const canonicalUrl = canonical ?? new URL(path, SITE.url).href;
 const fullTitle = title.startsWith(SITE.name) ? title : `${title} | ${SITE.name}`;
 const ogImage = new URL('/og-default.png', SITE.url).href;
 const ogImageAlt = `${SITE.name} — ${SITE.tagline}`;
+
+/* A page excluded from the index has nothing to say to a crawler. */
+const structuredData = noindex ? undefined : graph(schema);
 ---
 
 <!doctype html>

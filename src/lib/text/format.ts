@@ -1,31 +1,15 @@
 /**
- * Deterministic text transforms — every one of them a toggle, every one of them
- * reporting what it changed.
+ * Deterministic text transforms. Every one is a toggle and every one reports a
+ * count, so a rule that fired when it should not have is visible rather than
+ * buried.
  *
- * Two rules shape this file.
+ * Nothing here guesses: no grammar engine, no model. The CSP omits
+ * `'wasm-unsafe-eval'` and there is no server, so the operations are the
+ * mechanical ones where "correct" is typography rather than judgement.
  *
- * **Nothing here guesses.** There is no grammar engine and no model. Real
- * grammar correction — agreement, tense, article choice — is not available
- * offline in a browser: the only implementations are a server (which this site
- * does not have and will not get) or WebAssembly (which the site's CSP forbids,
- * since `script-src` carries no `'wasm-unsafe-eval'`). So the operations here
- * are the mechanical ones, where "correct" is a matter of typography rather
- * than judgement, and each is reversible by reasoning rather than by hoping.
- *
- * **Every operation reports a count.** A tool that silently rewrites a document
- * is one the visitor has to re-read to trust. Returning "removed 12 duplicate
- * lines, fixed 3 repeated words" turns the output from something to check into
- * something to accept, and makes a rule that fired when it should not have
- * visible instead of buried.
- *
- * A note on language. The whitespace and line operations are script-agnostic.
- * Everything that touches letters or punctuation is not, and takes a locale:
- * sorting collates in it, case maps in it (so German `ß` uppercases correctly),
- * and the punctuation rules follow that language's convention rather than
- * English's — French gains its space before `;!?` instead of losing it, German
- * quotes open low, and the spacing rules are reported as unsupported for CJK
- * rather than inserting spaces no typesetter there wants. `typography.ts` owns
- * that table and explains each choice.
+ * Whitespace and line operations are script-agnostic. Anything touching letters
+ * or punctuation takes a locale — sorting collates in it, case maps in it, and
+ * the punctuation rules follow that language. `typography.ts` owns that table.
  */
 
 import {
@@ -92,17 +76,13 @@ export interface FormatResult {
 /* ---------------------------------------------------------------- title --- */
 
 /**
- * Words that stay lowercase inside an **English** title, by the conventions of
- * AP and Chicago where they agree. Deliberately short: the disputed cases
- * (`as`, `if`, `than`) are capitalised, which is the safer error — a wrongly
- * capitalised word reads as a style choice, a wrongly lowercased one reads as
- * a mistake.
+ * Words that stay lowercase inside an **English** title, per AP and Chicago
+ * where they agree. Disputed cases (`as`, `if`, `than`) are capitalised — the
+ * safer error.
  *
- * This list is not translated, and must not be. The Spanish for "of" is "de",
- * but Spanish title case does not demote "de" the way English demotes "of" —
- * it generally capitalises only the first word. Applying an English rule
- * through a translated word list would produce a title no style guide
- * recognises, so other languages get `all-words` instead. See `typography.ts`.
+ * Not translated, and must not be: Spanish title case capitalises only the
+ * first word rather than demoting `de` the way English demotes `of`. Other
+ * languages get `all-words` instead — see `typography.ts`.
  */
 const MINOR_WORDS = new Set([
   'a', 'an', 'and', 'at', 'but', 'by', 'for', 'in', 'nor', 'of', 'on', 'or',
@@ -112,11 +92,9 @@ const MINOR_WORDS = new Set([
 /**
  * Title Case, applied per word.
  *
- * The first and last words of each line are always capitalised regardless of
- * the minor-word list, which is the rule both style guides share. Words already
- * containing an interior capital — `iPhone`, `JSON`, `McCarthy` — are left
- * exactly as they are: lowercasing an acronym to re-capitalise its first letter
- * would turn `JSON` into `Json`, which is not a case conversion but damage.
+ * First and last word of each line are always capitalised, minor-word list or
+ * not. Words with an interior capital — `iPhone`, `JSON`, `McCarthy` — are left
+ * alone, or `JSON` would come back as `Json`.
  */
 function toTitleCase(text: string, locale: string, style: Typography['titleCase']): string {
   return text
@@ -151,10 +129,8 @@ function toTitleCase(text: string, locale: string, style: Typography['titleCase'
  * Sentence case: lowercase everything, then capitalise the first letter of each
  * sentence.
  *
- * The lone `i` → `I` repair runs for English only. It is grammar rather than
- * typography — English is unusual in capitalising its first-person pronoun —
- * and applying it everywhere would capitalise a perfectly ordinary `i` in
- * another language.
+ * The lone `i` → `I` repair is English-only: elsewhere it would capitalise an
+ * ordinary word.
  */
 function toSentenceCase(text: string, locale: string, capitaliseLoneI: boolean): string {
   const sentences = text
@@ -175,18 +151,12 @@ function countMatches(text: string, pattern: RegExp): number {
 }
 
 /**
- * Straight quotes to the ones this language actually uses.
+ * Straight quotes to the ones this language uses. Marks come from
+ * `typography.ts`; a language with no safe style never reaches this function.
  *
- * Order matters: apostrophes inside words (`don't`, `'90s`) are handled before
- * the opening/closing pass, or the apostrophe in `don't` becomes an opening
- * quote. Anything inside backticks is left alone — that is code, and curling
- * its quotes breaks it.
- *
- * The marks come from `typography.ts`, so German gets `„…“`, French and
- * Russian get `«…»`, and French additionally gets the narrow no-break space
- * that belongs inside its guillemets. A language whose quoting cannot be
- * inferred safely — Japanese, where a straight `"` is usually code — has no
- * style and never reaches this function.
+ * Order matters: in-word apostrophes (`don't`, `'90s`) are handled before the
+ * opening/closing pass, or `don't` gains an opening quote. Backticked spans are
+ * left alone — that is code.
  */
 function applySmartQuotes(text: string, quotes: QuoteStyle): string {
   const inner = quotes.innerSpace ?? '';
@@ -213,14 +183,11 @@ function applySmartQuotes(text: string, quotes: QuoteStyle): string {
 /**
  * A space after `,` `;` `:` `!` `?` and `.` where one is clearly missing.
  *
- * The lookaheads are what keep this from mangling ordinary text. Digits are
- * excluded so `1,000` and `12:30` survive, and the full stop is the strict
- * case: it only fires between a lowercase run of two or more and a following
- * capital. That leaves `e.g.`, `Node.js`, `3.14` and `utildock.dev` untouched
- * while still catching `end of sentence.Next one`.
+ * The lookaheads keep it off ordinary text: digits are excluded so `1,000` and
+ * `12:30` survive, and the full stop fires only between a lowercase run of two
+ * or more and a capital, sparing `e.g.`, `Node.js` and `utildock.dev`.
  *
- * Never reached for CJK, whose punctuation is full-width and carries its own
- * spacing — inserting an ASCII space after `、` would be a defect, not a fix.
+ * Never reached for CJK, whose full-width punctuation carries its own spacing.
  */
 function applySpaceAfterPunctuation(text: string): string {
   return text
@@ -231,12 +198,10 @@ function applySpaceAfterPunctuation(text: string): string {
 /**
  * What to do about a space in front of `;` `:` `!` `?`.
  *
- * This is the rule that most needed to stop being English. English closes up
- * to its punctuation, so the space is a mistake and gets removed. **French
- * requires one** — and specifically a no-break one, narrow before `;!?` and
- * full before `:` — so in French the same switch inserts the correct space and
- * normalises any ordinary space already there. The comma and full stop close
- * up in both languages.
+ * English closes up, so the space is removed. French requires a no-break space
+ * — narrow before `;!?`, full before `:` — so the same switch inserts it there
+ * and normalises any ordinary space already present. Comma and full stop close
+ * up in both.
  */
 function applySpaceBeforePunctuation(text: string, spacing: SpacingStyle): string {
   if (spacing === 'french') {
@@ -250,10 +215,9 @@ function applySpaceBeforePunctuation(text: string, spacing: SpacingStyle): strin
 /**
  * `the the` → `the`, case-insensitively, within a line.
  *
- * Bounded to a single line on purpose: a word ending one line and beginning the
- * next is usually two different sentences, not a typo. Legitimate doubles do
- * exist — "had had", "that that" — so this is off by default and reported when
- * it fires.
+ * Single-line by design: a word ending one line and starting the next is
+ * usually two sentences. Legitimate doubles exist ("had had"), so this is off
+ * by default and reported when it fires.
  */
 function applyFixRepeatedWords(text: string): string {
   return text.replace(/\b(\p{L}+)([ \t]+)\1\b/giu, (match, word: string) =>
@@ -264,28 +228,19 @@ function applyFixRepeatedWords(text: string): string {
 /* -------------------------------------------------------------- the run --- */
 
 /**
- * Apply the enabled operations, in a fixed order.
+ * Apply the enabled operations, in a fixed order. The order is load-bearing and
+ * must not become a setting.
  *
- * The order is not arbitrary and cannot be exposed as a setting without the
- * results becoming unpredictable.
+ * Whitespace first, so line-level operations see clean lines — `hello` and
+ * `hello ` are distinct before trimming and identical after.
  *
- * Whitespace is normalised first, so that later line-level operations see clean
- * lines — deduplication in particular, where `hello` and `hello ` are different
- * strings before trimming and the same one after.
+ * Punctuation spacing before case, because sentence case finds boundaries by
+ * looking for a full stop and a space. `Xerox .Almost` cased first becomes
+ * `xerox.almost` and the break is unrecoverable; spaced first it becomes
+ * `Xerox. Almost`.
  *
- * **Punctuation spacing runs before case conversion**, and that ordering is
- * load-bearing. Sentence case decides where a sentence starts by looking for a
- * full stop followed by a space, so it has to run on text where that space is
- * already there. Given `Xerox .Almost`, converting case first lowercases the
- * `A` while the missing space still hides the boundary, and no later pass can
- * recover it — the result is `xerox.almost`, with the sentence break lost.
- * Repairing the spacing first turns it into `Xerox. Almost`, which sentence
- * case then reads correctly.
- *
- * Curly quotes come after case, since converting `"` to `“` is unaffected by
- * capitalisation and would otherwise have to be taught to survive it. Document
- * trimming is last, because several earlier operations can leave a blank line
- * at one end.
+ * Quotes after case (curling is unaffected by capitalisation), and document
+ * trimming last, since earlier operations can leave a blank line at one end.
  */
 export function formatText(
   input: string,
@@ -315,8 +270,7 @@ export function formatText(
   }
 
   if (options.collapseSpaces) {
-    // Leading indentation is structure, not an extra space, so the collapse
-    // starts after any indent rather than at the start of the line.
+    // Leading indentation is structure, so the collapse starts after it.
     record('collapseSpaces', countMatches(text, /(?<=\S)[ \t]{2,}/g));
     text = text.replace(/(?<=\S)[ \t]{2,}/g, ' ');
   }
@@ -341,8 +295,8 @@ export function formatText(
     const kept: string[] = [];
     let removed = 0;
     for (const line of lines) {
-      // Blank lines are structure, not content — deduplicating them would
-      // silently reflow the document's paragraphs into one block.
+      // Blank lines are structure: deduplicating them would reflow every
+      // paragraph into one block.
       if (line.trim() === '') {
         kept.push(line);
         continue;
@@ -361,9 +315,8 @@ export function formatText(
   if (options.sortLines !== 'none') {
     const lines = text.split('\n');
     const trailing = lines.length > 0 && lines[lines.length - 1] === '' ? lines.pop() : undefined;
-    // Collated in the page's language, not the browser's. German expects ä
-    // beside a, Swedish expects it at the end, and the two orders disagree on
-    // the same list — so the locale has to be named rather than inferred.
+    // Collated in the page's language, not the browser's: German sorts ä beside
+    // a, Swedish sorts it last.
     const sorted = [...lines].sort((a, b) => a.localeCompare(b, locale));
     if (options.sortLines === 'desc') sorted.reverse();
     const moved = sorted.filter((line, index) => line !== lines[index]).length;
@@ -382,8 +335,8 @@ export function formatText(
   if (options.removeSpaceBeforePunctuation && supported.removeSpaceBeforePunctuation) {
     const before = text;
     text = applySpaceBeforePunctuation(text, type.spacing);
-    // Counted by comparison rather than by matching, because in French this
-    // rule inserts spaces where the other languages remove them.
+    // Counted by comparison, not by matching: French inserts spaces here where
+    // the other languages remove them.
     record('removeSpaceBeforePunctuation', before === text ? 0 : Math.abs(text.length - before.length) || 1);
   }
 

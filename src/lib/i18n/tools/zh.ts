@@ -47,6 +47,8 @@ export const toolsZh: ToolCopyOverrides = {
       'json formatter 中文',
       'json 压缩',
       'json 美化',
+      'json 格式化 免费',
+      'json 格式化 不上传',
     ],
   },
 
@@ -77,7 +79,14 @@ export const toolsZh: ToolCopyOverrides = {
         a: '不需要。UtilDock 上的每个工具都是免费的，没有广告、无需注册，也没有使用次数限制。',
       },
     ],
-    keywords: ['json 查看器', 'json 在线查看', 'json viewer 中文', 'json 树形查看'],
+    keywords: [
+      'json 查看器',
+      'json 在线查看',
+      'json viewer 中文',
+      'json 树形查看',
+      'json 查看器 在线 免费',
+      '打开大型 json 文件',
+    ],
   },
 
   'json-validator': {
@@ -107,7 +116,14 @@ export const toolsZh: ToolCopyOverrides = {
         a: '还不能——校验器检查的是 RFC 8259 定义的严格 JSON，这也是大多数解析器和 API 所接受的。对 JSONC 和 NDJSON 的支持已在计划中。',
       },
     ],
-    keywords: ['json 校验', 'json 在线校验', 'json schema validator 中文', 'json 语法检查'],
+    keywords: [
+      'json 校验',
+      'json 在线校验',
+      'json schema validator 中文',
+      'json 语法检查',
+      'json 校验 在线 免费',
+      'json schema 在线校验',
+    ],
   },
 
   'json-diff': {
@@ -118,7 +134,7 @@ export const toolsZh: ToolCopyOverrides = {
     description:
       '免费的在线 JSON 差异对比工具。并排比较两份文档，新增、删除和变更的值都以颜色标注。完全在你的浏览器中运行。',
     overview:
-      '一个把差异展示出来、而不是列举出来的 JSON 比较工具。两份文档被绘制成一个对齐的视图：红色标出只有原始文档才有的内容，绿色标出只有变更后文档才有的内容，箭头标出每一个被替换的值。由于比较是结构性的而非文本性的，重新排序的键和不同的缩进从不会被算作改动。',
+      '一个可以直接在里面编辑的 JSON 比较工具。两份文档以可编辑的编辑器并排放置，差异画在两者之间：红色标出只有 JSON 1 才有的内容，绿色标出只有 JSON 2 才有的内容，中间接缝处的箭头可以把一整块往任意一边复制，于是你可以一边读一边把两份对齐。哪一侧都不是基准。而且由于判定是结构性的而非文本性的，重新排序的键和不同的缩进从不会被算作改动。',
     faqs: [
       {
         q: 'JSON 差异对比和文本差异对比有什么区别？',
@@ -137,7 +153,14 @@ export const toolsZh: ToolCopyOverrides = {
         a: '不会。两份文档都在这个标签页内的 Web Worker 中解析和比较。什么都不会发送到服务器——当你比较的是两份生产数据时，这一点很关键。',
       },
     ],
-    keywords: ['json 比较', 'json diff 在线', 'json 对比工具', '两个 json 的差异'],
+    keywords: [
+      'json 比较',
+      'json diff 在线',
+      'json 对比工具',
+      '两个 json 的差异',
+      '比较两个 json 文件',
+      'json 对比 免费',
+    ],
   },
 
   'jwt-decoder': {
@@ -171,7 +194,15 @@ export const toolsZh: ToolCopyOverrides = {
         a: 'exp 声明是一个 NumericDate——从 1970 年算起的秒数——解码器会把它显示为真实日期，并标出它已经过去了多久。令牌过期是某个刚才还正常的 API 突然返回 401 的最常见原因。而一个位于未来的 nbf 声明，会在另一端造成同样的结果。',
       },
     ],
-    keywords: ['jwt 解码', 'jwt 解析', 'jwt 签名验证', 'json web token 解码', 'jwt decoder 中文'],
+    keywords: [
+      'jwt 解码',
+      'jwt 解析',
+      'jwt 签名验证',
+      'json web token 解码',
+      'jwt decoder 中文',
+      'jwt 解码 在线 免费',
+      'jwt 解析 不上传',
+    ],
   },
 
   'jwt-encoder': {
@@ -201,7 +232,15 @@ export const toolsZh: ToolCopyOverrides = {
         a: '会，`alg` 始终按你选定的算法写入，这是刻意为之。头部声称一种算法、签名却由另一种算法生成，这不是令牌，而是 JWT 最著名漏洞的起点。你写的其他头部字段——`kid`、`cty` 或任何自定义字段——都会原样保留。',
       },
     ],
-    keywords: ['jwt 编码器', 'jwt 生成器', '生成 jwt', '在线签名 jwt', 'json web token 生成'],
+    keywords: [
+      'jwt 编码器',
+      'jwt 生成器',
+      '生成 jwt',
+      '在线签名 jwt',
+      'json web token 生成',
+      'jwt 令牌 生成器 在线',
+      'jwt hs256 签名 在线',
+    ],
   },
 
   'text-counter': {
@@ -231,7 +270,15 @@ export const toolsZh: ToolCopyOverrides = {
         a: '不会。计数是运行在你自己标签页里的 JavaScript，并放在 Web Worker 中执行，长文档也不会让页面卡住。断开网络它照样可用。对一个文本计数工具来说，这一点比听上去更重要，因为人们要数的往往是草稿、求职信和尚未发表的文字。',
       },
     ],
-    keywords: ['字数统计', '字符计数', '在线字数统计', '词数统计', '统计段落数'],
+    keywords: [
+      '字数统计',
+      '字符计数',
+      '在线字数统计',
+      '词数统计',
+      '统计段落数',
+      '字数统计 免费',
+      '阅读时间 计算',
+    ],
   },
 
   'text-formatter': {
@@ -261,6 +308,14 @@ export const toolsZh: ToolCopyOverrides = {
         a: '标点规则正是为了避免这一点而写的。逗号或冒号后面跟着数字时绝不插入空格，所以 1,000 和 12:30 都能保住。句点只有在小写字母序列与大写字母之间才会补空格，因此 e.g.、Node.js、3.14 和 utildock.dev 都不受影响。弯引号规则会跳过反引号里的所有内容。',
       },
     ],
-    keywords: ['文本格式化', '删除多余空格', '删除重复行', '在线文本清理', '大小写转换'],
+    keywords: [
+      '文本格式化',
+      '删除多余空格',
+      '删除重复行',
+      '在线文本清理',
+      '大小写转换',
+      '删除空行 在线',
+      '按字母顺序排序行',
+    ],
   },
 };

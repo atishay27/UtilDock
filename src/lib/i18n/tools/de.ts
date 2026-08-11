@@ -53,6 +53,8 @@ export const toolsDe: ToolCopyOverrides = {
       'json formatter online',
       'json beautifier',
       'json minifizieren',
+      'json formatter kostenlos',
+      'json formatieren ohne upload',
     ],
   },
 
@@ -83,7 +85,14 @@ export const toolsDe: ToolCopyOverrides = {
         a: 'Nein. Jedes Werkzeug auf UtilDock ist kostenlos, werbefrei, ohne Anmeldung und ohne Nutzungslimit.',
       },
     ],
-    keywords: ['json viewer', 'json anzeigen', 'json baum viewer', 'json online ansehen'],
+    keywords: [
+      'json viewer',
+      'json anzeigen',
+      'json baum viewer',
+      'json online ansehen',
+      'json viewer online kostenlos',
+      'große json datei ansehen',
+    ],
   },
 
   'json-validator': {
@@ -118,6 +127,8 @@ export const toolsDe: ToolCopyOverrides = {
       'json validieren',
       'json schema validator',
       'json syntax prüfen',
+      'json validator online kostenlos',
+      'json schema validator online',
     ],
   },
 
@@ -134,7 +145,7 @@ export const toolsDe: ToolCopyOverrides = {
     description:
       'Kostenloser JSON-Vergleich. Zwei Dokumente nebeneinander, mit farbkodierten Hinzufügungen, Entfernungen und Änderungen. Läuft im Browser.',
     overview:
-      'Ein JSON-Vergleich, der den Unterschied zeigt, statt ihn aufzuzählen. Die beiden Dokumente werden als eine ausgerichtete Ansicht gezeichnet: Rot markiert, was nur das Original hat, Grün, was nur das geänderte hat, und ein Pfeil markiert jeden ersetzten Wert. Weil der Vergleich strukturell statt textuell ist, zählen umsortierte Schlüssel und andere Einrückung nie als Änderung.',
+      'Ein JSON-Vergleich, in dem du bearbeiten kannst. Die beiden Dokumente stehen als lebende Editoren nebeneinander, mit dem Unterschied dazwischen gezeichnet: Rot markiert, was nur JSON 1 hat, Grün, was nur JSON 2 hat, und die Pfeile in der Naht kopieren einen Block in beide Richtungen — du kannst das Paar also beim Lesen angleichen. Keine Seite ist die Vorlage. Und weil das Urteil strukturell statt textuell ist, zählen umsortierte Schlüssel und andere Einrückung nie als Änderung.',
     faqs: [
       {
         q: 'Was ist der Unterschied zwischen einem JSON-Diff und einem Text-Diff?',
@@ -153,7 +164,14 @@ export const toolsDe: ToolCopyOverrides = {
         a: 'Nein. Beide werden in einem Web Worker innerhalb dieses Tabs geparst und verglichen. Es wird nichts an einen Server gesendet, und darauf kommt es an, wenn du zwei Produktions-Payloads vergleichst.',
       },
     ],
-    keywords: ['json diff', 'json vergleichen', 'json vergleich online', 'json unterschiede'],
+    keywords: [
+      'json diff',
+      'json vergleichen',
+      'json vergleich online',
+      'json unterschiede',
+      'zwei json dateien vergleichen',
+      'json diff online kostenlos',
+    ],
   },
 
   'jwt-decoder': {
@@ -198,6 +216,8 @@ export const toolsDe: ToolCopyOverrides = {
       'jwt signatur prüfen',
       'json web token decoder',
       'jwt token anzeigen',
+      'jwt decoder online kostenlos',
+      'jwt dekodieren ohne upload',
     ],
   },
 
@@ -234,6 +254,8 @@ export const toolsDe: ToolCopyOverrides = {
       'jwt erstellen',
       'jwt signieren online',
       'json web token generator',
+      'jwt token generator online',
+      'jwt hs256 signieren online',
     ],
   },
 
@@ -270,6 +292,8 @@ export const toolsDe: ToolCopyOverrides = {
       'wortzähler online',
       'zeichenzähler',
       'sätze zählen',
+      'wörter und zeichen zählen kostenlos',
+      'lesezeit berechnen',
     ],
   },
 
@@ -311,6 +335,8 @@ export const toolsDe: ToolCopyOverrides = {
       'doppelte zeilen entfernen',
       'text bereinigen online',
       'groß und kleinschreibung ändern',
+      'leerzeilen entfernen online',
+      'zeilen alphabetisch sortieren',
     ],
   },
 };

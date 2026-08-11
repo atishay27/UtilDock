@@ -99,37 +99,29 @@ function readOptions(children: ReactNode): OptionItem[] {
 }
 
 /**
- * How long after opening a click on the trigger is ignored.
+ * How long after opening a click on the trigger is ignored — the reason this
+ * dropdown is custom at all. A native `<select>` opens on pointer-down and
+ * dismisses on the pointer-up that follows, so hovering and clicking in one
+ * motion makes it flash and vanish, and the popup is browser chrome no handler
+ * can reach.
  *
- * This is the whole point of the custom dropdown. A native `<select>` opens its
- * popup on pointer-down and dismisses it on the pointer-up that follows, so
- * anyone who hovers and clicks in one motion — which is to say everyone — sees
- * it flash and vanish. The popup is browser chrome rather than DOM, so no
- * handler can prevent that; the only way to fix it is to own the menu.
- *
- * Here the menu opens on pointer-down and the release does nothing at all.
- * The window guards against the *second* event of a fast double-fire and
- * against a press-drag-release that ends back on the trigger. 400ms is longer
- * than any accidental click and shorter than a deliberate "close it again".
+ * Here the release does nothing. The window guards against the second event of
+ * a fast double-fire and against a press-drag-release that ends on the trigger.
+ * 400ms is longer than any accidental click, shorter than a deliberate close.
  */
 const ACCIDENTAL_CLICK_MS = 400;
 
 /**
  * A labelled `<select>`.
  *
- * The label is a **sibling** associated by `htmlFor`, never a wrapper. That is
- * not a style preference — it is the fix for a real bug. A form control nested
- * inside its own `<label>` gets the click twice: once as the control, and again
- * when the label forwards activation to the control it labels. On a checkbox
- * the second hit is invisible because the state flips twice in one frame, but
- * on a `<select>` it opens the dropdown and instantly closes it again, which is
- * exactly what "it flashes and disappears" looks like. It only bites when the
- * pointer lands on the control itself, which is why hovering and clicking —
- * what everyone actually does — triggered it every time.
+ * The label is a **sibling** associated by `htmlFor`, never a wrapper. A
+ * control nested inside its own `<label>` is activated twice when the pointer
+ * lands on the control itself — once directly, once forwarded by the label —
+ * which opens the dropdown and closes it in the same frame.
  *
- * `Toggle` and `FileButton` still wrap their inputs, and correctly so: both
- * inputs are `sr-only`, so the pointer can never land on the control directly
- * and the second dispatch has nothing to hit.
+ * `Toggle` and `FileButton` still wrap their inputs, correctly: both are
+ * `sr-only`, so the pointer never lands on the control and the second dispatch
+ * has nothing to hit.
  */
 export function Select({
   label,
@@ -166,13 +158,9 @@ export function Select({
   const typeahead = useRef({ buffer: '', at: 0 });
 
   /**
-   * Where the menu goes, measured fresh each time.
-   *
-   * It hangs below the trigger when there is room and flips above when there is
-   * not — the algorithm list is thirteen options, and a trigger low on the page
-   * would otherwise open a menu running off the bottom of the window with no
-   * way to reach the last few. The height is capped to the space actually
-   * available so the list scrolls inside itself rather than the page.
+   * Where the menu goes, measured fresh each time: below the trigger when there
+   * is room, flipped above when there is not. The height is capped to the space
+   * available so a thirteen-option list scrolls inside itself, not the page.
    */
   const place = useCallback(() => {
     const node = triggerRef.current;
@@ -211,9 +199,8 @@ export function Select({
     (option: OptionItem) => {
       if (option.disabled) return;
       closeMenu();
-      // Call sites were written against a real <select>, so the handler still
-      // receives something shaped like a change event. Keeping that contract
-      // means this swap touched no tool.
+      // Call sites are written against a real <select>, so the handler still
+      // receives something shaped like a change event.
       onChange?.({
         target: { value: option.value },
         currentTarget: { value: option.value },
@@ -232,19 +219,14 @@ export function Select({
       closeMenu(false);
     };
     /**
-     * This listener is on the capture phase so it sees scrolling in any
-     * container, which is what makes a fixed-position menu track its trigger.
-     * It also meant the menu's *own* scrolling reached it, and since the
-     * handler used to close on any scroll, reaching for the thirteenth
-     * algorithm dismissed the list the moment the wheel turned. Hence the
-     * first line: a scroll that started inside the menu is the user reading
-     * it, not the page moving underneath it.
+     * Capture phase, so a fixed-position menu tracks its trigger through a
+     * scroll in any container. The first line excludes the menu's own
+     * scrolling, which is the user reading it rather than the page moving.
      */
     const onScroll = (event: Event) => {
       if (listRef.current?.contains(event.target as Node)) return;
       const r = triggerRef.current?.getBoundingClientRect();
-      // Only give up once the trigger itself has left the viewport; short of
-      // that, follow it. Closing on any page scroll made the menu feel broken.
+      // Follow the trigger; only give up once it has left the viewport.
       if (!r || r.bottom < 0 || r.top > window.innerHeight) {
         closeMenu(false);
         return;
@@ -409,10 +391,9 @@ interface ToggleProps {
   title?: string;
   disabled?: boolean;
   /**
-   * Merged onto the label. Exists so a caller in a narrow column can pass
-   * `min-w-0` and let the text wrap — the default `whitespace-nowrap` suits a
-   * panel header, where a toggle sits beside buttons and must not reflow, but
-   * forces a horizontal scrollbar in a fixed-width list.
+   * Merged onto the label, so a caller in a narrow column can pass `min-w-0`
+   * and let the text wrap. The default `whitespace-nowrap` suits a panel header
+   * but forces a horizontal scrollbar in a fixed-width list.
    */
   className?: string;
 }
@@ -495,12 +476,11 @@ export function Panel({
       } ${highlighted ? 'border-cherry' : 'border-scribe-strong'} bg-anvil ${className}`}
       {...dropHandlers}
     >
-      {/* min-h-12 is the height a header reaches once it holds a button, and
-          most of them do. The floor used to be min-h-10, so a panel whose only
-          control is a checkbox — the validator's Result — sat 8px shorter than
-          the panel beside it and the two bodies started at different lines.
-          Panels that can use `aligned` get this from the subgrid; the validator
-          cannot, because its right column stacks two panels of its own. */}
+      {/* min-h-12 is the height a header reaches once it holds a button, which
+          most do — without the floor, a panel whose only control is a checkbox
+          sits 8px shorter than its neighbour and their bodies misalign. Panels
+          using `aligned` get this from the subgrid; the validator cannot, since
+          its right column stacks two panels of its own. */}
       <header className="flex min-h-12 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-scribe bg-bench px-3 py-2">
         <h2 className="ud-legend flex items-baseline gap-2 text-chalk">
           {title}
@@ -562,14 +542,9 @@ export function Status({ tone, children }: StatusProps) {
 }
 
 /**
- * A plain textarea for prose.
- *
- * The text tools deliberately do not use `JsonEditor`. CodeMirror's JSON mode
- * would colour ordinary writing as though it were syntax and highlight every
- * apostrophe as an unterminated string, and its line numbers answer a question
- * nobody has about a paragraph. A textarea is also what gives these tools the
- * browser's own spellcheck and the native selection behaviour people expect
- * when editing text rather than code.
+ * A plain textarea for prose. The text tools deliberately avoid `JsonEditor`:
+ * CodeMirror's JSON mode would flag every apostrophe as an unterminated string,
+ * and a textarea gives prose the browser's own spellcheck and native selection.
  */
 export function PlainEditor({
   value,
@@ -600,11 +575,9 @@ export function PlainEditor({
 }
 
 /**
- * One counted figure, sized to be read across the room.
- *
- * `tabular-nums` is doing real work here: without it the numerals have
- * different widths, so a count ticking from 199 to 200 shifts the whole row
- * sideways while someone is typing.
+ * One counted figure, sized to be read across the room. `tabular-nums` is
+ * load-bearing: without it a count ticking from 199 to 200 shifts the whole row
+ * sideways as someone types.
  */
 export function Metric({
   label,

@@ -9,7 +9,7 @@
  * Bump VERSION when any of that changes.
  */
 
-const VERSION = 'v5';
+const VERSION = 'v6';
 const ASSET_CACHE = `utildock-assets-${VERSION}`;
 const PAGE_CACHE = `utildock-pages-${VERSION}`;
 
@@ -21,8 +21,10 @@ const PAGES = [
   '/json/validator',
   '/json/diff',
   '/json/formatter',
+  '/jwt',
   '/jwt/decoder',
   '/jwt/encoder',
+  '/text',
   '/text/counter',
   '/text/formatter',
 ];
@@ -41,11 +43,9 @@ function localePrefix(pathname) {
 /**
  * Precache one language's pages, once per worker lifetime.
  *
- * Priming happens on the first navigation rather than on install, because
- * install cannot know which of the eight languages this visitor reads and
- * precaching all fifty-six pages to serve seven of them is most of a megabyte
- * of waste. The first navigation names the language; that is the moment we
- * know what is worth having offline.
+ * On first navigation rather than on install: install cannot know which of the
+ * eight languages this visitor reads, and caching all of them to serve one is
+ * most of a megabyte of waste.
  */
 const primed = new Set();
 

@@ -1,28 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Icon } from '../Icon';
-import { JsonEditor, type Marker } from '../JsonEditor';
-import { Button, FileButton, Panel, Status } from '../ui';
-import { useCopy, useDebounced, useFileDrop, usePersistentState } from '../../lib/hooks';
+import { JsonMergeEditor, type MergeHandle } from '../JsonMergeEditor';
+import type { Marker } from '../JsonEditor';
+import { Button, FileButton, Select, Status, Toggle } from '../ui';
+import { useDebounced, usePersistentState, readFileAsText } from '../../lib/hooks';
 import { useJsonWorker } from '../../lib/useJsonWorker';
 import { formatBytes, positionToOffset, type JsonError } from '../../lib/json/types';
-import type { Cell, ChangeKind, DiffResult, DiffRow, Token } from '../../lib/json/diff';
+import type { IndentStyle } from '../../lib/json/format';
+import type { ChangeKind, DiffResult } from '../../lib/json/diff';
 import { SAMPLE_DIFF_LEFT, SAMPLE_DIFF_RIGHT } from '../../lib/json/samples';
-import { fill, parseRich, plural } from '../../lib/i18n/format';
+import { fill, parseRich } from '../../lib/i18n/format';
 import type { IslandStrings } from '../../lib/i18n/ui/en';
 
-type SideError = { side: 'left' | 'right'; error: JsonError } | null;
-
-const ROW_HEIGHT = 22;
-const OVERSCAN = 14;
-
-/** Unchanged runs shorter than this are cheaper to read than to fold. */
-const FOLD_MIN = 6;
-/** Unchanged rows kept either side of a fold, so a change never starts cold. */
-const CONTEXT = 2;
-
-const SPLIT_COLUMNS = '1.5rem minmax(0,1fr) 1.5rem 1.5rem minmax(0,1fr)';
-const UNIFIED_COLUMNS = '1.5rem minmax(0,1fr)';
+type Side = 'left' | 'right';
+type SideError = { side: Side; error: JsonError } | null;
 
 /** Renders the `**bold**` a couple of these strings carry. */
 function Rich({ text }: { text: string }) {
@@ -41,18 +33,137 @@ function Rich({ text }: { text: string }) {
   );
 }
 
-export default function JsonDiff({ lang, strings }: { lang: string; strings: IslandStrings }) {
+/**
+ * The comparator: two live documents with the difference drawn between them.
+ * One surface, not three — both sides stay editable, the seam copies a block
+ * either way, and the toolbar re-indents, sorts and strips either document.
+ *
+ * Two comparisons run at once, and their disagreement is the point:
+ *
+ * - **The editor's** is textual. It is what you see, navigate, and what the
+ *   seam control acts on, since a copied block is a run of characters.
+ * - **The worker's** is structural. It parses both sides, so reordered keys and
+ *   different indentation are not differences. It owns the counts and verdict.
+ *
+ * When the text differs but the data does not, the toolbar says so and offers
+ * the action that resolves it.
+ */
+export default function JsonDiff({
+  strings,
+}: {
+  /* Accepted so every tool island has the same signature. The comparator has
+     no counted phrases left — the fold counter went with the row model — so
+     nothing here needs `plural()`. */
+  lang: string;
+  strings: IslandStrings;
+}) {
   const s = strings.diff;
+  const f = strings.formatter;
   const c = strings.common;
+
   const [left, setLeft] = usePersistentState('utildock:json-diff:left', '');
   const [right, setRight] = usePersistentState('utildock:json-diff:right', '');
+
+  /* Tidy settings live here rather than borrowing the formatter's storage
+     keys: someone who likes tabs when formatting one document does not
+     necessarily want tabs when lining two up. */
+  const [indent, setIndent] = usePersistentState<IndentStyle>('utildock:json-diff:indent', '2');
+  const [sortKeys, setSortKeys] = usePersistentState('utildock:json-diff:sort', false);
+  const [removeNulls, setRemoveNulls] = usePersistentState('utildock:json-diff:nulls', false);
+  const [autoTidy, setAutoTidy] = usePersistentState('utildock:json-diff:autotidy', true);
+  const [collapseIdentical, setCollapseIdentical] = usePersistentState(
+    'utildock:json-diff:collapse',
+    true,
+  );
   const [result, setResult] = useState<DiffResult | null>(null);
   const [sideError, setSideError] = useState<SideError>(null);
-  const [showEditors, setShowEditors] = usePersistentState('utildock:json-diff:editors', true);
 
+  const merge = useRef<MergeHandle>(null);
   const run = useJsonWorker('json-diff');
   const debouncedLeft = useDebounced(left, 220);
   const debouncedRight = useDebounced(right, 220);
+
+  // --- Tidy ---------------------------------------------------------------
+
+  /** Re-indent one document. Resolves null if it does not parse. */
+  const tidyText = useCallback(
+    async (text: string, force?: { sortKeys?: boolean }): Promise<string | null> => {
+      if (!text.trim()) return null;
+      const response = await run({
+        op: 'format',
+        text,
+        indent,
+        sortKeys: force?.sortKeys ?? sortKeys,
+        removeNulls,
+      });
+      return response.ok ? response.output : null;
+    },
+    [run, indent, sortKeys, removeNulls],
+  );
+
+  /* Sequential, not parallel. The worker hook drops all but the newest reply
+     for a given op, so firing both formats at once would leave the first
+     unresolved and one side untidied. */
+  const tidyBoth = useCallback(async () => {
+    const tidiedLeft = await tidyText(left);
+    if (tidiedLeft !== null) setLeft(tidiedLeft);
+    const tidiedRight = await tidyText(right);
+    if (tidiedRight !== null) setRight(tidiedRight);
+  }, [left, right, tidyText, setLeft, setRight]);
+
+  /**
+   * Resolve a formatting-only difference. Tidying alone will not: two documents
+   * can be indented identically and still order their keys differently, which
+   * is most of what puts this state on screen. So sorting goes on — and stays
+   * visibly on, rather than firing once and being undone by the next Tidy.
+   */
+  const alignSides = useCallback(async () => {
+    setSortKeys(true);
+    const alignedLeft = await tidyText(left, { sortKeys: true });
+    if (alignedLeft !== null) setLeft(alignedLeft);
+    const alignedRight = await tidyText(right, { sortKeys: true });
+    if (alignedRight !== null) setRight(alignedRight);
+  }, [left, right, tidyText, setLeft, setRight, setSortKeys]);
+
+  const tidyOne = useCallback(
+    async (side: Side) => {
+      const tidied = await tidyText(side === 'left' ? left : right);
+      if (tidied === null) return;
+      (side === 'left' ? setLeft : setRight)(tidied);
+    },
+    [left, right, tidyText, setLeft, setRight],
+  );
+
+  /** A whole document landed in one side — dropped, or loaded from a file. */
+  const receive = useCallback(
+    (side: Side, text: string) => {
+      (side === 'left' ? setLeft : setRight)(text);
+      if (!autoTidy) return;
+      void tidyText(text).then((tidied) => {
+        if (tidied !== null) (side === 'left' ? setLeft : setRight)(tidied);
+      });
+    },
+    [autoTidy, tidyText, setLeft, setRight],
+  );
+
+  /* Paste is the one arrival we cannot read directly: CodeMirror applies it
+     itself, so the finished document exists only once the debounce settles.
+     The paste handler leaves a note here and this picks it up. */
+  const pendingTidy = useRef<Side | null>(null);
+
+  useEffect(() => {
+    const side = pendingTidy.current;
+    if (!side) return;
+    pendingTidy.current = null;
+    if (!autoTidy) return;
+    void tidyText(side === 'left' ? debouncedLeft : debouncedRight).then((tidied) => {
+      if (tidied !== null) (side === 'left' ? setLeft : setRight)(tidied);
+    });
+    // A one-shot reaction to a paste, not a rule about the current options.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedLeft, debouncedRight]);
+
+  // --- The structural verdict ---------------------------------------------
 
   useEffect(() => {
     if (!debouncedLeft.trim() || !debouncedRight.trim()) {
@@ -74,8 +185,7 @@ export default function JsonDiff({ lang, strings }: { lang: string; strings: Isl
   const leftMarkers = useMarkers(sideError, 'left', left);
   const rightMarkers = useMarkers(sideError, 'right', right);
 
-  const leftDrop = useFileDrop((text) => setLeft(text));
-  const rightDrop = useFileDrop((text) => setRight(text));
+  // --- Actions ------------------------------------------------------------
 
   const loadSample = () => {
     setLeft(SAMPLE_DIFF_LEFT);
@@ -87,133 +197,248 @@ export default function JsonDiff({ lang, strings }: { lang: string; strings: Isl
     setRight(left);
   };
 
-  const totals = result
-    ? result.counts.added + result.counts.removed + result.counts.changed + result.counts.moved
-    : 0;
+  /* One frame, two documents: a dropped file belongs to whichever half it
+     landed on. Anything else would make the visitor guess. */
+  const frame = useRef<HTMLElement>(null);
+  const [dropSide, setDropSide] = useState<Side | null>(null);
+
+  const sideAt = (clientX: number): Side => {
+    const box = frame.current?.getBoundingClientRect();
+    if (!box) return 'left';
+    return clientX < box.left + box.width / 2 ? 'left' : 'right';
+  };
+
+  const dropHandlers = {
+    onDragOver: (event: React.DragEvent) => {
+      if (!event.dataTransfer.types.includes('Files')) return;
+      event.preventDefault();
+      setDropSide(sideAt(event.clientX));
+    },
+    onDragLeave: (event: React.DragEvent) => {
+      if (frame.current?.contains(event.relatedTarget as Node)) return;
+      setDropSide(null);
+    },
+    onDrop: (event: React.DragEvent) => {
+      const file = event.dataTransfer.files[0];
+      const side = sideAt(event.clientX);
+      setDropSide(null);
+      if (!file) return;
+      event.preventDefault();
+      void readFileAsText(file).then((text) => receive(side, text));
+    },
+  };
+
+  const isEmpty = !left.trim() && !right.trim();
+  const bothPresent = Boolean(left.trim() && right.trim());
+  const hasChanges = Boolean(result && !result.identical);
+  /* Structurally the same document, written down two different ways. The text
+     diff is showing chunks; the data has nothing to report. */
+  const formattingOnly = Boolean(result?.identical) && left !== right;
 
   return (
-    <div className="flex flex-col gap-4">
-      {showEditors && (
-        <div className="grid gap-4 lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)_auto]">
-          <Panel
-            title={s.originalTitle}
-            aligned
-            highlighted={leftDrop.isOver}
-            dropHandlers={leftDrop.dropHandlers}
-            dropLabel={c.dropHere}
-            className="h-[26vh] min-h-[200px]"
-            actions={
-              <>
-                <FileButton onText={(text) => setLeft(text)} label={c.load} title={c.loadTitle} />
-                <Button icon="trash" variant="danger" onClick={() => setLeft('')} disabled={!left} />
-              </>
-            }
-            footer={
-              <>
-                <span>{formatBytes(new Blob([left]).size)}</span>
-                {sideError?.side === 'left' && (
-                  <Status tone="error">
-                    {fill(c.errorAt, {
-                      line: sideError.error.line,
-                      column: sideError.error.column,
-                      message: sideError.error.message,
-                    })}
-                  </Status>
-                )}
-              </>
-            }
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border border-scribe-strong bg-bench px-3 py-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Button icon="sparkle" onClick={loadSample} title={c.sampleTitle}>
+            {c.sample}
+          </Button>
+          <Button icon="convert" onClick={swap} disabled={isEmpty} title={s.swapTitle}>
+            {s.swap}
+          </Button>
+          <Button
+            icon="braces"
+            onClick={() => void tidyBoth()}
+            disabled={isEmpty}
+            title={s.tidyTitle}
           >
-            <JsonEditor
-              label={s.originalLabel}
-              value={left}
-              onChange={setLeft}
-              markers={leftMarkers}
-              placeholder={s.originalPlaceholder}
-            />
-          </Panel>
+            {s.tidy}
+          </Button>
+        </div>
 
-          <Panel
-            title={s.changedTitle}
-            aligned
-            highlighted={rightDrop.isOver}
-            dropHandlers={rightDrop.dropHandlers}
-            dropLabel={c.dropHere}
-            className="h-[26vh] min-h-[200px]"
-            actions={
-              <>
-                <FileButton onText={(text) => setRight(text)} label={c.load} title={c.loadTitle} />
-                <Button
-                  icon="trash"
-                  variant="danger"
-                  onClick={() => setRight('')}
-                  disabled={!right}
-                />
-              </>
-            }
-            footer={
-              <>
-                <span>{formatBytes(new Blob([right]).size)}</span>
-                {sideError?.side === 'right' && (
-                  <Status tone="error">
-                    {fill(c.errorAt, {
-                      line: sideError.error.line,
-                      column: sideError.error.column,
-                      message: sideError.error.message,
-                    })}
-                  </Status>
-                )}
-              </>
-            }
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <Select
+            label={f.indent}
+            value={indent}
+            onChange={(event) => setIndent(event.target.value as IndentStyle)}
           >
-            <JsonEditor
-              label={s.changedLabel}
-              value={right}
-              onChange={setRight}
-              markers={rightMarkers}
-              placeholder={s.changedPlaceholder}
-            />
-          </Panel>
+            <option value="2">{fill(f.spaces, { count: 2 })}</option>
+            <option value="3">{fill(f.spaces, { count: 3 })}</option>
+            <option value="4">{fill(f.spaces, { count: 4 })}</option>
+            <option value="tab">{f.tab}</option>
+          </Select>
+          <Toggle checked={sortKeys} onChange={setSortKeys} title={f.sortKeysTitle}>
+            {f.sortKeys}
+          </Toggle>
+          <Toggle checked={removeNulls} onChange={setRemoveNulls} title={c.removeNullsTitle}>
+            {c.removeNulls}
+          </Toggle>
+          <Toggle checked={autoTidy} onChange={setAutoTidy} title={s.autoTidyTitle}>
+            {s.autoTidy}
+          </Toggle>
+        </div>
+
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
+          {hasChanges && (
+            <div className="flex items-center gap-1">
+              <Tally kind="removed" count={result!.counts.removed} strings={s} />
+              <Tally kind="added" count={result!.counts.added} strings={s} />
+              <Tally kind="changed" count={result!.counts.changed} strings={s} />
+              <Tally kind="moved" count={result!.counts.moved} strings={s} />
+            </div>
+          )}
+
+          <div className="flex items-center gap-0.5 border border-scribe-strong">
+            <button
+              type="button"
+              onClick={() => merge.current?.step(-1)}
+              disabled={!bothPresent}
+              title={s.prevTitle}
+              aria-label={s.prev}
+              className="grid size-6 place-items-center text-temper hover:bg-anvil-lit hover:text-chalk disabled:pointer-events-none disabled:opacity-40"
+            >
+              <Icon name="chevron-up" size={13} strokeWidth={2.5} />
+            </button>
+            <button
+              type="button"
+              onClick={() => merge.current?.step(1)}
+              disabled={!bothPresent}
+              title={s.nextTitle}
+              aria-label={s.next}
+              className="grid size-6 place-items-center text-temper hover:bg-anvil-lit hover:text-chalk disabled:pointer-events-none disabled:opacity-40"
+            >
+              <Icon name="chevron-down" size={13} strokeWidth={2.5} />
+            </button>
+          </div>
+
+          <Button
+            onClick={() => setCollapseIdentical(!collapseIdentical)}
+            title={collapseIdentical ? s.showAllTitle : s.foldSameTitle}
+          >
+            {collapseIdentical ? s.showAll : s.foldSame}
+          </Button>
+        </div>
+      </div>
+
+      {/* Capped measure with a non-wrapping sibling action, not a `flex-wrap`
+          row: German and Russian run half again the English, and wrapping put
+          the button on a row of its own where it read as unrelated. */}
+      {formattingOnly && (
+        <div className="flex flex-col gap-2 border border-sound/40 bg-sound/8 px-3 py-2 sm:flex-row sm:items-center sm:gap-4">
+          <span className="min-w-0 max-w-prose">
+            <Status tone="ok">{s.formattingOnly}</Status>
+          </span>
+          <Button
+            icon="braces"
+            className="shrink-0 self-start sm:ml-auto sm:self-auto"
+            onClick={() => void alignSides()}
+            title={s.alignSidesTitle}
+          >
+            {s.alignSides}
+          </Button>
         </div>
       )}
 
-      <DiffPanel
-        left={left}
-        right={right}
-        result={result}
-        sideError={sideError}
-        strikeKey={`${totals}:${result?.rows.length ?? 0}`}
-        header={
-          <>
-            <Button icon="sparkle" onClick={loadSample} title={c.sampleTitle}>
-              {c.sample}
-            </Button>
-            <Button icon="convert" onClick={swap} disabled={!left && !right} title={s.swapTitle}>
-              {s.swap}
-            </Button>
-            <Button
-              icon={showEditors ? 'chevron-up' : 'chevron-down'}
-              onClick={() => setShowEditors(!showEditors)}
-              title={showEditors ? s.hideTitle : s.showTitle}
+      <section
+        ref={frame}
+        {...dropHandlers}
+        className={`flex min-h-0 flex-col overflow-hidden border bg-anvil transition-colors lg:h-[calc(100vh-17rem)] lg:min-h-[440px] ${
+          dropSide ? 'border-cherry' : 'border-scribe-strong'
+        }`}
+      >
+        {/* The header splits at 50%, which is exactly where the seam between
+            the two editors falls — so each title sits over its own document. */}
+        <header className="grid shrink-0 grid-cols-2 border-b border-scribe bg-bench">
+          <SideHeader
+            title={s.firstTitle}
+            text={left}
+            onFile={(text) => receive('left', text)}
+            onTidy={() => void tidyOne('left')}
+            onClear={() => setLeft('')}
+            strings={strings}
+          />
+          <SideHeader
+            title={s.secondTitle}
+            text={right}
+            onFile={(text) => receive('right', text)}
+            onTidy={() => void tidyOne('right')}
+            onClear={() => setRight('')}
+            strings={strings}
+            divided
+          />
+        </header>
+
+        <div className="relative min-h-0 flex-1 overflow-hidden" onPasteCapture={(event) => {
+          /* Which document the paste landed in, decided by where the caret
+             was rather than by the pointer — a paste can be a keystroke. */
+          const target = event.target as HTMLElement;
+          const editors = frame.current?.querySelectorAll('.cm-mergeViewEditor');
+          pendingTidy.current = editors?.[1]?.contains(target) ? 'right' : 'left';
+        }}>
+          <JsonMergeEditor
+            handleRef={merge}
+            left={left}
+            right={right}
+            onLeftChange={setLeft}
+            onRightChange={setRight}
+            leftLabel={s.firstLabel}
+            rightLabel={s.secondLabel}
+            leftPlaceholder={s.firstPlaceholder}
+            rightPlaceholder={s.secondPlaceholder}
+            leftMarkers={leftMarkers}
+            rightMarkers={rightMarkers}
+            collapseIdentical={collapseIdentical}
+            applyIntoRight={s.applyRightTitle}
+            applyIntoLeft={s.applyLeftTitle}
+          />
+
+          {dropSide && (
+            <div
+              className={`ud-legend pointer-events-none absolute inset-y-0 grid place-items-center bg-ground/85 text-cherry ${
+                dropSide === 'left' ? 'left-0 right-1/2' : 'left-1/2 right-0'
+              }`}
             >
-              {showEditors ? s.hideInput : s.editInput}
-            </Button>
-          </>
-        }
-        tall={!showEditors}
-        /* Nothing to compare yet: the panel keeps only enough height to hold
-           its own sentence. It used to reserve 54vh of empty anvil under two
-           empty editors, which on a stacked layout is most of a second screen
-           of nothing. Height is claimed the moment both sides have text, so it
-           settles once rather than jumping on every keystroke. */
-        idle={!left.trim() || !right.trim()}
-        lang={lang}
-        strings={strings}
-      />
+              {c.dropHere}
+            </div>
+          )}
+        </div>
+
+        <footer className="ud-legend grid shrink-0 grid-cols-2 border-t border-scribe bg-bench">
+          <SideFooter
+            text={left}
+            error={sideError?.side === 'left' ? sideError.error : null}
+            strings={strings}
+          />
+          <SideFooter
+            text={right}
+            error={sideError?.side === 'right' ? sideError.error : null}
+            strings={strings}
+            divided
+          />
+        </footer>
+      </section>
+
+      {/* Prose here is set in the body face, not the engraved legend one: the
+          legend style is small caps for two-word labels, and a full sentence
+          in it is a wall to read rather than a line. The legend row below
+          keeps that style, because that is what it is for. */}
+      {!bothPresent ? (
+        <p className="max-w-prose text-sm leading-relaxed text-temper">
+          <Rich text={s.idle} />
+        </p>
+      ) : result?.identical && !formattingOnly ? (
+        <p className="max-w-prose text-sm leading-relaxed text-sound">{s.identicalBody}</p>
+      ) : (
+        <p className="ud-legend flex flex-wrap items-center gap-x-4 gap-y-1 text-faint">
+          <Legend strings={s} />
+          {result?.truncated && <Status tone="warn">{s.truncated}</Status>}
+          <span className="ml-auto hidden sm:inline">{s.keyboardHint}</span>
+        </p>
+      )}
     </div>
   );
 }
 
-function useMarkers(sideError: SideError, side: 'left' | 'right', text: string): Marker[] {
+function useMarkers(sideError: SideError, side: Side, text: string): Marker[] {
   return useMemo(() => {
     if (!sideError || sideError.side !== side) return [];
     const { error } = sideError;
@@ -222,275 +447,81 @@ function useMarkers(sideError: SideError, side: 'left' | 'right', text: string):
   }, [sideError, side, text]);
 }
 
-// --- The comparison ---------------------------------------------------------
-
-type ViewItem =
-  | { type: 'row'; row: DiffRow; index: number; side: 'both' | 'left' | 'right' }
-  | { type: 'fold'; id: number; count: number };
-
-interface DiffPanelProps {
-  left: string;
-  right: string;
-  result: DiffResult | null;
-  sideError: SideError;
-  header: React.ReactNode;
-  strikeKey: string;
-  tall: boolean;
-  idle: boolean;
-  lang: string;
-  strings: IslandStrings;
-}
-
-function DiffPanel({
-  left,
-  right,
-  result,
-  sideError,
-  header,
-  strikeKey,
-  tall,
-  idle,
-  lang,
+/** One half of the frame's header: a title, and what you can do to that side. */
+function SideHeader({
+  title,
+  text,
+  onFile,
+  onTidy,
+  onClear,
   strings,
-}: DiffPanelProps) {
+  divided = false,
+}: {
+  title: string;
+  text: string;
+  onFile: (text: string) => void;
+  onTidy: () => void;
+  onClear: () => void;
+  strings: IslandStrings;
+  divided?: boolean;
+}) {
   const s = strings.diff;
-  const [unified, setUnified] = useState(false);
-  const [showUnchanged, setShowUnchanged] = useState(false);
-  const [openFolds, setOpenFolds] = useState<Set<number>>(() => new Set());
-  const [cursor, setCursor] = useState(0);
-  const scroller = useRef<HTMLDivElement>(null);
-
-  // Two columns of JSON do not fit a phone, so the same rows are stacked
-  // instead. The toggle stays available — this only picks the sensible start.
-  useEffect(() => {
-    const query = window.matchMedia('(max-width: 900px)');
-    const apply = () => setUnified(query.matches);
-    apply();
-    query.addEventListener('change', apply);
-    return () => query.removeEventListener('change', apply);
-  }, []);
-
-  useEffect(() => {
-    setOpenFolds(new Set());
-    setCursor(0);
-    if (scroller.current) scroller.current.scrollTop = 0;
-  }, [result]);
-
-  const items = useMemo(
-    () => buildItems(result?.rows ?? [], openFolds, showUnchanged, unified),
-    [result, openFolds, showUnchanged, unified],
-  );
-
-  const anchors = useMemo(() => {
-    const found: number[] = new Array(result?.blocks.length ?? 0).fill(-1);
-    items.forEach((item, index) => {
-      if (item.type !== 'row') return;
-      const block = item.row.block;
-      if (block >= 0 && found[block] === -1) found[block] = index;
-    });
-    return found;
-  }, [items, result]);
-
-  const jumpTo = useCallback(
-    (block: number) => {
-      const element = scroller.current;
-      const anchor = anchors[block];
-      if (!element || anchor === undefined || anchor < 0) return;
-      setCursor(block);
-      element.scrollTo({
-        top: Math.max(0, anchor * ROW_HEIGHT - element.clientHeight * 0.35),
-        behavior: 'smooth',
-      });
-    },
-    [anchors],
-  );
-
-  const step = useCallback(
-    (delta: number) => {
-      const total = result?.blocks.length ?? 0;
-      if (total === 0) return;
-      jumpTo((cursor + delta + total) % total);
-    },
-    [cursor, jumpTo, result],
-  );
-
-  const jumpKind = useCallback(
-    (kind: ChangeKind) => {
-      const blocks = result?.blocks ?? [];
-      for (let offset = 1; offset <= blocks.length; offset++) {
-        const index = (cursor + offset) % blocks.length;
-        if (blocks[index]!.kind === kind) {
-          jumpTo(index);
-          return;
-        }
-      }
-    },
-    [cursor, jumpTo, result],
-  );
-
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (!event.altKey || (!event.key.startsWith('Arrow') && event.key !== 'n' && event.key !== 'p')) return;
-      if (event.key === 'ArrowDown' || event.key === 'n') {
-        event.preventDefault();
-        step(1);
-      } else if (event.key === 'ArrowUp' || event.key === 'p') {
-        event.preventDefault();
-        step(-1);
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [step]);
-
-  const hasChanges = Boolean(result && !result.identical);
-
+  const c = strings.common;
   return (
-    <Panel
-      title={s.comparisonTitle}
-      strikeKey={strikeKey}
-      className={
-        idle
-          ? 'min-h-[180px]'
-          : tall
-            ? 'h-[calc(100vh-17rem)] min-h-[420px]'
-            : 'h-[54vh] min-h-[360px]'
-      }
-      actions={
-        <>
-          {hasChanges && (
-            <>
-              <div className="flex items-center gap-1">
-                <Tally kind="removed" count={result!.counts.removed} onJump={jumpKind} strings={s} />
-                <Tally kind="added" count={result!.counts.added} onJump={jumpKind} strings={s} />
-                <Tally kind="changed" count={result!.counts.changed} onJump={jumpKind} strings={s} />
-                <Tally kind="moved" count={result!.counts.moved} onJump={jumpKind} strings={s} />
-              </div>
-              <div className="flex items-center gap-0.5 border border-scribe-strong">
-                <button
-                  type="button"
-                  onClick={() => step(-1)}
-                  title={s.prevTitle}
-                  aria-label={s.prev}
-                  className="grid size-6 place-items-center text-temper hover:bg-anvil-lit hover:text-chalk"
-                >
-                  <Icon name="chevron-up" size={13} strokeWidth={2.5} />
-                </button>
-                <span className="ud-force min-w-11 text-center text-[11px] text-faint">
-                  {cursor + 1}/{result!.blocks.length}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => step(1)}
-                  title={s.nextTitle}
-                  aria-label={s.next}
-                  className="grid size-6 place-items-center text-temper hover:bg-anvil-lit hover:text-chalk"
-                >
-                  <Icon name="chevron-down" size={13} strokeWidth={2.5} />
-                </button>
-              </div>
-              <Button
-                onClick={() => setShowUnchanged(!showUnchanged)}
-                title={s.showAllTitle}
-              >
-                {showUnchanged ? s.foldSame : s.showAll}
-              </Button>
-              <Button
-                onClick={() => setUnified(!unified)}
-                title={unified ? s.splitTitle : s.stackTitle}
-              >
-                {unified ? s.split : s.stack}
-              </Button>
-            </>
-          )}
-          {header}
-        </>
-      }
-      footer={
-        result && !result.identical ? (
-          <>
-            <Legend strings={s} />
-            {result.truncated && <Status tone="warn">{s.truncated}</Status>}
-            {/* A keyboard hint is noise on a touch screen. */}
-            <span className="ml-auto hidden text-faint sm:inline">{s.keyboardHint}</span>
-          </>
-        ) : undefined
-      }
+    <div
+      className={`flex min-h-12 flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2 ${
+        divided ? 'border-l border-scribe' : ''
+      }`}
     >
-      <Body
-        left={left}
-        right={right}
-        result={result}
-        sideError={sideError}
-        items={items}
-        anchors={anchors}
-        unified={unified}
-        scroller={scroller}
-        onOpenFold={(id) => setOpenFolds((current) => new Set(current).add(id))}
-        onJump={jumpTo}
-        lang={lang}
-        strings={strings}
-      />
-    </Panel>
+      <h2 className="ud-legend text-chalk">{title}</h2>
+      <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
+        <FileButton onText={onFile} label={c.load} title={c.loadTitle} />
+        <Button
+          icon="braces"
+          onClick={onTidy}
+          disabled={!text.trim()}
+          aria-label={s.tidyOne}
+          title={s.tidyOne}
+        />
+        <Button
+          icon="trash"
+          variant="danger"
+          onClick={onClear}
+          disabled={!text}
+          aria-label={c.clear}
+          title={c.clear}
+        />
+      </div>
+    </div>
   );
 }
 
-/**
- * Collapse long runs of untouched rows. `keep` rows are the braces on the path
- * to a difference, so a fold leaves an outline: every change, in place, with
- * the structure that locates it.
- */
-function buildItems(
-  rows: DiffRow[],
-  openFolds: Set<number>,
-  showUnchanged: boolean,
-  unified: boolean,
-): ViewItem[] {
-  const folded: ViewItem[] = [];
-  let index = 0;
-
-  while (index < rows.length) {
-    const row = rows[index]!;
-    if (showUnchanged || row.kind !== 'same' || row.keep) {
-      folded.push({ type: 'row', row, index, side: 'both' });
-      index++;
-      continue;
-    }
-
-    let end = index;
-    while (end < rows.length && rows[end]!.kind === 'same' && !rows[end]!.keep) end++;
-    const length = end - index;
-
-    if (length < FOLD_MIN || openFolds.has(index)) {
-      for (let i = index; i < end; i++) folded.push({ type: 'row', row: rows[i]!, index: i, side: 'both' });
-    } else {
-      const head = index === 0 ? 0 : CONTEXT;
-      const tail = end === rows.length ? 0 : CONTEXT;
-      for (let i = index; i < index + head; i++)
-        folded.push({ type: 'row', row: rows[i]!, index: i, side: 'both' });
-      folded.push({ type: 'fold', id: index, count: length - head - tail });
-      for (let i = end - tail; i < end; i++)
-        folded.push({ type: 'row', row: rows[i]!, index: i, side: 'both' });
-    }
-    index = end;
-  }
-
-  if (!unified) return folded;
-
-  // Stacked: a changed row becomes the old line followed by the new one.
-  const stacked: ViewItem[] = [];
-  for (const item of folded) {
-    if (item.type !== 'row') {
-      stacked.push(item);
-      continue;
-    }
-    if (item.row.kind === 'changed') {
-      stacked.push({ ...item, side: 'left' }, { ...item, side: 'right' });
-    } else {
-      stacked.push({ ...item, side: item.row.kind === 'added' ? 'right' : 'left' });
-    }
-  }
-  return stacked;
+function SideFooter({
+  text,
+  error,
+  strings,
+  divided = false,
+}: {
+  text: string;
+  error: JsonError | null;
+  strings: IslandStrings;
+  divided?: boolean;
+}) {
+  const c = strings.common;
+  return (
+    <div
+      className={`flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1 px-3 py-1.5 ${
+        divided ? 'border-l border-scribe' : ''
+      }`}
+    >
+      <span>{formatBytes(new Blob([text]).size)}</span>
+      {error && (
+        <Status tone="error">
+          {fill(c.errorAt, { line: error.line, column: error.column, message: error.message })}
+        </Status>
+      )}
+    </div>
+  );
 }
 
 const KIND_TEXT: Record<ChangeKind, string> = {
@@ -507,30 +538,32 @@ const KIND_MARK: Record<ChangeKind, string> = {
   moved: '⇅',
 };
 
+/**
+ * A structural count. Not a button: these come from the parsed data, and the
+ * navigation beside them walks the text — sending one to the other would be
+ * quietly wrong on any document where the two disagree.
+ */
 function Tally({
   kind,
   count,
-  onJump,
   strings,
 }: {
   kind: ChangeKind;
   count: number;
-  onJump: (kind: ChangeKind) => void;
   strings: IslandStrings['diff'];
 }) {
   if (count === 0) return null;
   return (
-    <button
-      type="button"
-      onClick={() => onJump(kind)}
-      title={fill(strings.jumpTo, { kind: strings.kinds[kind] })}
-      className={`ud-legend inline-flex items-center gap-1 border border-transparent px-1.5 py-1 transition-colors hover:border-scribe-strong ${KIND_TEXT[kind]}`}
+    <span
+      title={fill(strings.tallyTitle, { kind: strings.kinds[kind] })}
+      className={`ud-legend inline-flex items-center gap-1 px-1 py-1 ${KIND_TEXT[kind]}`}
     >
       <span aria-hidden="true" className="ud-force text-sm leading-none">
         {KIND_MARK[kind]}
       </span>
       <span className="ud-force tabular-nums">{count}</span>
-    </button>
+      <span className="sr-only">{strings.kinds[kind]}</span>
+    </span>
   );
 }
 
@@ -539,435 +572,12 @@ function Legend({ strings }: { strings: IslandStrings['diff'] }) {
     <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
       <span className="inline-flex items-center gap-1.5">
         <span className="size-2.5 bg-fault/35 ring-1 ring-fault/60" />
-        {strings.onlyOriginal}
+        {strings.onlyFirst}
       </span>
       <span className="inline-flex items-center gap-1.5">
         <span className="size-2.5 bg-sound/35 ring-1 ring-sound/60" />
-        {strings.onlyChanged}
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <span className="ud-force text-warn" aria-hidden="true">
-          →
-        </span>
-        {strings.replaced}
+        {strings.onlySecond}
       </span>
     </span>
-  );
-}
-
-interface BodyProps {
-  left: string;
-  right: string;
-  result: DiffResult | null;
-  sideError: SideError;
-  items: ViewItem[];
-  anchors: number[];
-  unified: boolean;
-  scroller: React.RefObject<HTMLDivElement | null>;
-  onOpenFold: (id: number) => void;
-  onJump: (block: number) => void;
-  lang: string;
-  strings: IslandStrings;
-}
-
-function Body({
-  left,
-  right,
-  result,
-  sideError,
-  items,
-  anchors,
-  unified,
-  scroller,
-  onOpenFold,
-  onJump,
-  lang,
-  strings,
-}: BodyProps) {
-  const s = strings.diff;
-  const [scrollTop, setScrollTop] = useState(0);
-  const [height, setHeight] = useState(600);
-
-  useEffect(() => {
-    const element = scroller.current;
-    if (!element) return;
-    const observer = new ResizeObserver(([entry]) => setHeight(entry!.contentRect.height));
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [scroller, result]);
-
-  if (sideError) {
-    return (
-      <Centered>
-        {fill(s.sideError, {
-          side: sideError.side === 'left' ? s.sideOriginal : s.sideChanged,
-          line: sideError.error.line,
-        })}
-      </Centered>
-    );
-  }
-
-  if (!left.trim() || !right.trim()) {
-    return (
-      <Centered>
-        <Rich text={s.idle} />
-      </Centered>
-    );
-  }
-
-  if (!result) return <Centered>{s.comparing}</Centered>;
-
-  if (result.identical) {
-    return (
-      <div className="grid h-full place-items-center p-6 text-center">
-        <div>
-          <span className="mx-auto grid size-11 place-items-center border border-sound/40 bg-sound/10 text-sound">
-            <Icon name="check" size={20} />
-          </span>
-          <p className="mt-3 font-medium text-chalk">{s.identicalTitle}</p>
-          <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-temper">
-            {s.identicalBody}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const columns = unified ? UNIFIED_COLUMNS : SPLIT_COLUMNS;
-  const start = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
-  const end = Math.min(items.length, Math.ceil((scrollTop + height) / ROW_HEIGHT) + OVERSCAN);
-
-  return (
-    <div className="flex h-full flex-col">
-      <div
-        className="ud-legend grid shrink-0 items-center border-b border-scribe bg-bench"
-        style={{ gridTemplateColumns: columns }}
-      >
-        {unified ? (
-          <div className="col-span-2 px-2 py-1.5">
-            <span className="text-fault">{s.unifiedOriginal}</span>
-            <span className="px-1.5 text-scribe-strong">/</span>
-            <span className="text-sound">{s.unifiedChanged}</span>
-          </div>
-        ) : (
-          <>
-            <div className="col-span-2 px-2 py-1.5 text-fault">{s.headerOriginal}</div>
-            <div className="border-x border-scribe" />
-            <div className="col-span-2 px-2 py-1.5 text-sound">{s.headerChanged}</div>
-          </>
-        )}
-      </div>
-
-      <div className="relative min-h-0 flex-1">
-        <div
-          ref={scroller}
-          onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
-          className="h-full overflow-auto font-mono text-[12.5px] leading-none"
-        >
-          <div style={{ height: items.length * ROW_HEIGHT, position: 'relative' }}>
-            <div style={{ transform: `translateY(${start * ROW_HEIGHT}px)` }}>
-              {items.slice(start, end).map((item, offset) =>
-                item.type === 'fold' ? (
-                  <FoldRow
-                    key={`fold-${item.id}`}
-                    count={item.count}
-                    columns={columns}
-                    onClick={() => onOpenFold(item.id)}
-                    lang={lang}
-                    strings={s}
-                  />
-                ) : (
-                  <Line
-                    key={`${item.index}-${item.side}-${start + offset}`}
-                    row={item.row}
-                    side={item.side}
-                    unified={unified}
-                    columns={columns}
-                    common={strings.common}
-                  />
-                ),
-              )}
-            </div>
-          </div>
-        </div>
-
-        <Ribbon
-          blocks={result.blocks}
-          anchors={anchors}
-          total={items.length}
-          scrollTop={scrollTop}
-          viewportHeight={height}
-          onJump={onJump}
-        />
-      </div>
-    </div>
-  );
-}
-
-/**
- * The change ribbon: the whole comparison compressed into one column, so the
- * distribution of differences is visible without scrolling and each is a click.
- */
-function Ribbon({
-  blocks,
-  anchors,
-  total,
-  scrollTop,
-  viewportHeight,
-  onJump,
-}: {
-  blocks: DiffResult['blocks'];
-  anchors: number[];
-  total: number;
-  scrollTop: number;
-  viewportHeight: number;
-  onJump: (block: number) => void;
-}) {
-  const contentHeight = total * ROW_HEIGHT;
-  if (contentHeight <= viewportHeight) return null;
-
-  const marks: Record<ChangeKind, string> = {
-    added: 'bg-sound',
-    removed: 'bg-fault',
-    changed: 'bg-warn',
-    moved: 'bg-cherry',
-  };
-
-  return (
-    <div
-      className="absolute inset-y-0 right-0 w-2.5 border-l border-scribe bg-bench"
-      aria-hidden="true"
-    >
-      {blocks.map((block, index) => {
-        const anchor = anchors[index];
-        if (anchor === undefined || anchor < 0) return null;
-        return (
-          <button
-            key={`${block.path}-${index}`}
-            type="button"
-            tabIndex={-1}
-            onClick={() => onJump(index)}
-            title={block.path}
-            className={`absolute left-0 h-[3px] w-full ${marks[block.kind]}`}
-            style={{ top: `${(anchor / total) * 100}%` }}
-          />
-        );
-      })}
-      <div
-        className="pointer-events-none absolute left-0 w-full border border-chalk/30 bg-chalk/10"
-        style={{
-          top: `${(scrollTop / contentHeight) * 100}%`,
-          height: `${Math.min(100, (viewportHeight / contentHeight) * 100)}%`,
-        }}
-      />
-    </div>
-  );
-}
-
-function FoldRow({
-  count,
-  columns,
-  onClick,
-  lang,
-  strings,
-}: {
-  count: number;
-  columns: string;
-  onClick: () => void;
-  lang: string;
-  strings: IslandStrings['diff'];
-}) {
-  return (
-    <div className="grid" style={{ gridTemplateColumns: columns, height: ROW_HEIGHT }}>
-      <button
-        type="button"
-        onClick={onClick}
-        className="ud-legend col-span-full flex items-center gap-2 border-y border-scribe/60 bg-bench/60 px-2 text-faint transition-colors hover:bg-anvil-lit hover:text-chalk"
-        title={strings.showIdentical}
-      >
-        <Icon name="chevron-down" size={11} strokeWidth={2.5} />
-        {plural(lang, strings.identicalLines, count)}
-      </button>
-    </div>
-  );
-}
-
-/** One line of the comparison — in split mode, both documents at once. */
-function Line({
-  row,
-  side,
-  unified,
-  columns,
-  common,
-}: {
-  row: DiffRow;
-  side: 'both' | 'left' | 'right';
-  unified: boolean;
-  columns: string;
-  common: IslandStrings['common'];
-}) {
-  const { copy, copied } = useCopy(1200);
-
-  if (unified) {
-    const cell = side === 'right' ? row.right : row.left;
-    const kind = row.kind === 'changed' ? (side === 'right' ? 'added' : 'removed') : row.kind;
-    return (
-      <div
-        className={`group relative grid ${TINT[kind]}`}
-        style={{ gridTemplateColumns: columns, height: ROW_HEIGHT }}
-      >
-        <Gutter kind={kind} moved={row.moved} />
-        <Content cell={cell} kind={kind} />
-        <CopyPath path={row.path} copy={copy} copied={copied} common={common} />
-      </div>
-    );
-  }
-
-  const leftKind = row.kind === 'added' ? 'gap' : row.kind === 'changed' ? 'removed' : row.kind;
-  const rightKind = row.kind === 'removed' ? 'gap' : row.kind === 'changed' ? 'added' : row.kind;
-
-  return (
-    <div
-      className="group relative grid"
-      style={{ gridTemplateColumns: columns, height: ROW_HEIGHT }}
-    >
-      <Gutter kind={leftKind} />
-      <Content cell={row.left} kind={leftKind} />
-      {/* Split view says "moved" once, in the spine — the gutters carry ± only. */}
-      <Spine row={row} />
-      <Gutter kind={rightKind} align="right" />
-      <Content cell={row.right} kind={rightKind} />
-      <CopyPath path={row.path} copy={copy} copied={copied} common={common} />
-    </div>
-  );
-}
-
-type LineKind = 'same' | 'added' | 'removed' | 'changed' | 'gap';
-
-const TINT: Record<LineKind, string> = {
-  same: '',
-  added: 'bg-sound/12',
-  removed: 'bg-fault/12',
-  changed: 'bg-warn/12',
-  gap: 'ud-void',
-};
-
-const SIGN: Record<LineKind, string> = {
-  same: '',
-  added: '+',
-  removed: '−',
-  changed: '~',
-  gap: '',
-};
-
-function Gutter({
-  kind,
-  moved,
-  align = 'left',
-}: {
-  kind: LineKind;
-  moved?: boolean;
-  align?: 'left' | 'right';
-}) {
-  const tone =
-    kind === 'added'
-      ? 'text-sound'
-      : kind === 'removed'
-        ? 'text-fault'
-        : moved
-          ? 'text-cherry'
-          : 'text-faint';
-  return (
-    <span
-      className={`ud-force grid place-items-center text-[13px] leading-none select-none ${TINT[kind]} ${tone} ${
-        align === 'right' ? 'border-l border-scribe/40' : ''
-      }`}
-      aria-hidden="true"
-    >
-      {SIGN[kind] || (moved ? '⇅' : '')}
-    </span>
-  );
-}
-
-/** The centre column: what happened between the two sides, in one glyph. */
-function Spine({ row }: { row: DiffRow }) {
-  const glyph = row.kind === 'changed' ? '→' : row.moved ? '⇅' : '';
-  const tone = row.kind === 'changed' ? 'text-warn' : 'text-cherry';
-  return (
-    <span
-      className={`ud-force grid place-items-center border-x border-scribe text-[13px] leading-none select-none ${tone}`}
-      aria-hidden="true"
-    >
-      {glyph}
-    </span>
-  );
-}
-
-function Content({ cell, kind }: { cell: Cell | null; kind: LineKind }) {
-  if (!cell) return <span className={`block h-full ${TINT.gap}`} />;
-  return (
-    <code
-      className={`block h-full overflow-hidden text-ellipsis whitespace-pre ${TINT[kind]}`}
-      style={{ paddingLeft: 6 + cell.depth * 12, paddingTop: 5 }}
-    >
-      {cell.tokens.map((token, index) => (
-        <TokenSpan key={index} token={token} emphasis={cell.emphasis} />
-      ))}
-    </code>
-  );
-}
-
-const TOKEN_CLASS: Record<Token['t'], string> = {
-  key: 'text-key',
-  punct: 'text-temper',
-  string: 'text-string',
-  number: 'text-number',
-  boolean: 'text-boolean',
-  null: 'text-nullish italic',
-  note: 'text-faint',
-};
-
-function TokenSpan({ token, emphasis }: { token: Token; emphasis?: Cell['emphasis'] }) {
-  const isValue = token.t !== 'key' && token.t !== 'punct' && token.t !== 'note';
-  if (!emphasis || !isValue) return <span className={TOKEN_CLASS[token.t]}>{token.v}</span>;
-
-  // The replaced value is struck through and the replacement is weighted, so
-  // which way the arrow points needs no explaining.
-  return emphasis === 'old' ? (
-    <span className="text-fault line-through decoration-fault/70 decoration-[1.5px]">{token.v}</span>
-  ) : (
-    <span className="font-semibold text-sound">{token.v}</span>
-  );
-}
-
-function CopyPath({
-  path,
-  copy,
-  copied,
-  common,
-}: {
-  path: string;
-  copy: (text: string) => Promise<void>;
-  copied: boolean;
-  common: IslandStrings['common'];
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => void copy(path)}
-      title={fill(common.copyPathTitle, { path })}
-      className="ud-legend absolute top-0 right-4 hidden h-full items-center gap-1 bg-anvil px-2 text-faint group-hover:flex hover:text-chalk"
-    >
-      <Icon name={copied ? 'check' : 'copy'} size={11} />
-      {copied ? common.pathCopied : common.path}
-    </button>
-  );
-}
-
-function Centered({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="grid h-full place-items-center p-6 text-center">
-      <p className="max-w-md text-sm leading-relaxed text-temper">{children}</p>
-    </div>
   );
 }

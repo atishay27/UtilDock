@@ -52,6 +52,8 @@ export const toolsFr: ToolCopyOverrides = {
       'json formatter français',
       'minifier json',
       'embellir json',
+      'formateur json gratuit',
+      'formater json sans téléverser',
     ],
   },
 
@@ -92,6 +94,8 @@ export const toolsFr: ToolCopyOverrides = {
       'visualiser json en ligne',
       'json viewer français',
       'explorateur json',
+      'visionneuse json en ligne gratuite',
+      'ouvrir un gros fichier json',
     ],
   },
 
@@ -127,6 +131,8 @@ export const toolsFr: ToolCopyOverrides = {
       'valider json en ligne',
       'json schema validator',
       'vérifier syntaxe json',
+      'validateur json en ligne gratuit',
+      'validateur json schema en ligne',
     ],
   },
 
@@ -143,7 +149,7 @@ export const toolsFr: ToolCopyOverrides = {
     description:
       'Comparateur JSON gratuit. Deux documents côte à côte : ajouts, suppressions et valeurs modifiées en couleur. Dans votre navigateur.',
     overview:
-      'Un comparateur JSON qui montre la différence au lieu de l’énumérer. Les deux documents sont dessinés comme une seule vue alignée : le rouge marque ce que seul l’original possède, le vert ce que seul le modifié possède, et une flèche signale chaque valeur remplacée. Comme la comparaison est structurelle plutôt que textuelle, des clés réordonnées et une indentation différente ne comptent jamais comme des changements.',
+      'Un comparateur JSON dans lequel vous pouvez éditer. Les deux documents sont côte à côte, en éditeurs vivants, avec la différence dessinée entre eux : le rouge marque ce que seul JSON 1 possède, le vert ce que seul JSON 2 possède, et les flèches de la couture copient un bloc dans les deux sens, de sorte que vous réconciliez la paire en la lisant. Aucun côté n’est la référence. Et comme le verdict est structurel plutôt que textuel, des clés réordonnées et une indentation différente ne comptent jamais comme des changements.',
     faqs: [
       {
         q: 'Quelle différence entre un diff JSON et un diff textuel ?',
@@ -167,6 +173,8 @@ export const toolsFr: ToolCopyOverrides = {
       'comparateur json',
       'json diff en ligne',
       'différence entre deux json',
+      'comparer deux fichiers json',
+      'json diff en ligne gratuit',
     ],
   },
 
@@ -212,6 +220,8 @@ export const toolsFr: ToolCopyOverrides = {
       'vérifier signature jwt',
       'jwt decoder français',
       'json web token décoder',
+      'jwt decoder en ligne gratuit',
+      'décoder jwt sans téléverser',
     ],
   },
 
@@ -253,6 +263,8 @@ export const toolsFr: ToolCopyOverrides = {
       'créer un jwt',
       'signer jwt en ligne',
       'générateur json web token',
+      'générer un jeton jwt en ligne',
+      'signer jwt hs256 en ligne',
     ],
   },
 
@@ -294,6 +306,8 @@ export const toolsFr: ToolCopyOverrides = {
       'compter les mots en ligne',
       'compteur de phrases',
       'compter les paragraphes',
+      'compter mots et caractères gratuit',
+      'calcul du temps de lecture',
     ],
   },
 
@@ -335,6 +349,8 @@ export const toolsFr: ToolCopyOverrides = {
       'supprimer les lignes en double',
       'nettoyer du texte en ligne',
       'changer la casse en ligne',
+      'supprimer les lignes vides en ligne',
+      'trier les lignes par ordre alphabétique',
     ],
   },
 };

@@ -1,17 +1,12 @@
 /**
  * JWT signature verification, done in the visitor's own tab with WebCrypto.
  *
- * This is the one place on the site where a secret may be typed, so it is worth
- * being precise about what happens to it: the key is held in a React state
- * variable, passed to `crypto.subtle.importKey`, and dropped. It is never
- * persisted to `localStorage` — every other input on this site is, and this one
- * deliberately is not — never sent anywhere, and never included in an analytics
- * event. There is no backend that could receive it. `SubtleCrypto` is a browser
- * primitive, so nothing here needs a library and nothing compiles code at
- * runtime, which the site's CSP forbids anyway.
+ * The key is held in a React state variable, passed to
+ * `crypto.subtle.importKey`, and dropped. Unlike every other input on this
+ * site it is deliberately *not* persisted to `localStorage`, never sent
+ * anywhere, and never in an analytics event.
  *
- * Like `decode.ts`, this returns codes rather than sentences; the island holds
- * the eight translations.
+ * Returns codes rather than sentences; the island holds the eight translations.
  */
 
 import { decodeSegmentText } from './decode';
@@ -26,9 +21,8 @@ import {
   type SecretEncoding,
 } from './algorithms';
 
-/* The algorithm table moved to `algorithms.ts` when the encoder arrived, so
-   that signing and verifying cannot drift apart. Re-exported here because
-   callers have always reached for these through this module. */
+/* The table itself lives in `algorithms.ts` so signing and verifying cannot
+   drift apart. Re-exported for callers that reach for it through this module. */
 export {
   isSupportedAlgorithm,
   isSymmetric,
@@ -66,21 +60,17 @@ interface Jwk {
 }
 
 /**
- * Pick the key to check against out of whatever was pasted.
- *
- * A JWKS is accepted whole because that is the shape people actually have —
- * the body of a `/.well-known/jwks.json`, copied entire. When it holds more
- * than one key, the token's `kid` chooses; a set with one key is used without
- * a `kid`, since there is nothing to disambiguate.
+ * Pick the key to check against out of whatever was pasted. A JWKS is accepted
+ * whole, since that is the shape people have — a `/.well-known/jwks.json` body
+ * copied entire. The token's `kid` chooses; a single-key set needs no `kid`.
  */
 function selectJwk(set: Jwk[], kid: string | null): Jwk | null {
   if (set.length === 0) return null;
   if (kid) {
     const match = set.find((key) => key.kid === kid);
     if (match) return match;
-    // A named key that is not in the set is a real answer, not a fallback
-    // opportunity: checking against a different key would produce a confident
-    // "invalid" that says nothing about the token.
+    // A named key missing from the set is the answer, not a reason to fall
+    // back: another key would give a confident "invalid" that means nothing.
     return null;
   }
   return set.length === 1 ? set[0] : null;
@@ -213,12 +203,9 @@ export async function verifySignature({
 }
 
 /**
- * Whether the signature segment is even well-formed base64url.
- *
- * Worth checking separately: a truncated token — the single most common way a
- * JWT arrives broken, because something along the way had a length limit —
- * otherwise reports as a failed signature, which sends people hunting for the
- * wrong bug.
+ * Whether the signature segment is well-formed base64url. Checked separately so
+ * a truncated token — the commonest way a JWT arrives broken — does not report
+ * as a failed signature and send people after the wrong bug.
  */
 export function signatureLooksWellFormed(signature: string): boolean {
   if (signature === '') return false;

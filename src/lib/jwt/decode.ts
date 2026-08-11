@@ -1,19 +1,15 @@
 /**
- * JWT decoding — dependency-free, and small enough to run on the main thread.
+ * JWT decoding — dependency-free, and small enough for the main thread. Unlike
+ * a JSON document a token cannot be megabytes, so there is no worker here and
+ * the island imports this module directly.
  *
- * The JSON tools push their work to `json/worker.ts` because a document can be
- * megabytes. A token cannot: a JWT that exceeds a few kilobytes has already
- * broken every header limit that would carry it, so the worker's cost buys
- * nothing here and the island imports this module directly.
+ * Returns fault *codes*, never sentences: anything a visitor reads has to exist
+ * in eight languages, and the island maps each code onto its dictionary entry.
+ * That is why the codes are a closed union rather than free text.
  *
- * **This module returns fault *codes*, never sentences.** Anything a visitor
- * reads has to exist in eight languages, and a string baked in here could not.
- * The island maps each code onto its dictionary entry — which is also why the
- * codes are a closed union rather than free text.
- *
- * Decoding a JWT is not verifying one. This file does no cryptography at all;
- * it reads what the token says about itself. `verify.ts` is where a claim of
- * authenticity is actually tested, and the UI must never let the two blur.
+ * Decoding is not verifying. This file does no cryptography — it reads what the
+ * token says about itself. `verify.ts` tests the claim, and the UI must never
+ * let the two blur.
  */
 
 /** Why a token, or one segment of it, could not be read. */
@@ -60,13 +56,10 @@ export type DecodeResult =
   | { ok: false; fault: JwtFault; parts?: TokenParts };
 
 /**
- * Strip the noise a token picks up in transit.
- *
- * Tokens are copied out of `Authorization` headers, curl commands, JSON bodies
- * and log lines, so they arrive wearing a `Bearer` prefix, wrapping quotes, or
- * the line breaks a terminal added. Every one of those is unambiguously not
- * part of a JWT — the alphabet is base64url and dots — so removing them is
- * safe, and it spares the visitor an error whose only fix is manual tidying.
+ * Strip the noise a token picks up in transit — a `Bearer` prefix, wrapping
+ * quotes, line breaks a terminal added. None of it can be part of a JWT, whose
+ * alphabet is base64url and dots, so removing it is safe and spares the visitor
+ * an error whose only fix is manual tidying.
  */
 export function normalizeToken(input: string): string {
   return input
@@ -198,11 +191,9 @@ export function isTimeClaim(name: string): name is TimeClaim {
 }
 
 /**
- * What a NumericDate claim means right now.
- *
- * `exp` and `nbf` are windows and can fail; `iat` is a statement of when the
- * token was minted and cannot. Keeping the distinction here stops the UI from
- * painting a perfectly ordinary `iat` as a problem.
+ * What a NumericDate claim means right now. `exp` and `nbf` are windows and can
+ * fail; `iat` only states when the token was minted, so the UI must not paint
+ * an ordinary one as a problem.
  */
 export type TimeState = 'expired' | 'expires' | 'not-yet-valid' | 'active' | 'issued' | 'invalid';
 
@@ -217,12 +208,9 @@ export interface TimeReading {
 }
 
 /**
- * Read a NumericDate claim.
- *
- * Values are seconds by the spec, but tokens minted with `Date.now()` instead
- * of `Date.now() / 1000` are common enough that treating one as seconds would
- * date it to the year 56000. Anything that far out is read as milliseconds,
- * which is what its issuer meant, rather than reported as a bizarre date.
+ * Read a NumericDate claim. The spec says seconds, but tokens minted with
+ * `Date.now()` are common enough to matter — read as seconds they date to the
+ * year 56000, so anything that far out is treated as milliseconds instead.
  */
 export function readTimeClaim(
   claim: TimeClaim,

@@ -23,6 +23,41 @@ export function sortObjectKeys<T>(value: T): T {
   return value;
 }
 
+/**
+ * Drop every object property whose value is `null`.
+ *
+ * "Field" means object property, and only that. Nulls sitting in an array are
+ * left where they are: removing one shifts every index after it, so a document
+ * that used `data[3]` to mean something would quietly start meaning something
+ * else. A tool that silently renumbers your data is worse than one that leaves
+ * a null alone.
+ *
+ * Empty objects and arrays left behind by the strip are also kept — collapsing
+ * them is a different rule, and guessing at it would be a second unannounced
+ * edit to the document.
+ */
+export function stripNulls<T>(value: T): { value: T; removed: number } {
+  let removed = 0;
+
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (node !== null && typeof node === 'object') {
+      const kept: Record<string, unknown> = {};
+      for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
+        if (child === null) {
+          removed++;
+          continue;
+        }
+        kept[key] = walk(child);
+      }
+      return kept;
+    }
+    return node;
+  };
+
+  return { value: walk(value) as T, removed };
+}
+
 export function formatJson(value: unknown, options: FormatOptions): string {
   const prepared = options.sortKeys ? sortObjectKeys(value) : value;
   return JSON.stringify(prepared, null, indentFor(options.indent));

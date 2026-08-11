@@ -61,12 +61,10 @@ const RICH = /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)/g;
 /**
  * The whole markup vocabulary: `**bold**`, `` `code` `` and `[label](href)`.
  *
- * Prose has to carry emphasis and links, and the alternatives were both worse:
- * splitting every sentence into fragments around its markup makes a translation
- * unreadable and ungrammatical in languages that reorder clauses, and handing
- * raw HTML from a dictionary to `set:html` puts an injection point in a file
- * that will be edited by whoever is translating. This parses to tokens, and the
- * renderers emit elements — so a stray `<script>` in a translation is text.
+ * Splitting sentences into fragments around their markup is ungrammatical in
+ * languages that reorder clauses, and `set:html` on dictionary strings puts an
+ * injection point in a file translators edit. This parses to tokens and the
+ * renderers emit elements, so a stray `<script>` in a translation is text.
  */
 export function parseRich(input: string): RichToken[] {
   const tokens: RichToken[] = [];
@@ -89,14 +87,10 @@ export function parseRich(input: string): RichToken[] {
 }
 
 /**
- * The same string with its markup removed rather than rendered.
- *
- * Some strings are shown in two places: as prose in a panel, where `**bold**`
- * and `` `code` `` should become elements, and again on a one-line status
- * footer, which is plain text. Without this the footer prints the asterisks and
- * backticks literally. Stripping here rather than keeping a second, markup-free
- * copy of each string means a translator never has to maintain two versions of
- * the same sentence and watch them drift apart.
+ * The same string with its markup removed rather than rendered, for the places
+ * a string appears as plain text — a one-line status footer, say, as well as
+ * panel prose. Cheaper than a second markup-free copy for translators to keep
+ * in step.
  */
 export function plainText(input: string): string {
   return parseRich(input)

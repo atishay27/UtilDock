@@ -53,6 +53,8 @@ export const toolsJa: ToolCopyOverrides = {
       'json 整形 オンライン',
       'json formatter 日本語',
       'json 圧縮',
+      'json 整形 無料',
+      'json 整形 アップロードなし',
     ],
   },
 
@@ -83,7 +85,14 @@ export const toolsJa: ToolCopyOverrides = {
         a: 'いいえ。UtilDock のすべてのツールは無料で、広告も登録も利用制限もありません。',
       },
     ],
-    keywords: ['json ビューア', 'json 表示', 'json viewer 日本語', 'json ツリー表示'],
+    keywords: [
+      'json ビューア',
+      'json 表示',
+      'json viewer 日本語',
+      'json ツリー表示',
+      'json ビューア オンライン 無料',
+      '大きな json ファイル 表示',
+    ],
   },
 
   'json-validator': {
@@ -118,6 +127,8 @@ export const toolsJa: ToolCopyOverrides = {
       'json 検証',
       'json チェック オンライン',
       'json schema validator 日本語',
+      'json バリデーター 無料',
+      'json schema 検証 オンライン',
     ],
   },
 
@@ -129,7 +140,7 @@ export const toolsJa: ToolCopyOverrides = {
     description:
       '無料のオンライン JSON 差分ツール。2 つのドキュメントを左右に並べ、追加・削除・変更された値を色分けして比較できます。完全にブラウザ内で動作します。',
     overview:
-      '違いを列挙するのではなく、見せる JSON 比較ツール。2 つのドキュメントはひとつの整列したビューとして描かれます。赤は変更前にしかないもの、緑は変更後にしかないもの、矢印は置き換えられた値を示します。比較はテキストではなく構造に対して行われるため、キーの並べ替えやインデントの違いが変更として現れることはありません。',
+      'その場で編集できる JSON 比較ツール。2 つのドキュメントは生きたエディタとして左右に並び、その間に差分が描かれます。赤は JSON 1 にしかないもの、緑は JSON 2 にしかないもので、中央の矢印はブロックをどちら向きにもコピーするので、読みながらその場で揃えられます。どちらが正ということはありません。判定はテキストではなく構造に対して行われるため、キーの並べ替えやインデントの違いが変更として数えられることはありません。',
     faqs: [
       {
         q: 'JSON の差分とテキストの差分は何が違いますか？',
@@ -148,7 +159,14 @@ export const toolsJa: ToolCopyOverrides = {
         a: 'いいえ。どちらもこのタブ内の Web Worker で解析・比較されます。サーバーには何も送信されません。本番のペイロード同士を比較するときに効いてくるのはそこです。',
       },
     ],
-    keywords: ['json 差分', 'json 比較', 'json diff 日本語', 'json 比較 オンライン'],
+    keywords: [
+      'json 差分',
+      'json 比較',
+      'json diff 日本語',
+      'json 比較 オンライン',
+      'json ファイル 2つ 比較',
+      'json 差分 無料',
+    ],
   },
 
   'jwt-decoder': {
@@ -193,6 +211,8 @@ export const toolsJa: ToolCopyOverrides = {
       'jwt 署名 検証',
       'json web token デコード',
       'jwt 解析',
+      'jwt デコード 無料',
+      'jwt 解析 アップロードなし',
     ],
   },
 
@@ -229,6 +249,8 @@ export const toolsJa: ToolCopyOverrides = {
       'jwt 作成',
       'jwt 署名 オンライン',
       'json web token 生成',
+      'jwt トークン 生成 オンライン',
+      'jwt hs256 署名',
     ],
   },
 
@@ -265,6 +287,8 @@ export const toolsJa: ToolCopyOverrides = {
       '文字数 カウンター',
       'word counter 日本語',
       '文字数を数える',
+      '文字数カウント 無料',
+      '読了時間 計算',
     ],
   },
 
@@ -301,6 +325,8 @@ export const toolsJa: ToolCopyOverrides = {
       '重複行 削除',
       'テキスト 整形 オンライン',
       '大文字 小文字 変換',
+      '空行 削除 オンライン',
+      '行 並び替え アルファベット順',
     ],
   },
 };

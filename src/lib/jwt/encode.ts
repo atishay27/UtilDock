@@ -1,24 +1,17 @@
 /**
  * JWT signing, done in the visitor's own tab with WebCrypto.
  *
- * This is the mirror of `verify.ts` and inherits its one uncomfortable
- * property: the key typed here is a *private* key or a shared secret, which is
- * strictly more dangerous than the public key the decoder asks for. Anyone
- * holding it can mint tokens that your systems will accept. So the same rule
- * applies, harder — the key is held in a React state variable, handed to
- * `crypto.subtle.importKey`, and dropped. It is never written to
- * `localStorage`, never included in an analytics event, and there is no backend
- * that could receive it.
+ * The key typed here is a private key or shared secret — anyone holding it can
+ * mint tokens your systems accept. It is held in a React state variable, handed
+ * to `crypto.subtle.importKey`, and dropped: never written to `localStorage`,
+ * never in an analytics event, and there is no backend to receive it.
  *
- * Like the rest of `lib/jwt`, this returns fault *codes* rather than sentences.
- * Anything a visitor reads has to exist in eight languages, and a string baked
- * in here could not be one of them.
+ * Returns fault *codes*, never sentences: anything a visitor reads has to exist
+ * in eight languages.
  *
- * The header is assembled rather than accepted verbatim in one respect: `alg`
- * is always written from the algorithm actually used to sign. A header that
- * claims `HS256` over an RS256 signature is not a token, it is the setup for
- * the best-known JWT vulnerability, and there is no legitimate reason to let
- * this tool produce one.
+ * `alg` in the header is always overwritten from the algorithm actually used to
+ * sign. A header claiming `HS256` over an RS256 signature is the setup for the
+ * best-known JWT vulnerability.
  */
 
 import {
@@ -49,20 +42,15 @@ export type EncodeResult =
   | { ok: false; fault: EncodeFault };
 
 /**
- * The `alg: none` unsecured JWT of RFC 7519 §6.
- *
- * Offered because it is part of the specification and people do need to
- * reproduce one — usually to test that their own verifier rejects it. The UI
- * says loudly what it is; this constant is just the name.
+ * The `alg: none` unsecured JWT of RFC 7519 §6. Offered because people need to
+ * reproduce one, usually to check their own verifier rejects it. The UI says
+ * loudly what it is.
  */
 export const UNSECURED = 'none';
 
 /**
- * HMAC keys shorter than the hash output are permitted by WebCrypto but
- * forbidden by RFC 7518 §3.2, which requires a secret at least as long as the
- * hash. Browsers will sign with a four-character secret quite happily, and the
- * resulting token is trivially brute-forced offline. This is the one piece of
- * advice the encoder gives that is about security rather than syntax.
+ * WebCrypto permits HMAC keys shorter than the hash output; RFC 7518 §3.2 does
+ * not. A four-character secret signs fine and is trivially brute-forced offline.
  */
 const MINIMUM_SECRET_BYTES: Record<string, number> = { 'SHA-256': 32, 'SHA-384': 48, 'SHA-512': 64 };
 
@@ -88,11 +76,9 @@ export function secretByteLength(secret: string, encoding: SecretEncoding): numb
 /* --------------------------------------------------------------- header --- */
 
 /**
- * The header this token will actually carry.
- *
- * Whatever the visitor typed is kept — `kid`, `cty`, anything custom — but
- * `alg` is overwritten from the chosen algorithm, and `typ` defaults to `JWT`
- * when absent because a token without one is legal but unhelpful.
+ * The header this token will carry. Whatever the visitor typed is kept — `kid`,
+ * `cty`, anything custom — but `alg` is overwritten from the chosen algorithm
+ * and `typ` defaults to `JWT`.
  */
 export function buildHeader(
   typed: Record<string, unknown>,
@@ -179,10 +165,9 @@ async function importSigningKey(
     }
 
     if (trimmed.includes('-----BEGIN')) {
-      // WebCrypto imports PKCS#8 ("BEGIN PRIVATE KEY") and nothing else. A
-      // PKCS#1 key ("BEGIN RSA PRIVATE KEY") or a traditional EC key would need
-      // DER surgery to get there, and guessing wrong produces a key that
-      // imports and then signs garbage.
+      // WebCrypto imports PKCS#8 ("BEGIN PRIVATE KEY") and nothing else. PKCS#1
+      // or a traditional EC key would need DER surgery, and guessing wrong
+      // yields a key that imports and then signs garbage.
       if (!/-----BEGIN PRIVATE KEY-----/.test(trimmed)) return { failure: 'bad-key' };
 
       const key = await crypto.subtle.importKey(
@@ -239,8 +224,8 @@ export async function signToken({
     JSON.stringify(parsedPayload.value),
   )}`;
 
-  // The unsecured JWT: three parts, the third one empty. Not a shortcut around
-  // a missing key — a distinct, specified token type that proves nothing.
+  // The unsecured JWT: three parts, the third empty. A specified token type
+  // that proves nothing, not a shortcut around a missing key.
   if (algorithm.toLowerCase() === UNSECURED) {
     return { ok: true, token: `${signingInput}.`, signingInput, unsecured: true };
   }
@@ -293,13 +278,9 @@ export const EXPIRY_PRESETS = [
 export type ExpiryPresetId = (typeof EXPIRY_PRESETS)[number]['id'];
 
 /**
- * Re-stamp the time claims on a payload.
- *
- * `iat` and `nbf` are set to now, `exp` to now plus the chosen span. Written as
- * a whole-object rewrite rather than three separate edits so the three claims
- * can never disagree about what "now" was — a payload whose `nbf` is a second
- * after its `iat` is the kind of thing that only fails in someone else's
- * clock-skew tolerance.
+ * Re-stamp the time claims: `iat` and `nbf` to now, `exp` to now plus the span.
+ * A whole-object rewrite rather than three edits, so the claims cannot disagree
+ * about what "now" was and strand an `nbf` a second after its `iat`.
  */
 export function stampTimeClaims(
   payload: Record<string, unknown>,

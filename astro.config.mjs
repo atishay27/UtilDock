@@ -79,11 +79,9 @@ export default defineConfig({
         // does not claim every URL changed. Undefined omits the tag entirely.
         item.lastmod = lastmodFor(path, localeOf(pathname));
 
-        /* The tools are the point of the site; the legal pages are not.
-           Stated as a shape rule rather than a list of routes: the home page,
-           then the reading pages, then category hubs at one segment and tools
-           at two. Adding a tool or a whole category needs no edit here, which
-           the previous version — which named `/json` twice — did. */
+        /* A shape rule rather than a list of routes, so adding a tool or a
+           whole category needs no edit here: home, then the reading pages, then
+           category hubs at one segment and tools at two. */
         if (path === '/') item.priority = 1.0;
         else if (READING_PAGES.includes(path)) {
           item.priority = 0.3;
