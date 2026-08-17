@@ -128,7 +128,7 @@ export const mergeTheme = EditorView.theme({
     borderBlock: '1px solid var(--fg-scribe)',
     color: 'var(--fg-faint)',
     fontFamily: 'var(--font-sans)',
-    fontSize: '10px',
+    fontSize: '0.6875rem',
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
     cursor: 'pointer',
@@ -140,7 +140,7 @@ export const mergeTheme = EditorView.theme({
   '.cm-deletedChunk .cm-chunkButtons': { insetInlineEnd: '6px' },
   '.cm-deletedChunk button': {
     fontFamily: 'var(--font-sans)',
-    fontSize: '10px',
+    fontSize: '0.6875rem',
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
     borderRadius: '0',
