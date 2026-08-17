@@ -4,4 +4,10 @@ Allow: /
 # The share card is a render target, not a page anyone should land on.
 Disallow: /og/
 
+# Not ours. Cloudflare injects /cdn-cgi/ links into the HTML on the way out —
+# the email-obfuscation shim rewrites every mailto: into one — and the endpoint
+# it points at 404s when anything but a browser asks. Nothing under here is a
+# page, so nothing under here should be crawled.
+Disallow: /cdn-cgi/
+
 Sitemap: https://utildock.dev/sitemap-index.xml

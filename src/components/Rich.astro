@@ -33,9 +33,18 @@ const {
 
 const tokens = parseRich(text);
 
+/**
+ * A path whose last segment names a file is a file, not a page: it has no
+ * translation and no trailing slash, and `href` would invent both. This is not
+ * hypothetical — `/.well-known/security.txt` is linked from /privacy in all
+ * eight languages, and RFC 8615 puts `.well-known` at the origin, so the seven
+ * prefixed copies were addresses that could not exist.
+ */
+const isFile = (to: string) => /\.[a-z0-9]+$/i.test(to.split('/').pop() ?? '');
+
 /** Absolute, mail and anchor targets are left alone; site paths get a prefix. */
 function target(to: string): string {
-  return to.startsWith('/') && !to.startsWith('//') ? href(to, locale) : to;
+  return to.startsWith('/') && !to.startsWith('//') && !isFile(to) ? href(to, locale) : to;
 }
 
 const external = (to: string) => /^https?:/.test(to);
