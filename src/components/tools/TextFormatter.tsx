@@ -260,6 +260,7 @@ export default function TextFormatter({
               icon="download"
               onClick={() => downloadText(output, s.outputFile)}
               disabled={!output}
+              aria-label={c.download}
               title={c.download}
             />
           </>

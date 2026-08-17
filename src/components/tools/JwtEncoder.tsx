@@ -337,6 +337,7 @@ export default function JwtEncoder({ lang, strings }: { lang: string; strings: I
                 icon="download"
                 onClick={() => downloadText(token, s.tokenFile)}
                 disabled={!token}
+                aria-label={c.download}
                 title={c.download}
               />
             </>

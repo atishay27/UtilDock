@@ -38,11 +38,23 @@ function useStrike(key: string | number | undefined, duration = 720) {
 
 /** Shop controls: square corners, engraved legends, tabular figures. */
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonBase extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: IconKey;
   variant?: 'default' | 'primary' | 'ghost' | 'danger';
-  children?: ReactNode;
 }
+
+/**
+ * A button is either labelled by its text or labelled by `aria-label`. There is
+ * no third case, so the type does not offer one.
+ *
+ * An icon-only button with neither is announced as "button" and nothing else —
+ * the trash control on four tools was exactly that, and an audit found it. The
+ * `title` alone is not enough: it is the weakest fallback in the accessible
+ * name computation, it never reaches a touch user, and it is not what a screen
+ * reader is guaranteed to read. Pass both, as the call sites do.
+ */
+type ButtonProps = ButtonBase &
+  ({ children: ReactNode } | { children?: never; 'aria-label': string });
 
 export function Button({
   icon,

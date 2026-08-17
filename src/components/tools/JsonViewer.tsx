@@ -100,7 +100,14 @@ export default function JsonViewer({ lang, strings }: { lang: string; strings: I
             <Button icon="sparkle" onClick={() => setInput(SAMPLE_DOCUMENT)} title={c.sampleTitle}>
               {c.sample}
             </Button>
-            <Button icon="trash" variant="danger" onClick={() => setInput('')} disabled={isEmpty} />
+            <Button
+              icon="trash"
+              variant="danger"
+              onClick={() => setInput('')}
+              disabled={isEmpty}
+              aria-label={c.clear}
+              title={c.clear}
+            />
           </>
         }
         footer={

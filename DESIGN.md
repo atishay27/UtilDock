@@ -10,7 +10,7 @@ colors:
   scribed-line-strong: "#454a52"
   chalk: "#f2ede6"
   tempered-grey: "#a8a49d"
-  faint-mark: "#86837b"
+  faint-mark: "#908d85"
   cold-stock: "#5a5f66"
   dull-red: "#7a1e12"
   cherry: "#ff4b00"
@@ -152,7 +152,7 @@ ramp is the one a smith actually reads: cold → dull red → cherry → white h
 | Scribed line | `#2f3339` / `#454a52` | `#c9c4ba` / `#a8a296` | Hairline and structural rules |
 | Chalk | `#f2ede6` | `#17181b` | Primary text |
 | Tempered | `#a8a49d` | `#4f5257` | Secondary text |
-| Faint | `#86837b` | `#5a5d62` | Engraved legends (holds 4.5:1) |
+| Faint | `#908d85` | `#5a5d62` | Engraved legends (holds 4.5:1 on every ground, incl. anvil-lit) |
 | Cold stock | `#5a5f66` | `#8a8d92` | Nothing on the anvil yet |
 | Cherry | `#ff4b00` | `#b02c00` | Working heat — the primary accent |
 | White heat | `#ffb400` | `#a25c00` | Keys, warnings, focus ring |

@@ -220,6 +220,7 @@ export default function JsonFormatter({
                 onClick={() =>
                   downloadText(output, mode === 'pretty' ? s.prettyFile : s.minifiedFile)
                 }
+                aria-label={c.download}
                 disabled={!output}
                 title={c.download}
               />

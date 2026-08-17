@@ -23,7 +23,12 @@
   /* Marks */
   --fg-chalk: #f2ede6; /* chalk on steel */
   --fg-temper: #a8a49d; /* tempered gray */
-  --fg-faint: #86837b;
+  /* Held to 4.5:1 against every dark ground it can land on, not just the two
+     darkest. It was #86837b, which cleared forge black (5.22) and the bench
+     (4.86) but missed on the anvil (4.46) and badly on anvil-lit (3.96) — and
+     the anvil is where the engraved legends mostly sit, including the editor
+     placeholder an audit caught. Ratios now: 5.97 / 5.56 / 5.09 / 4.52. */
+  --fg-faint: #908d85;
 
   /* The heat scale — state, in order of temperature */
   --fg-cold: #5a5f66; /* stock, untouched */

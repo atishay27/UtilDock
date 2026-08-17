@@ -123,7 +123,14 @@ export default function JsonValidator({
             <Button onClick={() => setInput(SAMPLE_BROKEN)} title={s.brokenTitle}>
               {s.broken}
             </Button>
-            <Button icon="trash" variant="danger" onClick={() => setInput('')} disabled={isEmpty} />
+            <Button
+              icon="trash"
+              variant="danger"
+              onClick={() => setInput('')}
+              disabled={isEmpty}
+              aria-label={c.clear}
+              title={c.clear}
+            />
           </>
         }
         footer={
@@ -159,6 +166,8 @@ export default function JsonValidator({
                   variant="danger"
                   onClick={() => setSchema('')}
                   disabled={!schema.trim()}
+                  aria-label={c.clear}
+                  title={c.clear}
                 />
               </>
             }

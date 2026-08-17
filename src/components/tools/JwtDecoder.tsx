@@ -170,7 +170,14 @@ export default function JwtDecoder({ lang, strings }: { lang: string; strings: I
               <Button onClick={() => setInput(SAMPLE_EXPIRED_TOKEN)} title={s.expiredTitle}>
                 {s.expired}
               </Button>
-              <Button icon="trash" variant="danger" onClick={() => setInput('')} disabled={isEmpty} />
+              <Button
+                icon="trash"
+                variant="danger"
+                onClick={() => setInput('')}
+                disabled={isEmpty}
+                aria-label={c.clear}
+                title={c.clear}
+              />
             </>
           }
           footer={
