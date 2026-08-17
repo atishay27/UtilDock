@@ -129,12 +129,17 @@ export function isLocale(value: string): value is Locale {
  * Rewrite a site-root path into a locale. The default locale is returned
  * unprefixed, which is the whole reason this function exists rather than a
  * template literal at each call site.
+ *
+ * The trailing slash is not cosmetic. Astro builds directory-style, so the
+ * server answers `/de/json/` and 308s `/de/json`. Every canonical, hreflang and
+ * sitemap entry carries the slash; an internal link without one sends both the
+ * visitor and the crawler through a redirect to reach the page it just named.
  */
 export function localizedPath(path: string, locale: Locale): string {
   const { segment } = LOCALES[locale];
   const clean = path === '/' ? '' : path.replace(/^\/|\/$/g, '');
   const parts = [segment, clean].filter(Boolean);
-  return parts.length === 0 ? '/' : `/${parts.join('/')}`;
+  return parts.length === 0 ? '/' : `/${parts.join('/')}/`;
 }
 
 /**

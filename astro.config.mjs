@@ -55,6 +55,12 @@ const lastmodFor = lastmodLookup();
 // https://astro.build/config
 export default defineConfig({
   site: 'https://utildock.dev',
+  /* The build has always been directory-style, so the host answers `/json/diff/`
+     and 308s the slashless form. Declaring it makes the dev server agree: a link
+     written without the slash 404s locally instead of quietly costing a redirect
+     in production, which is how a whole language's worth of URLs ended up in
+     Search Console under "Page with redirect". */
+  trailingSlash: 'always',
   i18n: {
     defaultLocale: 'en',
     locales: Object.keys(LOCALES),

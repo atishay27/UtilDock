@@ -9,24 +9,30 @@
  * Bump VERSION when any of that changes.
  */
 
-const VERSION = 'v6';
+const VERSION = 'v7';
 const ASSET_CACHE = `utildock-assets-${VERSION}`;
 const PAGE_CACHE = `utildock-pages-${VERSION}`;
 
-/** The shell worth having before the first offline visit, per language. */
+/**
+ * The shell worth having before the first offline visit, per language.
+ *
+ * Trailing slashes are required, not tidiness: the host 308s the slashless
+ * form, and `cache.addAll` rejects a redirected response — one bad entry threw
+ * away the whole precache. The keys would not have matched a navigation anyway.
+ */
 const PAGES = [
   '/',
-  '/json',
-  '/json/viewer',
-  '/json/validator',
-  '/json/diff',
-  '/json/formatter',
-  '/jwt',
-  '/jwt/decoder',
-  '/jwt/encoder',
-  '/text',
-  '/text/counter',
-  '/text/formatter',
+  '/json/',
+  '/json/viewer/',
+  '/json/validator/',
+  '/json/diff/',
+  '/json/formatter/',
+  '/jwt/',
+  '/jwt/decoder/',
+  '/jwt/encoder/',
+  '/text/',
+  '/text/counter/',
+  '/text/formatter/',
 ];
 
 /**
@@ -52,7 +58,7 @@ const primed = new Set();
 function prime(prefix) {
   if (primed.has(prefix)) return;
   primed.add(prefix);
-  const urls = PAGES.map((page) => (page === '/' ? `${prefix}/` : `${prefix}${page}`));
+  const urls = PAGES.map((page) => `${prefix}${page}`);
   // A failed precache must not break anything — the runtime caches pick these
   // up on first visit anyway.
   caches
@@ -88,13 +94,23 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+/**
+ * `cache.put` rejects a response that arrived via a redirect, so an inbound link
+ * to the slashless form of a page would otherwise throw where nothing is
+ * listening. The site links only the slashed form; this covers links it did not
+ * write.
+ */
+function storable(response) {
+  return response.ok && !response.redirected;
+}
+
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   const hit = await cache.match(request);
   if (hit) return hit;
 
   const response = await fetch(request);
-  if (response.ok) cache.put(request, response.clone());
+  if (storable(response)) cache.put(request, response.clone());
   return response;
 }
 
@@ -102,7 +118,7 @@ async function networkFirst(request, cacheName, prefix = '') {
   const cache = await caches.open(cacheName);
   try {
     const response = await fetch(request);
-    if (response.ok) cache.put(request, response.clone());
+    if (storable(response)) cache.put(request, response.clone());
     return response;
   } catch (error) {
     const hit = await cache.match(request);
@@ -122,7 +138,7 @@ async function staleWhileRevalidate(request, cacheName) {
   const hit = await cache.match(request);
   const network = fetch(request)
     .then((response) => {
-      if (response.ok) cache.put(request, response.clone());
+      if (storable(response)) cache.put(request, response.clone());
       return response;
     })
     .catch(() => hit);

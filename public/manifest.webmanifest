@@ -19,9 +19,9 @@
     }
   ],
   "shortcuts": [
-    { "name": "JSON Viewer", "url": "/json/viewer" },
-    { "name": "JSON Validator", "url": "/json/validator" },
-    { "name": "JSON Comparator", "url": "/json/diff" },
-    { "name": "JSON Formatter", "url": "/json/formatter" }
+    { "name": "JSON Viewer", "url": "/json/viewer/" },
+    { "name": "JSON Validator", "url": "/json/validator/" },
+    { "name": "JSON Comparator", "url": "/json/diff/" },
+    { "name": "JSON Formatter", "url": "/json/formatter/" }
   ]
 }
