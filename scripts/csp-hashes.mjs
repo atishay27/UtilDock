@@ -1,10 +1,16 @@
 /**
- * Replaces `'unsafe-inline'` in the shipped script-src with a SHA-256 hash per
- * inline script, computed from the built output.
+ * Fills in the two parts of public/_headers that cannot be written by hand.
  *
- * Runs from npm's postbuild hook because the hashes cannot be written by hand:
- * Astro emits its own island-hydration loaders, whose contents change with most
- * builds. style-src is left alone — see the note in public/_headers.
+ * `{{SCRIPT_HASHES}}` becomes a SHA-256 per inline script, computed from the
+ * built output — Astro emits its own island-hydration loaders, whose contents
+ * change with most builds. style-src is left alone; see the note in _headers.
+ *
+ * `{{FONT_PRELOAD}}` becomes a Link: header mirroring the font preloads in the
+ * built <head>, which is what Cloudflare's Early Hints reads. It is derived
+ * from the HTML rather than from the font manifest so the header and the markup
+ * cannot disagree: whatever the page asks for is what gets hinted.
+ *
+ * Runs from npm's postbuild hook.
  */
 import { createHash } from 'node:crypto';
 import { readFile, writeFile, readdir } from 'node:fs/promises';
@@ -15,6 +21,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
 const headersFile = join(dist, '_headers');
 const PLACEHOLDER = '{{SCRIPT_HASHES}}';
+const FONT_PLACEHOLDER = '{{FONT_PRELOAD}}';
 
 async function htmlFiles(dir) {
   const out = [];
@@ -57,25 +64,58 @@ async function inlineScripts() {
   return bodies;
 }
 
+/**
+ * The font preloads the built <head> actually asks for, in document order.
+ * One page is enough — BaseLayout emits the same set on every page.
+ */
+async function fontPreloads() {
+  const [page] = await htmlFiles(dist);
+  const html = await readFile(page, 'utf8');
+  return [...html.matchAll(/<link\b([^>]*\brel=["']?preload["']?[^>]*)>/g)]
+    .map(([, attrs]) => attrs)
+    .filter((attrs) => /\bas=["']?font["']?/.test(attrs))
+    .map((attrs) => attrs.match(/\bhref=["']([^"']+)["']/)?.[1])
+    .filter((href) => typeof href === 'string');
+}
+
 const bodies = await inlineScripts();
 const hashes = [...bodies]
   .map((body) => `'sha256-${createHash('sha256').update(body, 'utf8').digest('base64')}'`)
   .sort();
 
-let headers = await readFile(headersFile, 'utf8');
-
-// Exactly one, or the substitution is ambiguous — a stray mention in a comment
-// would silently take the hashes and leave the real directive unreplaced.
-const occurrences = headers.split(PLACEHOLDER).length - 1;
-if (occurrences !== 1) {
+const fonts = await fontPreloads();
+if (fonts.length === 0) {
   console.error(
-    `\n  csp-hashes: expected exactly one ${PLACEHOLDER} in public/_headers, found ${occurrences}.\n` +
-      '  Refusing to continue — the shipped script-src would be wrong.\n',
+    '\n  csp-hashes: no font preloads found in the built HTML.\n' +
+      '  Refusing to continue — the Link: header would ship empty.\n',
   );
   process.exit(1);
 }
+// crossorigin is not decoration: a font is fetched in CORS mode, and a hint
+// without it preloads into a cache entry the real request cannot use.
+const link = fonts.map((href) => `<${href}>; rel=preload; as=font; crossorigin`).join(', ');
 
-headers = headers.replace(PLACEHOLDER, hashes.join(' '));
+let headers = await readFile(headersFile, 'utf8');
+
+// Exactly one each, or the substitution is ambiguous — a stray mention in a
+// comment would silently take the value and leave the real directive
+// unreplaced.
+for (const [token, what] of [
+  [PLACEHOLDER, 'script-src'],
+  [FONT_PLACEHOLDER, 'Link'],
+]) {
+  const occurrences = headers.split(token).length - 1;
+  if (occurrences !== 1) {
+    console.error(
+      `\n  csp-hashes: expected exactly one ${token} in public/_headers, found ${occurrences}.\n` +
+        `  Refusing to continue — the shipped ${what} would be wrong.\n`,
+    );
+    process.exit(1);
+  }
+}
+
+headers = headers.replace(PLACEHOLDER, hashes.join(' ')).replace(FONT_PLACEHOLDER, link);
 await writeFile(headersFile, headers);
 
 console.log(`  csp-hashes: script-src pinned to ${hashes.length} inline hashes`);
+console.log(`  csp-hashes: Link: preloading ${fonts.length} fonts — ${fonts.join(', ')}`);

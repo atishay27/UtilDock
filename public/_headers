@@ -55,6 +55,16 @@
   # max_age unregisters the policy instead of renewing it.
   NEL: {"max_age":0}
   Report-To: {"group":"cf-nel","max_age":0,"endpoints":[]}
+  # The same two faces the <head> preloads, repeated as a header so Cloudflare's
+  # Early Hints has something to put in a 103 — it reads Link:, not markup, and
+  # the markup arrives too late to be worth hinting. Written by
+  # scripts/csp-hashes.mjs from the built HTML rather than by hand, because the
+  # filenames carry a content hash and the two lists must not drift apart.
+  #
+  # This rides on every response, including the assets, which is the cost of
+  # _headers having no glob that means "documents only". Next to the CSP above
+  # it is noise.
+  Link: {{FONT_PRELOAD}}
 
 # Hashed build output never changes under the same name.
 /_astro/*
@@ -72,6 +82,8 @@
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate
 
-# Self-hosted and never renamed, so revalidate daily rather than hold a year.
+# Content-hashed by scripts/fetch-fonts.mjs, so a changed face is a changed
+# name. Held for a year: the daily revalidation this replaces cost a round trip
+# on a render-blocking preload, every day, to be told nothing had changed.
 /fonts/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=31536000, immutable

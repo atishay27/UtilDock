@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { SITE } from '../lib/site';
+import { FONT_PRELOADS } from '../lib/fonts';
 import { graph } from '../lib/seo';
 import { alternates, defaultAlternate, t } from '../lib/i18n';
 import { DEFAULT_LOCALE, LOCALES, rootPath, type Locale } from '../lib/i18n/locales';
@@ -100,9 +101,14 @@ const structuredData = noindex ? undefined : graph(schema);
     }
     <meta id="theme-color" name="theme-color" content="#0a0a0c" />
 
-    {/* Self-hosted; the display face carries the first viewport, so it leads. */}
-    <link rel="preload" href="/fonts/bigshoulders.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin />
+    {/* Self-hosted; the display face carries the first viewport, so it leads.
+        Names and order come from scripts/fetch-fonts.mjs — they carry a content
+        hash now, so they cannot be written here by hand. */}
+    {
+      FONT_PRELOADS.map((font) => (
+        <link rel="preload" href={font} as="font" type="font/woff2" crossorigin />
+      ))
+    }
 
     <script is:inline>
       (function () {
